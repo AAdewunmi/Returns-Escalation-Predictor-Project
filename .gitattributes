@@ -1,0 +1,30 @@
+# Normalize text files to LF in the repository
+* text=auto eol=lf
+
+# Explicit text types
+*.py text eol=lf
+*.md text eol=lf
+*.toml text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.txt text eol=lf
+*.sh text eol=lf
+Dockerfile text eol=lf
+
+# Keep Windows scripts with CRLF if added later
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# Common binary assets
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.woff binary
+*.woff2 binary
+
+# Generated coverage artifact
+coverage.xml -diff
