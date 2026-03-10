@@ -1,4 +1,5 @@
 """App configuration for user interface surfaces."""
+
 from django.apps import AppConfig
 
 

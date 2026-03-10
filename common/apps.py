@@ -1,4 +1,5 @@
 """App configuration for shared utilities."""
+
 from django.apps import AppConfig
 
 
