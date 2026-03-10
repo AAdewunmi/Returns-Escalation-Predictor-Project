@@ -53,7 +53,7 @@ The public UI is not treated as decoration. The landing page and shared shell we
 
 ### Reproducible environment
 
-The application runs locally with Docker Compose and PostgreSQL. Split settings keep development and test concerns separate, while the test configuration can still fall back to SQLite when a friction-free local run is useful.
+The application runs locally with Docker Compose and PostgreSQL. Split settings keep development and test concerns separate while keeping both environments aligned to PostgreSQL.
 
 ### Core domain models
 
@@ -325,4 +325,3 @@ Sprint 1 delivers the foundation only. Later sprints add API-first workflow logi
 ## License
 
 MIT License.
-
