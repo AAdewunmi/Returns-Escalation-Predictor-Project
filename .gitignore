@@ -1,0 +1,45 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Packaging / build artifacts
+build/
+dist/
+*.egg-info/
+.eggs/
+pip-wheel-metadata/
+
+# Virtual environments
+.venv/
+venv/
+env/
+ENV/
+
+# Environment and local config
+.env
+.env.*
+!.env.example
+
+# Django local artifacts
+db.sqlite3
+db.sqlite3-journal
+media/
+staticfiles/
+
+# Test, lint, and coverage outputs
+.pytest_cache/
+.ruff_cache/
+.coverage
+.coverage.*
+htmlcov/
+coverage.xml
+
+# Type checker / notebook caches
+.mypy_cache/
+.ipynb_checkpoints/
+
+# IDE/editor files
+.DS_Store
+.vscode/
+.idea/
