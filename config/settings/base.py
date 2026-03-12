@@ -1,7 +1,7 @@
 # path: config/settings/base.py
 """Base Django settings for the ReturnHub project."""
-import os
 from pathlib import Path
+import os
 
 from dotenv import load_dotenv
 
@@ -10,9 +10,7 @@ load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-dev-key")
 DEBUG = os.getenv("DJANGO_DEBUG", "0") == "1"
-ALLOWED_HOSTS = [
-    host.strip() for host in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
-]
+ALLOWED_HOSTS = [host.strip() for host in os.getenv("DJANGO_ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")]
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -23,6 +21,8 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "common.apps.CommonConfig",
+    "accounts.apps.AccountsConfig",
+    "returns.apps.ReturnsConfig",
     "ui.apps.UiConfig",
 ]
 
