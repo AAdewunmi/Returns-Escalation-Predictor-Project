@@ -28,3 +28,8 @@ Dockerfile text eol=lf
 
 # Generated coverage artifact
 coverage.xml -diff
+
+# GitHub Linguist overrides: count this repo primarily as Python
+Makefile linguist-detectable=false
+Dockerfile linguist-detectable=false
+*.html linguist-detectable=false
