@@ -32,10 +32,7 @@ class Command(BaseCommand):
 
     def _ensure_groups(self) -> dict[str, Group]:
         """Create the role groups used across product surfaces."""
-        return {
-            name: Group.objects.get_or_create(name=name)[0]
-            for name in self.GROUP_NAMES
-        }
+        return {name: Group.objects.get_or_create(name=name)[0] for name in self.GROUP_NAMES}
 
     def _ensure_users(self, groups: dict[str, Group]) -> dict[str, object]:
         """Create deterministic demo users and group assignments."""
@@ -63,7 +60,11 @@ class Command(BaseCommand):
 
         customer_user, _ = user_model.objects.update_or_create(
             username="customer",
-            defaults={"email": "customer@returnhub.local", "is_staff": False, "is_superuser": False},
+            defaults={
+                "email": "customer@returnhub.local",
+                "is_staff": False,
+                "is_superuser": False,
+            },
         )
         customer_user.set_password("password123")
         customer_user.save()
@@ -71,7 +72,11 @@ class Command(BaseCommand):
 
         merchant_user, _ = user_model.objects.update_or_create(
             username="merchant",
-            defaults={"email": "merchant@returnhub.local", "is_staff": False, "is_superuser": False},
+            defaults={
+                "email": "merchant@returnhub.local",
+                "is_staff": False,
+                "is_superuser": False,
+            },
         )
         merchant_user.set_password("password123")
         merchant_user.save()
