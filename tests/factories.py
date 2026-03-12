@@ -22,6 +22,7 @@ class UserFactory(factory.django.DjangoModelFactory):
     username = factory.Sequence(lambda n: f"user{n}")
     email = factory.LazyAttribute(lambda obj: f"{obj.username}@example.com")
 
+
 class CustomerProfileFactory(factory.django.DjangoModelFactory):
     """Create customer profiles for tests."""
 
@@ -33,6 +34,7 @@ class CustomerProfileFactory(factory.django.DjangoModelFactory):
     user = factory.SubFactory(UserFactory)
     external_reference = factory.Sequence(lambda n: f"CUS-{n:04d}")
     display_name = factory.Sequence(lambda n: f"Customer {n}")
+
 
 class MerchantProfileFactory(factory.django.DjangoModelFactory):
     """Create merchant profiles for tests."""
@@ -46,6 +48,7 @@ class MerchantProfileFactory(factory.django.DjangoModelFactory):
     merchant_code = factory.Sequence(lambda n: f"MER-{n:04d}")
     display_name = factory.Sequence(lambda n: f"Merchant {n}")
     support_email = factory.Sequence(lambda n: f"merchant{n}@example.com")
+
 
 class ReturnCaseFactory(factory.django.DjangoModelFactory):
     """Create return cases for tests."""

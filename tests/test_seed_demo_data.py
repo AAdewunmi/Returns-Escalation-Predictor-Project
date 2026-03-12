@@ -19,6 +19,7 @@ def test_seed_demo_data_is_idempotent(db) -> None:
     assert CustomerProfile.objects.count() == 1
     assert MerchantProfile.objects.count() == 1
 
+
 def test_seed_demo_data_creates_expected_users_and_groups(db) -> None:
     """The demo seed should create the expected demo identities."""
     call_command("seed_demo_data")
