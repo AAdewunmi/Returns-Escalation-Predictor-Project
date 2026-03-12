@@ -1,0 +1,51 @@
+# path: templates/partials/_pagination.html
+{% load querystring %}
+<div class="pagination-shell" data-testid="pagination-shell">
+  <div class="pagination-count">{{ pagination.count_line }}</div>
+
+  {% if pagination.page_obj.paginator.num_pages > 1 %}
+    <nav aria-label="Pagination">
+      <ul class="pagination pagination-sm mb-0">
+        <li class="page-item {% if not pagination.page_obj.has_previous %}disabled{% endif %}">
+          <a
+            class="page-link"
+            href="?{% replace_query page=1 %}"
+            aria-label="First page"
+          >First</a>
+        </li>
+        <li class="page-item {% if not pagination.page_obj.has_previous %}disabled{% endif %}">
+          <a
+            class="page-link"
+            href="?{% replace_query page=pagination.page_obj.previous_page_number|default:1 %}"
+            aria-label="Previous page"
+          >Previous</a>
+        </li>
+
+        {% for page_number in pagination.page_numbers %}
+          <li class="page-item {% if page_number == pagination.page_obj.number %}active{% endif %}">
+            <a
+              class="page-link"
+              href="?{% replace_query page=page_number %}"
+              aria-current="{% if page_number == pagination.page_obj.number %}page{% else %}false{% endif %}"
+            >{{ page_number }}</a>
+          </li>
+        {% endfor %}
+
+        <li class="page-item {% if not pagination.page_obj.has_next %}disabled{% endif %}">
+          <a
+            class="page-link"
+            href="?{% replace_query page=pagination.page_obj.next_page_number|default:pagination.page_obj.paginator.num_pages %}"
+            aria-label="Next page"
+          >Next</a>
+        </li>
+        <li class="page-item {% if not pagination.page_obj.has_next %}disabled{% endif %}">
+          <a
+            class="page-link"
+            href="?{% replace_query page=pagination.page_obj.paginator.num_pages %}"
+            aria-label="Last page"
+          >Last</a>
+        </li>
+      </ul>
+    </nav>
+  {% endif %}
+</div>
