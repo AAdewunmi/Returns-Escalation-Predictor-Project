@@ -1,0 +1,70 @@
+# path: templates/public/landing.html
+{% extends "base.html" %}
+
+{% block title %}ReturnHub | Returns and support workflow{% endblock %}
+
+{% block content %}
+  <section class="rh-card rh-hero mb-4">
+    <div class="rh-kicker">Returns workflow platform</div>
+    <h1>One clear place to triage returns, evidence, and follow-up.</h1>
+    <p>
+      ReturnHub helps retail teams coordinate customer evidence, merchant responses,
+      and operational triage through a shared workflow that can later power API,
+      queue, and portal surfaces from the same domain rules.
+    </p>
+    <div class="rh-role-grid">
+      <article class="rh-card rh-role-card">
+        <h2>Admin</h2>
+        <p>Platform administration, controls, and cross-surface access.</p>
+        <a class="btn btn-primary" href="{% url 'admin-login' %}">Enter admin surface</a>
+      </article>
+      <article class="rh-card rh-role-card">
+        <h2>Ops</h2>
+        <p>Queue-driven case triage, notes, decisions, and escalations.</p>
+        <a class="btn btn-primary" href="{% url 'ops-login' %}">Enter ops surface</a>
+      </article>
+      <article class="rh-card rh-role-card">
+        <h2>Customer</h2>
+        <p>Read-only case tracking with evidence upload in later sprints.</p>
+        <a class="btn btn-primary" href="{% url 'customer-login' %}">Enter customer surface</a>
+      </article>
+      <article class="rh-card rh-role-card">
+        <h2>Merchant</h2>
+        <p>Merchant-facing case review and response handling for linked returns.</p>
+        <a class="btn btn-primary" href="{% url 'merchant-login' %}">Enter merchant surface</a>
+      </article>
+    </div>
+  </section>
+
+  <section class="row g-4 mb-4">
+    <div class="col-lg-4">
+      <article class="rh-card rh-info-card">
+        <h2>Operational clarity</h2>
+        <p>
+          Cases, notes, events, and documents are modelled separately so later surfaces
+          can show the same truth without template-only workflow logic.
+        </p>
+      </article>
+    </div>
+    <div class="col-lg-4">
+      <article class="rh-card rh-info-card">
+        <h2>Deterministic setup</h2>
+        <p>
+          Demo users, roles, and seeded cases are created through a repeatable command,
+          which keeps tests and walkthroughs predictable from the start.
+        </p>
+      </article>
+    </div>
+    <div class="col-lg-4">
+      <article class="rh-card rh-info-card">
+        <h2>Shared pagination contract</h2>
+        <p>
+          Queue and portal list behaviour will inherit one page-size contract with
+          stable ordering and filter-preserving links instead of per-page reinvention.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  {% include "partials/_empty_state.html" with title="Current sprint scope" body="Sprint 1 ships the public shell, domain foundations, deterministic data setup, and shared UI primitives. Auth flows, queues, and portal workflows land in later sprints." %}
+{% endblock %}
