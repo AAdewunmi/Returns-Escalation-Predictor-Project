@@ -1,0 +1,169 @@
+<!-- path: templates/public/landing.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}ReturnHub | Returns and support workflow{% endblock %}
+
+{% block content %}
+  <span class="visually-hidden">ReturnHub bootstrap is live.</span>
+  <section class="rh-card rh-hero mb-4">
+    <div class="rh-hero-grid">
+      <div class="rh-hero-copy">
+        <div class="rh-kicker">Returns workflow platform</div>
+        <h1>Resolve return cases faster with one operational system of record.</h1>
+        <p class="rh-hero-lead">
+          Give ops, merchants, and support teams the same case timeline so triage
+          moves faster, ownership stays clear, and every case keeps a traceable path to resolution.
+        </p>
+        <div class="rh-hero-actions">
+          <a class="btn btn-primary rh-btn-primary" href="{% url 'ops-login' %}">Open Operations Queue</a>
+          <a class="btn btn-outline-secondary rh-btn-secondary" href="#workflow">View workflow</a>
+        </div>
+      </div>
+      <aside class="rh-hero-visual" aria-label="Return workflow preview">
+        <div class="rh-visual-window">
+          <div class="rh-visual-topbar">
+            <span class="rh-visual-dot"></span>
+            <span class="rh-visual-dot"></span>
+            <span class="rh-visual-dot"></span>
+            <div class="rh-visual-window-title">Operations Queue</div>
+          </div>
+          <div class="rh-visual-body">
+            <div class="rh-visual-column">
+              <div class="rh-visual-label">Live queue</div>
+              <div class="rh-visual-metrics">
+                <div class="rh-visual-metric">
+                  <span class="rh-visual-metric-label">Open today</span>
+                  <strong>18</strong>
+                </div>
+                <div class="rh-visual-metric">
+                  <span class="rh-visual-metric-label">Assigned</span>
+                  <strong>12</strong>
+                </div>
+                <div class="rh-visual-metric">
+                  <span class="rh-visual-metric-label">Awaiting merchant</span>
+                  <strong>6</strong>
+                </div>
+              </div>
+              <div class="rh-visual-panel rh-visual-panel--case">
+                <div class="rh-visual-row">
+                  <strong>RH-2048</strong>
+                  <span class="rh-status-pill rh-status-pill--warning">Needs review</span>
+                </div>
+                <p>Damaged footwear return with photo evidence and customer notes attached.</p>
+                <div class="rh-visual-meta">
+                  <span>Owner: Ops desk</span>
+                  <span>Merchant reply due in 2h</span>
+                </div>
+              </div>
+              <div class="rh-visual-panel rh-visual-panel--muted rh-visual-panel--case">
+                <div class="rh-visual-row">
+                  <strong>RH-2043</strong>
+                  <span class="rh-status-pill rh-status-pill--success">Ready to resolve</span>
+                </div>
+                <p>Evidence confirmed, merchant response logged, and refund recommendation prepared.</p>
+                <div class="rh-visual-meta">
+                  <span>Owner: Returns lead</span>
+                  <span>Final decision ready</span>
+                </div>
+              </div>
+            </div>
+            <div class="rh-visual-column">
+              <div class="rh-visual-label">Case timeline</div>
+              <ol class="rh-timeline rh-timeline--visual">
+                <li>
+                  <strong>Evidence received</strong>
+                  <span>Customer upload and order context added to the case record.</span>
+                </li>
+                <li>
+                  <strong>Shared review</strong>
+                  <span>Merchant and ops work from the same live history and attachments.</span>
+                </li>
+                <li>
+                  <strong>Decision recorded</strong>
+                  <span>Ownership, note trail, and resolution status stay visible.</span>
+                </li>
+              </ol>
+              <div class="rh-visual-summary">
+                <div class="rh-visual-summary-label">Resolution confidence</div>
+                <div class="rh-visual-summary-value">Clear evidence. Clear owner. Clear next step.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+    <div class="rh-trust-row" aria-label="Operational trust signals">
+      <span class="rh-trust-item">Audit-ready workflows</span>
+      <span class="rh-trust-item">Role-based access</span>
+      <span class="rh-trust-item">Predictable case handling</span>
+      <span class="rh-trust-item">Shared case history</span>
+    </div>
+  </section>
+
+  <section id="how-it-works" class="rh-band rh-band--value rh-band--wide mb-5">
+    <div class="rh-section-heading">
+      <div class="rh-kicker">Product value</div>
+      <h2>Built for operational teams that need visibility, speed, and clear ownership.</h2>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <article class="rh-info-card rh-info-card--primary">
+          <h2>Faster triage</h2>
+          <p>
+            Bring customer evidence, merchant replies, and ops decisions into one working view
+            so teams resolve cases without chasing updates across tools.
+          </p>
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="rh-info-card rh-info-card--primary">
+          <h2>Clear ownership</h2>
+          <p>
+            Keep every return tied to the right queue, role, and next action so responsibility
+            stays visible from intake through resolution.
+          </p>
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="rh-info-card rh-info-card--primary">
+          <h2>Fewer manual handoffs</h2>
+          <p>
+            Shared case history reduces repeated checks and scattered context, helping teams
+            move from review to resolution with less back-and-forth.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="workflow" class="rh-band rh-band--workflow rh-band--wide mb-5">
+    <div class="rh-section-heading">
+      <div class="rh-kicker">Workflow</div>
+      <h2>Follow one clear return workflow from intake to recorded outcome.</h2>
+    </div>
+    <div class="rh-workflow-grid">
+      <article class="rh-workflow-step">
+        <span class="rh-workflow-index">01</span>
+        <h3>Capture the issue</h3>
+        <p>Open the case with the order problem, customer context, and supporting evidence in one place.</p>
+      </article>
+      <article class="rh-workflow-step">
+        <span class="rh-workflow-index">02</span>
+        <h3>Review the details</h3>
+        <p>Assess evidence, notes, and case history without piecing the record together from separate tools.</p>
+      </article>
+      <article class="rh-workflow-step">
+        <span class="rh-workflow-index">03</span>
+        <h3>Route to the right team</h3>
+        <p>Send the case to ops or merchant review with ownership, status, and context kept intact.</p>
+      </article>
+      <article class="rh-workflow-step">
+        <span class="rh-workflow-index">04</span>
+        <h3>Resolve with a recorded outcome</h3>
+        <p>Close the loop with a final decision, traceable history, and a durable record of what happened.</p>
+      </article>
+    </div>
+  </section>
+
+{% endblock %}

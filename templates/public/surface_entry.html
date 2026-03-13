@@ -1,0 +1,16 @@
+<!-- path: templates/public/surface_entry.html -->
+{% extends "base.html" %}
+
+{% block title %}{{ brand_name }} | {{ surface_title }}{% endblock %}
+
+{% block content %}
+  <section class="rh-card rh-hero">
+    <div class="rh-kicker">{{ surface_title }}</div>
+    <h1>{{ heading }}</h1>
+    <p>{{ body }}</p>
+    <div class="d-flex flex-wrap gap-3">
+      <a class="btn btn-primary" href="{% url 'landing' %}">Back to landing page</a>
+      <a class="btn btn-outline-secondary" href="/admin/">Open Django admin</a>
+    </div>
+  </section>
+{% endblock %}
