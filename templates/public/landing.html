@@ -1,5 +1,6 @@
 <!-- path: templates/public/landing.html -->
 {% extends "base.html" %}
+{% load static %}
 
 {% block title %}ReturnHub | Returns and support workflow{% endblock %}
 
@@ -99,7 +100,7 @@
     </div>
   </section>
 
-  <section id="how-it-works" class="rh-band rh-band--value rh-band--narrow mb-5">
+  <section id="how-it-works" class="rh-band rh-band--value rh-band--wide mb-5">
     <div class="rh-section-heading">
       <div class="rh-kicker">Product value</div>
       <h2>Built for operational teams that need visibility, speed, and clear ownership.</h2>
@@ -162,12 +163,13 @@
         <p>Close the loop with a final decision, traceable history, and a durable record of what happened.</p>
       </article>
     </div>
-    <div class="rh-principles">
-      <div class="rh-principle"><strong>Clear owner:</strong> every case has a visible next owner.</div>
-      <div class="rh-principle"><strong>Attached evidence:</strong> documents stay connected to the case record.</div>
-      <div class="rh-principle"><strong>Traceable decisions:</strong> actions and outcomes stay visible over time.</div>
-      <div class="rh-principle"><strong>Shared timeline:</strong> merchants and ops work from the same history.</div>
-    </div>
+    <figure class="rh-workflow-figure">
+      <img
+        class="rh-workflow-image"
+        src="{% static 'images/workflow-diagram.svg' %}"
+        alt="Workflow diagram showing capture, review, route, and resolve stages for return cases."
+      >
+    </figure>
   </section>
 
   <section id="workspace-entry" class="rh-band rh-band--wide mb-5">
@@ -175,7 +177,7 @@
       <div class="rh-kicker">Choose your workspace</div>
       <h2>Start in the workspace built for your role and the decisions you need to make.</h2>
     </div>
-    <div class="rh-workspace-layout">
+    <div class="rh-role-grid rh-role-grid--balanced">
       <article class="rh-card rh-role-card rh-role-card--featured">
         <div class="rh-role-marker">
           <span class="rh-role-icon" aria-hidden="true">O</span>
@@ -191,44 +193,42 @@
         </p>
         <a class="btn btn-primary rh-btn-primary" href="{% url 'ops-login' %}">Open Operations Queue</a>
       </article>
-      <div class="rh-role-grid">
-        <article class="rh-card rh-role-card">
-          <div class="rh-role-marker">
-            <span class="rh-role-icon" aria-hidden="true">A</span>
-            <div>
-              <div class="rh-role-audience">Admin workspace</div>
-              <div class="rh-role-outcome">Platform controls and cross-surface access</div>
-            </div>
+      <article class="rh-card rh-role-card">
+        <div class="rh-role-marker">
+          <span class="rh-role-icon" aria-hidden="true">A</span>
+          <div>
+            <div class="rh-role-audience">Admin workspace</div>
+            <div class="rh-role-outcome">Platform controls and cross-surface access</div>
           </div>
-          <h2>Manage users, permissions, and operational guardrails.</h2>
-          <p>Designed for platform oversight, account controls, and the policies that shape how teams work.</p>
-          <a class="btn btn-outline-secondary rh-btn-secondary" href="{% url 'admin-login' %}">Open Admin Workspace</a>
-        </article>
-        <article class="rh-card rh-role-card">
-          <div class="rh-role-marker">
-            <span class="rh-role-icon" aria-hidden="true">C</span>
-            <div>
-              <div class="rh-role-audience">Customer workspace</div>
-              <div class="rh-role-outcome">Case visibility and evidence follow-up</div>
-            </div>
+        </div>
+        <h2>Manage users, permissions, and operational guardrails.</h2>
+        <p>Designed for platform oversight, account controls, and the policies that shape how teams work.</p>
+        <a class="btn btn-outline-secondary rh-btn-secondary" href="{% url 'admin-login' %}">Open Admin Workspace</a>
+      </article>
+      <article class="rh-card rh-role-card">
+        <div class="rh-role-marker">
+          <span class="rh-role-icon" aria-hidden="true">C</span>
+          <div>
+            <div class="rh-role-audience">Customer workspace</div>
+            <div class="rh-role-outcome">Case visibility and evidence follow-up</div>
           </div>
-          <h2>Track return progress and keep supporting details connected to the case.</h2>
-          <p>Built for customers who need clear status visibility and confidence that supporting evidence stays with the case.</p>
-          <a class="btn btn-outline-secondary rh-btn-secondary" href="{% url 'customer-login' %}">View Customer Workspace</a>
-        </article>
-        <article class="rh-card rh-role-card">
-          <div class="rh-role-marker">
-            <span class="rh-role-icon" aria-hidden="true">M</span>
-            <div>
-              <div class="rh-role-audience">Merchant workspace</div>
-              <div class="rh-role-outcome">Response handling for linked returns</div>
-            </div>
+        </div>
+        <h2>Track return progress and keep supporting details connected to the case.</h2>
+        <p>Built for customers who need clear status visibility and confidence that supporting evidence stays with the case.</p>
+        <a class="btn btn-outline-secondary rh-btn-secondary" href="{% url 'customer-login' %}">View Customer Workspace</a>
+      </article>
+      <article class="rh-card rh-role-card">
+        <div class="rh-role-marker">
+          <span class="rh-role-icon" aria-hidden="true">M</span>
+          <div>
+            <div class="rh-role-audience">Merchant workspace</div>
+            <div class="rh-role-outcome">Response handling for linked returns</div>
           </div>
-          <h2>Review linked cases and respond without losing the operational timeline.</h2>
-          <p>Created for merchant teams that need structured review, timely responses, and the same case context seen by ops.</p>
-          <a class="btn btn-outline-secondary rh-btn-secondary" href="{% url 'merchant-login' %}">Open Merchant Workspace</a>
-        </article>
-      </div>
+        </div>
+        <h2>Review linked cases and respond without losing the operational timeline.</h2>
+        <p>Created for merchant teams that need structured review, timely responses, and the same case context seen by ops.</p>
+        <a class="btn btn-outline-secondary rh-btn-secondary" href="{% url 'merchant-login' %}">Open Merchant Workspace</a>
+      </article>
     </div>
   </section>
 

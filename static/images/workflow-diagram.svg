@@ -1,0 +1,39 @@
+<svg width="1200" height="520" viewBox="0 0 1200 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="520" rx="32" fill="#F5F4EE"/>
+  <rect x="46" y="48" width="1108" height="424" rx="26" fill="#FCFBF7" stroke="#D8DED2"/>
+  <path d="M240 252H344" stroke="#6C8275" stroke-width="4" stroke-linecap="round"/>
+  <path d="M508 252H612" stroke="#6C8275" stroke-width="4" stroke-linecap="round"/>
+  <path d="M776 252H880" stroke="#6C8275" stroke-width="4" stroke-linecap="round"/>
+  <path d="M336 242L348 252L336 262" stroke="#6C8275" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M604 242L616 252L604 262" stroke="#6C8275" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M872 242L884 252L872 262" stroke="#6C8275" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="86" y="148" width="164" height="208" rx="24" fill="#EAF1E8" stroke="#D5DED4"/>
+  <rect x="354" y="148" width="164" height="208" rx="24" fill="#F5F3ED" stroke="#D5DED4"/>
+  <rect x="622" y="148" width="164" height="208" rx="24" fill="#F5F3ED" stroke="#D5DED4"/>
+  <rect x="890" y="148" width="224" height="208" rx="24" fill="#184B38"/>
+  <rect x="112" y="180" width="110" height="16" rx="8" fill="#C7D7C6"/>
+  <rect x="380" y="180" width="110" height="16" rx="8" fill="#DDD8CF"/>
+  <rect x="648" y="180" width="110" height="16" rx="8" fill="#DDD8CF"/>
+  <rect x="916" y="180" width="146" height="16" rx="8" fill="#2A6851"/>
+  <circle cx="132" cy="238" r="19" fill="#205741"/>
+  <circle cx="400" cy="238" r="19" fill="#D9DED2"/>
+  <circle cx="668" cy="238" r="19" fill="#D9DED2"/>
+  <circle cx="936" cy="238" r="19" fill="#2F755A"/>
+  <text x="86" y="112" fill="#365644" font-family="Arial, sans-serif" font-size="18" font-weight="700" letter-spacing="2.5">WORKFLOW OVERVIEW</text>
+  <text x="112" y="245" fill="#F9F8F2" font-family="Arial, sans-serif" font-size="14" font-weight="700">1</text>
+  <text x="380" y="245" fill="#394439" font-family="Arial, sans-serif" font-size="14" font-weight="700">2</text>
+  <text x="648" y="245" fill="#394439" font-family="Arial, sans-serif" font-size="14" font-weight="700">3</text>
+  <text x="930" y="245" fill="#F9F8F2" font-family="Arial, sans-serif" font-size="14" font-weight="700">4</text>
+  <text x="86" y="290" fill="#1F2B22" font-family="Arial, sans-serif" font-size="28" font-weight="700">Capture</text>
+  <text x="86" y="323" fill="#566159" font-family="Arial, sans-serif" font-size="18">Customer issue, order context,</text>
+  <text x="86" y="348" fill="#566159" font-family="Arial, sans-serif" font-size="18">and evidence enter one record.</text>
+  <text x="354" y="290" fill="#1F2B22" font-family="Arial, sans-serif" font-size="28" font-weight="700">Review</text>
+  <text x="354" y="323" fill="#566159" font-family="Arial, sans-serif" font-size="18">Teams assess the case with</text>
+  <text x="354" y="348" fill="#566159" font-family="Arial, sans-serif" font-size="18">history, notes, and attachments.</text>
+  <text x="622" y="290" fill="#1F2B22" font-family="Arial, sans-serif" font-size="28" font-weight="700">Route</text>
+  <text x="622" y="323" fill="#566159" font-family="Arial, sans-serif" font-size="18">Ownership moves to ops or</text>
+  <text x="622" y="348" fill="#566159" font-family="Arial, sans-serif" font-size="18">merchant review with context intact.</text>
+  <text x="890" y="290" fill="#F9F8F2" font-family="Arial, sans-serif" font-size="28" font-weight="700">Resolve</text>
+  <text x="890" y="323" fill="#D8E8DC" font-family="Arial, sans-serif" font-size="18">Final outcome recorded with</text>
+  <text x="890" y="348" fill="#D8E8DC" font-family="Arial, sans-serif" font-size="18">clear accountability and history.</text>
+</svg>

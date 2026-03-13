@@ -578,24 +578,18 @@ button:focus-visible {
   line-height: 1.65;
 }
 
-.rh-principles {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: var(--rh-space-3);
-  margin-top: var(--rh-space-5);
+.rh-workflow-figure {
+  margin: var(--rh-space-5) 0 0;
 }
 
-.rh-principle {
-  padding: 0.95rem 1rem;
-  border-radius: var(--rh-radius-md);
-  background: rgba(255, 252, 247, 0.72);
-  border: 1px solid rgba(27, 35, 28, 0.06);
-  color: var(--rh-color-text-muted);
-  box-shadow: none;
-}
-
-.rh-principle strong {
-  color: var(--rh-color-text);
+.rh-workflow-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: var(--rh-radius-xl);
+  border: 1px solid rgba(27, 35, 28, 0.08);
+  background: rgba(255, 252, 247, 0.85);
+  box-shadow: 0 20px 40px rgba(23, 34, 28, 0.08);
 }
 
 .rh-role-card,
@@ -611,17 +605,14 @@ button:focus-visible {
   box-shadow: var(--rh-shadow-sm);
 }
 
-.rh-workspace-layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
-  gap: var(--rh-space-4);
-  align-items: stretch;
-}
-
 .rh-role-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--rh-space-4);
+}
+
+.rh-role-grid--balanced {
+  align-items: stretch;
 }
 
 .rh-role-card--featured {
@@ -629,6 +620,7 @@ button:focus-visible {
   border-color: rgba(16, 34, 27, 0.2);
   color: #f5f1e8;
   box-shadow: 0 24px 44px rgba(23, 34, 28, 0.18);
+  min-height: 100%;
 }
 
 .rh-role-marker {
@@ -680,8 +672,8 @@ button:focus-visible {
 
 .rh-role-card--featured h2 {
   color: #fffaf1;
-  font-size: clamp(1.55rem, 2vw, 2rem);
-  max-width: 18ch;
+  font-size: clamp(1.45rem, 1.8vw, 1.85rem);
+  max-width: 16ch;
 }
 
 .rh-info-card {
@@ -898,7 +890,6 @@ button:focus-visible {
     grid-template-columns: 1fr;
   }
 
-  .rh-workspace-layout,
   .rh-role-grid {
     grid-template-columns: 1fr;
   }
@@ -980,14 +971,11 @@ button:focus-visible {
 
   .rh-visual-panel,
   .rh-workflow-step,
-  .rh-role-card,
-  .rh-principle {
+  .rh-role-card {
     padding: 0.95rem;
   }
 
-  .rh-workspace-layout,
-  .rh-role-grid,
-  .rh-principles {
+  .rh-role-grid {
     gap: 0.85rem;
   }
 
