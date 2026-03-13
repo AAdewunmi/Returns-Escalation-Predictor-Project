@@ -1,5 +1,6 @@
 # path: tests/test_public_views.py
 """Smoke tests for public-facing pages."""
+
 import pytest
 from django.urls import reverse
 
@@ -11,11 +12,12 @@ def test_landing_page_renders_role_entry_buttons(client) -> None:
     assert response.status_code == 200
     body = response.content.decode()
 
-    assert "One clear place to triage returns, evidence, and follow-up." in body
+    assert "Resolve return cases faster with one operational system of record." in body
     assert reverse("admin-login") in body
     assert reverse("ops-login") in body
     assert reverse("customer-login") in body
     assert reverse("merchant-login") in body
+
 
 @pytest.mark.parametrize(
     ("route_name", "expected_text"),
