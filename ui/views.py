@@ -3,7 +3,6 @@
 from django.http import Http404
 from django.views.generic import TemplateView
 
-
 SURFACE_CONTENT = {
     "admin": {
         "surface_title": "Admin surface",
@@ -66,7 +65,5 @@ class SurfaceEntryView(TemplateView):
         return context
 
 
-class BootstrapLandingView(TemplateView):
+class BootstrapLandingView(LandingView):
     """Backward-compatible minimal bootstrap view kept during the sprint transition."""
-
-    template_name = "public/landing.html"
