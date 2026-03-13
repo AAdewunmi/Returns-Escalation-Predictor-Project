@@ -1,15 +1,30 @@
 <!-- path: templates/partials/_app_nav.html -->
 <nav class="navbar navbar-expand-lg rh-topbar">
-  <div class="container">
-    <a class="rh-brand" href="{% url 'landing' %}">{{ brand_name }}</a>
-    <div class="ms-auto d-flex align-items-center gap-2">
-      {% if request.user.is_authenticated %}
-        {% for group_name in active_role_groups %}
-          {% include "partials/_status_badge.html" with label=group_name tone="neutral" %}
-        {% endfor %}
+  <div class="container rh-topbar-inner">
+    <a class="rh-brand" href="{% url 'landing' %}">
+      <span class="rh-brand-mark" aria-hidden="true">R</span>
+      <span>{{ brand_name }}</span>
+    </a>
+    <div class="rh-topbar-links" aria-label="Primary">
+      <a href="#how-it-works">How it works</a>
+      <a href="#workspace-entry">Roles</a>
+      <a href="#workflow">Workflow</a>
+      <a href="#support">Support</a>
+    </div>
+    <div class="rh-topbar-actions">
+      {% if request.user.is_authenticated and active_role_groups %}
+        <div class="rh-topbar-meta">
+          {% for group_name in active_role_groups %}
+            {% include "partials/_status_badge.html" with label=group_name tone="neutral" %}
+          {% endfor %}
+        </div>
       {% else %}
-        {% include "partials/_status_badge.html" with label="Public beta groundwork" tone="neutral" %}
+        <div class="rh-topbar-meta">
+          <span class="rh-header-note">Public product preview</span>
+        </div>
       {% endif %}
+      <a class="rh-topbar-secondary" href="#workspace-entry">Choose Workspace</a>
+      <a class="btn rh-btn-primary rh-topbar-primary" href="{% url 'ops-login' %}">Open Operations Queue</a>
     </div>
   </div>
 </nav>

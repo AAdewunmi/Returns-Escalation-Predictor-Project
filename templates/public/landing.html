@@ -14,7 +14,7 @@
           moves faster, ownership stays clear, and every case keeps a traceable path to resolution.
         </p>
         <div class="rh-hero-actions">
-          <a class="btn btn-primary rh-btn-primary" href="{% url 'ops-login' %}">Open ops workspace</a>
+          <a class="btn btn-primary rh-btn-primary" href="{% url 'ops-login' %}">Open Operations Queue</a>
           <a class="btn btn-outline-secondary rh-btn-secondary" href="#workspace-entry">Choose another workspace</a>
         </div>
       </div>
@@ -64,14 +64,14 @@
     </div>
   </section>
 
-  <section class="rh-band rh-band--value mb-5">
+  <section id="how-it-works" class="rh-band rh-band--value mb-5">
     <div class="rh-section-heading">
       <div class="rh-kicker">Product value</div>
       <h2>Built for operational teams that need visibility, speed, and clear ownership.</h2>
     </div>
     <div class="row g-4">
       <div class="col-lg-4">
-        <article class="rh-card rh-info-card rh-info-card--primary">
+        <article class="rh-info-card rh-info-card--primary">
           <h2>Faster triage</h2>
           <p>
             Bring customer evidence, merchant replies, and ops decisions into one working view
@@ -80,7 +80,7 @@
         </article>
       </div>
       <div class="col-lg-4">
-        <article class="rh-card rh-info-card rh-info-card--primary">
+        <article class="rh-info-card rh-info-card--primary">
           <h2>Clear ownership</h2>
           <p>
             Keep every return tied to the right queue, role, and next action so responsibility
@@ -89,7 +89,7 @@
         </article>
       </div>
       <div class="col-lg-4">
-        <article class="rh-card rh-info-card rh-info-card--primary">
+        <article class="rh-info-card rh-info-card--primary">
           <h2>Fewer manual handoffs</h2>
           <p>
             Shared case history reduces repeated checks and scattered context, helping teams
@@ -100,7 +100,7 @@
     </div>
   </section>
 
-  <section class="rh-band rh-band--workflow mb-5">
+  <section id="workflow" class="rh-band rh-band--workflow mb-5">
     <div class="rh-section-heading">
       <div class="rh-kicker">Workflow</div>
       <h2>Follow one clear return workflow from intake to recorded outcome.</h2>
@@ -154,7 +154,7 @@
           Built for returns and support teams managing the active queue, with clear status handling,
           operational notes, and a reliable path from review to resolution.
         </p>
-        <a class="btn btn-primary rh-btn-primary" href="{% url 'ops-login' %}">Open Ops Workspace</a>
+        <a class="btn btn-primary rh-btn-primary" href="{% url 'ops-login' %}">Open Operations Queue</a>
       </article>
       <div class="rh-role-grid">
         <article class="rh-card rh-role-card">
@@ -179,7 +179,7 @@
           </div>
           <h2>Track return progress and keep supporting details connected to the case.</h2>
           <p>Built for customers who need clear status visibility and confidence that supporting evidence stays with the case.</p>
-          <a class="btn btn-outline-secondary rh-btn-secondary" href="{% url 'customer-login' %}">Open Customer Workspace</a>
+          <a class="btn btn-outline-secondary rh-btn-secondary" href="{% url 'customer-login' %}">View Customer Workspace</a>
         </article>
         <article class="rh-card rh-role-card">
           <div class="rh-role-marker">
@@ -204,7 +204,7 @@
     </div>
     <div class="row g-4">
       <div class="col-lg-4">
-        <article class="rh-card rh-info-card">
+        <article class="rh-info-card rh-info-card--soft">
         <h2>Clear case history and traceability</h2>
         <p>
           Every case keeps its notes, events, and documents connected so teams can understand what happened without guesswork.
@@ -212,7 +212,7 @@
         </article>
       </div>
       <div class="col-lg-4">
-        <article class="rh-card rh-info-card">
+        <article class="rh-info-card rh-info-card--soft">
         <h2>Reliable onboarding and demo environments</h2>
         <p>
           Teams can start from a stable operational baseline that makes training, walkthroughs, and internal adoption easier.
@@ -220,7 +220,7 @@
         </article>
       </div>
       <div class="col-lg-4">
-        <article class="rh-card rh-info-card">
+        <article class="rh-info-card rh-info-card--soft">
         <h2>Consistent case navigation</h2>
         <p>
           Lists and filters stay predictable so people can move through queues and case views without losing context.
@@ -240,8 +240,8 @@
     </p>
   </section>
 
-  <footer class="rh-footer" aria-label="ReturnHub footer">
+  <footer id="support" class="rh-footer" aria-label="ReturnHub footer">
     <p>ReturnHub is shaping a calmer returns workflow for retail operations.</p>
-    <a href="{% url 'ops-login' %}">Open ops workspace</a>
+    <a href="{% url 'ops-login' %}">Open operations queue</a>
   </footer>
 {% endblock %}
