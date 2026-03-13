@@ -511,6 +511,10 @@ button:focus-visible {
   background: linear-gradient(90deg, rgba(27, 35, 28, 0.12), rgba(27, 35, 28, 0.02));
 }
 
+#workspace-entry::before {
+  display: none;
+}
+
 .rh-band--value {
   padding: calc(var(--rh-space-6) + 0.4rem) calc(var(--rh-space-6) + 0.6rem);
   border-radius: var(--rh-radius-xl);
