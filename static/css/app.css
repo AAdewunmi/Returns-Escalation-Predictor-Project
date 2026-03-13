@@ -45,8 +45,9 @@ a {
 
 a:focus-visible,
 button:focus-visible {
-  outline: 3px solid rgba(31, 90, 67, 0.22);
-  outline-offset: 2px;
+  outline: 3px solid rgba(198, 124, 77, 0.72);
+  outline-offset: 3px;
+  box-shadow: 0 0 0 6px rgba(255, 248, 236, 0.92);
 }
 
 .rh-shell {
@@ -107,6 +108,9 @@ button:focus-visible {
   text-decoration: none;
   font-size: var(--rh-font-size-sm);
   font-weight: 700;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
 }
 
 .rh-topbar-links a {
@@ -227,6 +231,7 @@ button:focus-visible {
   padding: 0.84rem 1.28rem;
   font-weight: 700;
   letter-spacing: 0.01em;
+  min-height: 48px;
   transition:
     transform 160ms ease,
     box-shadow 160ms ease,
@@ -664,7 +669,7 @@ button:focus-visible {
 }
 
 .rh-role-outcome {
-  font-size: var(--rh-font-size-sm);
+  font-size: 0.82rem;
   color: var(--rh-color-text-muted);
 }
 
@@ -725,26 +730,31 @@ button:focus-visible {
   font-weight: 700;
   letter-spacing: 0.02em;
   line-height: 1;
+  border: 1px solid transparent;
 }
 
 .rh-status-pill--neutral {
   background: var(--rh-color-surface-muted);
   color: var(--rh-color-text);
+  border-color: rgba(27, 35, 28, 0.08);
 }
 
 .rh-status-pill--success {
   background: rgba(31, 143, 82, 0.12);
   color: var(--rh-color-success);
+  border-color: rgba(31, 143, 82, 0.18);
 }
 
 .rh-status-pill--warning {
   background: rgba(182, 117, 24, 0.12);
   color: var(--rh-color-warning);
+  border-color: rgba(182, 117, 24, 0.2);
 }
 
 .rh-status-pill--danger {
   background: rgba(193, 60, 60, 0.12);
   color: var(--rh-color-danger);
+  border-color: rgba(193, 60, 60, 0.2);
 }
 
 .rh-empty-state {
@@ -800,22 +810,47 @@ button:focus-visible {
 }
 
 .rh-footer {
-  display: flex;
-  justify-content: space-between;
-  gap: var(--rh-space-4);
-  align-items: center;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(0, 0.9fr) minmax(0, 0.8fr);
+  gap: var(--rh-space-5);
+  align-items: start;
   padding-top: var(--rh-space-4);
   border-top: 1px solid rgba(27, 35, 28, 0.08);
   color: var(--rh-color-text-muted);
 }
 
+.rh-footer-brand {
+  display: grid;
+  gap: 0.55rem;
+}
+
+.rh-footer-title {
+  font-family: var(--rh-font-family-display);
+  font-size: 1.35rem;
+  line-height: 1;
+  color: var(--rh-color-text);
+}
+
 .rh-footer p {
   margin: 0;
   font-size: var(--rh-font-size-sm);
+  max-width: 34ch;
 }
 
 .rh-footer a {
   font-weight: 700;
+}
+
+.rh-footer-links,
+.rh-footer-meta {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.rh-footer-legal {
+  color: var(--rh-color-text-muted);
+  font-size: var(--rh-font-size-xs);
+  line-height: 1.5;
 }
 
 .pagination-shell {
@@ -871,6 +906,10 @@ button:focus-visible {
   .rh-hero {
     padding: var(--rh-space-6);
   }
+
+  .rh-footer {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 575.98px) {
@@ -895,16 +934,75 @@ button:focus-visible {
   }
 
   .rh-hero {
-    padding: var(--rh-space-5);
+    padding: 1.1rem 1.05rem 1.35rem;
+    border-radius: 1.45rem;
   }
 
   .rh-hero h1 {
-    font-size: clamp(2.3rem, 12vw, 3.25rem);
+    font-size: clamp(2.15rem, 11vw, 2.95rem);
+    max-width: 11ch;
+  }
+
+  .rh-hero-copy {
+    order: 2;
+    max-width: 100%;
+  }
+
+  .rh-hero-visual {
+    order: 1;
+  }
+
+  .rh-hero-lead {
+    font-size: 1rem;
+    line-height: 1.65;
+    margin-bottom: 1.15rem;
+  }
+
+  .rh-kicker {
+    font-size: 0.68rem;
+    letter-spacing: 0.15em;
+    margin-bottom: 0.7rem;
   }
 
   .rh-visual-metrics,
   .rh-workflow-grid {
     grid-template-columns: 1fr;
+  }
+
+  .rh-visual-window {
+    border-radius: 1.2rem;
+  }
+
+  .rh-visual-body {
+    gap: 0.9rem;
+    padding: 0.95rem;
+  }
+
+  .rh-visual-panel,
+  .rh-workflow-step,
+  .rh-role-card,
+  .rh-principle {
+    padding: 0.95rem;
+  }
+
+  .rh-workspace-layout,
+  .rh-role-grid,
+  .rh-principles {
+    gap: 0.85rem;
+  }
+
+  .rh-band--value,
+  .rh-band--workflow {
+    padding: 1.1rem 1rem;
+  }
+
+  .rh-section-heading {
+    margin-bottom: 1rem;
+  }
+
+  .rh-section-heading h2 {
+    font-size: clamp(1.45rem, 8vw, 2rem);
+    max-width: 100%;
   }
 
   .rh-hero-actions,
@@ -913,15 +1011,16 @@ button:focus-visible {
     align-items: stretch;
   }
 
+  .rh-trust-item {
+    justify-content: center;
+  }
+
   .rh-visual-row {
     flex-direction: column;
     align-items: flex-start;
   }
 
-  .rh-workflow-grid,
   .rh-footer {
-    grid-template-columns: 1fr;
-    flex-direction: column;
-    align-items: flex-start;
+    gap: var(--rh-space-4);
   }
 }
