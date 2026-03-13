@@ -16,7 +16,7 @@
         </p>
         <div class="rh-hero-actions">
           <a class="btn btn-primary rh-btn-primary" href="{% url 'ops-login' %}">Open Operations Queue</a>
-          <a class="btn btn-outline-secondary rh-btn-secondary" href="#workspace-entry">Choose another workspace</a>
+          <a class="btn btn-outline-secondary rh-btn-secondary" href="#workflow">View workflow</a>
         </div>
       </div>
       <aside class="rh-hero-visual" aria-label="Return workflow preview">
@@ -161,66 +161,6 @@
         <span class="rh-workflow-index">04</span>
         <h3>Resolve with a recorded outcome</h3>
         <p>Close the loop with a final decision, traceable history, and a durable record of what happened.</p>
-      </article>
-    </div>
-  </section>
-
-  <section id="workspace-entry" class="rh-band rh-band--wide mb-5">
-    <div class="rh-section-heading">
-      <div class="rh-kicker">Choose your workspace</div>
-      <h2>Start in the workspace built for your role and the decisions you need to make.</h2>
-    </div>
-    <div class="rh-role-grid rh-role-grid--balanced">
-      <article class="rh-card rh-role-card rh-role-card--featured">
-        <div class="rh-role-marker">
-          <span class="rh-role-icon" aria-hidden="true">O</span>
-          <div>
-            <div class="rh-role-audience">Ops workspace</div>
-            <div class="rh-role-outcome">Primary route for queue triage and case resolution</div>
-          </div>
-        </div>
-        <h2>Review incoming return cases, assign ownership, and move decisions forward.</h2>
-        <p>
-          Built for returns and support teams managing the active queue, with clear status handling,
-          operational notes, and a reliable path from review to resolution.
-        </p>
-        <a class="btn btn-primary rh-btn-primary" href="{% url 'ops-login' %}">Open Operations Queue</a>
-      </article>
-      <article class="rh-card rh-role-card">
-        <div class="rh-role-marker">
-          <span class="rh-role-icon" aria-hidden="true">A</span>
-          <div>
-            <div class="rh-role-audience">Admin workspace</div>
-            <div class="rh-role-outcome">Platform controls and cross-surface access</div>
-          </div>
-        </div>
-        <h2>Manage users, permissions, and operational guardrails.</h2>
-        <p>Designed for platform oversight, account controls, and the policies that shape how teams work.</p>
-        <a class="btn btn-outline-secondary rh-btn-secondary" href="{% url 'admin-login' %}">Open Admin Workspace</a>
-      </article>
-      <article class="rh-card rh-role-card">
-        <div class="rh-role-marker">
-          <span class="rh-role-icon" aria-hidden="true">C</span>
-          <div>
-            <div class="rh-role-audience">Customer workspace</div>
-            <div class="rh-role-outcome">Case visibility and evidence follow-up</div>
-          </div>
-        </div>
-        <h2>Track return progress and keep supporting details connected to the case.</h2>
-        <p>Built for customers who need clear status visibility and confidence that supporting evidence stays with the case.</p>
-        <a class="btn btn-outline-secondary rh-btn-secondary" href="{% url 'customer-login' %}">View Customer Workspace</a>
-      </article>
-      <article class="rh-card rh-role-card">
-        <div class="rh-role-marker">
-          <span class="rh-role-icon" aria-hidden="true">M</span>
-          <div>
-            <div class="rh-role-audience">Merchant workspace</div>
-            <div class="rh-role-outcome">Response handling for linked returns</div>
-          </div>
-        </div>
-        <h2>Review linked cases and respond without losing the operational timeline.</h2>
-        <p>Created for merchant teams that need structured review, timely responses, and the same case context seen by ops.</p>
-        <a class="btn btn-outline-secondary rh-btn-secondary" href="{% url 'merchant-login' %}">Open Merchant Workspace</a>
       </article>
     </div>
   </section>

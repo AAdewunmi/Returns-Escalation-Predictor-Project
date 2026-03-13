@@ -6,10 +6,13 @@
       <span>{{ brand_name }}</span>
     </a>
     <div class="rh-topbar-links" aria-label="Primary">
-      <a href="#how-it-works">How it works</a>
-      <a href="#workspace-entry">Roles</a>
-      <a href="#workflow">Workflow</a>
-      <a href="#support">Support</a>
+      <a href="{% url 'landing' %}#how-it-works">How it works</a>
+      <a href="{% url 'landing' %}#workflow">Workflow</a>
+      <a href="{% url 'admin-login' %}">Admin</a>
+      <a href="{% url 'ops-login' %}">Ops</a>
+      <a href="{% url 'customer-login' %}">Customer</a>
+      <a href="{% url 'merchant-login' %}">Merchant</a>
+      <a href="{% url 'landing' %}#support">Support</a>
     </div>
   </div>
 </nav>
