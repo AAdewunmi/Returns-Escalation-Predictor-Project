@@ -64,7 +64,72 @@
     </div>
   </section>
 
-  <section id="workspace-entry" class="mb-4">
+  <section class="rh-band rh-band--value mb-5">
+    <div class="rh-section-heading">
+      <div class="rh-kicker">Product value</div>
+      <h2>Built for operational teams that need visibility, speed, and clear ownership.</h2>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <article class="rh-card rh-info-card rh-info-card--primary">
+          <h2>Faster triage</h2>
+          <p>
+            Bring customer evidence, merchant replies, and ops decisions into one working view
+            so teams resolve cases without chasing updates across tools.
+          </p>
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="rh-card rh-info-card rh-info-card--primary">
+          <h2>Clear ownership</h2>
+          <p>
+            Keep every return tied to the right queue, role, and next action so responsibility
+            stays visible from intake through resolution.
+          </p>
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="rh-card rh-info-card rh-info-card--primary">
+          <h2>Fewer manual handoffs</h2>
+          <p>
+            Shared case history reduces duplicated checks and scattered context, helping teams
+            move from review to resolution with less back-and-forth.
+          </p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="rh-band rh-band--workflow mb-5">
+    <div class="rh-section-heading">
+      <div class="rh-kicker">Workflow</div>
+      <h2>One workflow rhythm from intake to final outcome.</h2>
+    </div>
+    <div class="rh-workflow-grid">
+      <article class="rh-workflow-step">
+        <span class="rh-workflow-index">01</span>
+        <h3>Capture the case</h3>
+        <p>Start with the order issue, supporting evidence, and customer context in one record.</p>
+      </article>
+      <article class="rh-workflow-step">
+        <span class="rh-workflow-index">02</span>
+        <h3>Route to the right owner</h3>
+        <p>Move the case into the right operational lane without losing history or attachments.</p>
+      </article>
+      <article class="rh-workflow-step">
+        <span class="rh-workflow-index">03</span>
+        <h3>Review and decide</h3>
+        <p>Coordinate merchant input, ops notes, and resolution logic through a shared timeline.</p>
+      </article>
+      <article class="rh-workflow-step">
+        <span class="rh-workflow-index">04</span>
+        <h3>Record the outcome</h3>
+        <p>Close the loop with a final status, visible ownership trail, and durable case history.</p>
+      </article>
+    </div>
+  </section>
+
+  <section id="workspace-entry" class="rh-band mb-5">
     <div class="rh-section-heading">
       <div class="rh-kicker">Choose your workspace</div>
       <h2>Role-specific entry points, kept secondary to the main ops path.</h2>
@@ -93,35 +158,52 @@
     </div>
   </section>
 
-  <section class="row g-4 mb-4">
-    <div class="col-lg-4">
-      <article class="rh-card rh-info-card">
+  <section class="rh-band rh-band--proof mb-5">
+    <div class="rh-section-heading">
+      <div class="rh-kicker">Operational proof points</div>
+      <h2>Core system behaviors designed to stay consistent across future surfaces.</h2>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <article class="rh-card rh-info-card">
         <h2>Operational clarity</h2>
         <p>
           Cases, notes, events, and documents are modelled separately so later surfaces
           can show the same truth without template-only workflow logic.
         </p>
-      </article>
-    </div>
-    <div class="col-lg-4">
-      <article class="rh-card rh-info-card">
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="rh-card rh-info-card">
         <h2>Deterministic setup</h2>
         <p>
           Demo users, roles, and seeded cases are created through a repeatable command,
           which keeps tests and walkthroughs predictable from the start.
         </p>
-      </article>
-    </div>
-    <div class="col-lg-4">
-      <article class="rh-card rh-info-card">
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="rh-card rh-info-card">
         <h2>Shared pagination contract</h2>
         <p>
           Queue and portal list behaviour will inherit one page-size contract with
           stable ordering and filter-preserving links instead of per-page reinvention.
         </p>
-      </article>
+        </article>
+      </div>
     </div>
   </section>
 
-  {% include "partials/_empty_state.html" with title="Current sprint scope" body="Sprint 1 ships the public shell, domain foundations, deterministic data setup, and shared UI primitives. Auth flows, queues, and portal workflows land in later sprints." %}
+  <section class="rh-roadmap mb-4" aria-label="Current sprint scope">
+    <div class="rh-roadmap-label">Current sprint scope</div>
+    <p>
+      Sprint 1 ships the public shell, domain foundations, deterministic data setup,
+      and shared UI primitives. Auth flows, queues, and portal workflows land in later sprints.
+    </p>
+  </section>
+
+  <footer class="rh-footer" aria-label="ReturnHub footer">
+    <p>ReturnHub is shaping a calmer returns workflow for retail operations.</p>
+    <a href="{% url 'ops-login' %}">Open ops workspace</a>
+  </footer>
 {% endblock %}
