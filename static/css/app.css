@@ -348,6 +348,26 @@ button:focus-visible {
   color: var(--rh-color-text-muted);
 }
 
+.rh-principles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--rh-space-3);
+  margin-top: var(--rh-space-5);
+}
+
+.rh-principle {
+  padding: var(--rh-space-4);
+  border-radius: var(--rh-radius-md);
+  background: rgba(255, 252, 247, 0.72);
+  border: 1px solid rgba(27, 35, 28, 0.08);
+  color: var(--rh-color-text-muted);
+  box-shadow: var(--rh-shadow-sm);
+}
+
+.rh-principle strong {
+  color: var(--rh-color-text);
+}
+
 .rh-role-card,
 .rh-info-card {
   padding: var(--rh-space-5);
@@ -526,6 +546,19 @@ button:focus-visible {
   font-size: var(--rh-font-size-sm);
 }
 
+.rh-assurance {
+  margin-top: var(--rh-space-4);
+  padding-top: var(--rh-space-4);
+  border-top: 1px solid rgba(27, 35, 28, 0.08);
+}
+
+.rh-assurance p {
+  max-width: 68ch;
+  margin: 0;
+  color: var(--rh-color-text-muted);
+  font-size: var(--rh-font-size-sm);
+}
+
 .rh-footer {
   display: flex;
   justify-content: space-between;
@@ -569,6 +602,10 @@ button:focus-visible {
 
   .rh-workflow-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rh-principles {
+    grid-template-columns: 1fr;
   }
 
   .rh-workspace-layout,
