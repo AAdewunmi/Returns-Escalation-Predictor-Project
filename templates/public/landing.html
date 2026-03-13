@@ -1,37 +1,94 @@
-# path: templates/public/landing.html
+<!-- path: templates/public/landing.html -->
 {% extends "base.html" %}
 
 {% block title %}ReturnHub | Returns and support workflow{% endblock %}
 
 {% block content %}
   <section class="rh-card rh-hero mb-4">
-    <div class="rh-kicker">Returns workflow platform</div>
-    <h1>One clear place to triage returns, evidence, and follow-up.</h1>
-    <p>
-      ReturnHub helps retail teams coordinate customer evidence, merchant responses,
-      and operational triage through a shared workflow that can later power API,
-      queue, and portal surfaces from the same domain rules.
-    </p>
+    <div class="rh-hero-grid">
+      <div class="rh-hero-copy">
+        <div class="rh-kicker">Returns workflow platform</div>
+        <h1>Resolve return cases faster with one operational system of record.</h1>
+        <p class="rh-hero-lead">
+          Give ops, merchants, and support teams the same case timeline so triage
+          moves faster, ownership stays clear, and manual handoffs stop slowing down resolution.
+        </p>
+        <div class="rh-hero-actions">
+          <a class="btn btn-primary rh-btn-primary" href="{% url 'ops-login' %}">Open ops workspace</a>
+          <a class="btn btn-outline-secondary rh-btn-secondary" href="#workspace-entry">Choose another workspace</a>
+        </div>
+      </div>
+      <aside class="rh-hero-visual" aria-label="Return workflow preview">
+        <div class="rh-visual-window">
+          <div class="rh-visual-topbar">
+            <span class="rh-visual-dot"></span>
+            <span class="rh-visual-dot"></span>
+            <span class="rh-visual-dot"></span>
+          </div>
+          <div class="rh-visual-body">
+            <div class="rh-visual-column">
+              <div class="rh-visual-label">Queue</div>
+              <div class="rh-visual-panel">
+                <div class="rh-visual-row">
+                  <strong>RH-2048</strong>
+                  <span class="rh-status-pill rh-status-pill--warning">Needs review</span>
+                </div>
+                <p>Customer evidence attached. Merchant response pending.</p>
+              </div>
+              <div class="rh-visual-panel rh-visual-panel--muted">
+                <div class="rh-visual-row">
+                  <strong>RH-2043</strong>
+                  <span class="rh-status-pill rh-status-pill--success">Ready to resolve</span>
+                </div>
+                <p>Ops note added. Ownership assigned to returns desk.</p>
+              </div>
+            </div>
+            <div class="rh-visual-column">
+              <div class="rh-visual-label">Case timeline</div>
+              <ol class="rh-timeline">
+                <li>Evidence received from customer</li>
+                <li>Merchant review requested automatically</li>
+                <li>Ops owner assigned and decision logged</li>
+                <li>Outcome recorded with full history</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+    <div class="rh-trust-row" aria-label="Operational trust signals">
+      <span class="rh-trust-item">Audit-ready workflows</span>
+      <span class="rh-trust-item">Role-based access</span>
+      <span class="rh-trust-item">Predictable case handling</span>
+      <span class="rh-trust-item">Shared case history</span>
+    </div>
+  </section>
+
+  <section id="workspace-entry" class="mb-4">
+    <div class="rh-section-heading">
+      <div class="rh-kicker">Choose your workspace</div>
+      <h2>Role-specific entry points, kept secondary to the main ops path.</h2>
+    </div>
     <div class="rh-role-grid">
       <article class="rh-card rh-role-card">
         <h2>Admin</h2>
         <p>Platform administration, controls, and cross-surface access.</p>
-        <a class="btn btn-primary" href="{% url 'admin-login' %}">Enter admin surface</a>
+        <a class="btn btn-outline-secondary rh-btn-secondary" href="{% url 'admin-login' %}">Open admin workspace</a>
       </article>
       <article class="rh-card rh-role-card">
         <h2>Ops</h2>
         <p>Queue-driven case triage, notes, decisions, and escalations.</p>
-        <a class="btn btn-primary" href="{% url 'ops-login' %}">Enter ops surface</a>
+        <a class="btn btn-outline-secondary rh-btn-secondary" href="{% url 'ops-login' %}">Open ops workspace</a>
       </article>
       <article class="rh-card rh-role-card">
         <h2>Customer</h2>
         <p>Read-only case tracking with evidence upload in later sprints.</p>
-        <a class="btn btn-primary" href="{% url 'customer-login' %}">Enter customer surface</a>
+        <a class="btn btn-outline-secondary rh-btn-secondary" href="{% url 'customer-login' %}">Open customer workspace</a>
       </article>
       <article class="rh-card rh-role-card">
         <h2>Merchant</h2>
         <p>Merchant-facing case review and response handling for linked returns.</p>
-        <a class="btn btn-primary" href="{% url 'merchant-login' %}">Enter merchant surface</a>
+        <a class="btn btn-outline-secondary rh-btn-secondary" href="{% url 'merchant-login' %}">Open merchant workspace</a>
       </article>
     </div>
   </section>

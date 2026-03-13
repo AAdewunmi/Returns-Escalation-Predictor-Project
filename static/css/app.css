@@ -47,6 +47,17 @@ button:focus-visible {
   padding: var(--rh-space-7);
 }
 
+.rh-hero-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(320px, 0.85fr);
+  gap: var(--rh-space-6);
+  align-items: center;
+}
+
+.rh-hero-copy {
+  max-width: 42rem;
+}
+
 .rh-kicker {
   color: var(--rh-color-accent);
   font-size: var(--rh-font-size-sm);
@@ -65,6 +76,159 @@ button:focus-visible {
   max-width: 60ch;
   color: var(--rh-color-text-muted);
   margin-bottom: var(--rh-space-5);
+}
+
+.rh-hero-lead {
+  font-size: var(--rh-font-size-lg);
+  line-height: 1.6;
+}
+
+.rh-hero-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rh-space-3);
+  margin-bottom: var(--rh-space-6);
+}
+
+.rh-btn-primary,
+.rh-btn-secondary {
+  border-radius: 999px;
+  padding: 0.8rem 1.2rem;
+  font-weight: 600;
+}
+
+.rh-btn-primary {
+  box-shadow: 0 14px 30px rgba(31, 94, 255, 0.22);
+}
+
+.rh-btn-secondary {
+  border-color: var(--rh-color-border);
+  color: var(--rh-color-text);
+}
+
+.rh-btn-secondary:hover,
+.rh-btn-secondary:focus-visible {
+  background: var(--rh-color-surface-muted);
+  border-color: var(--rh-color-border);
+  color: var(--rh-color-text);
+}
+
+.rh-hero-visual {
+  position: relative;
+}
+
+.rh-visual-window {
+  background: linear-gradient(180deg, #f8fbff 0%, #eef3fb 100%);
+  border: 1px solid rgba(31, 94, 255, 0.12);
+  border-radius: 1.5rem;
+  box-shadow: 0 24px 54px rgba(24, 34, 48, 0.12);
+  overflow: hidden;
+}
+
+.rh-visual-topbar {
+  display: flex;
+  gap: 0.45rem;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid rgba(31, 94, 255, 0.08);
+  background: rgba(255, 255, 255, 0.72);
+}
+
+.rh-visual-dot {
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  background: #c7d2e5;
+}
+
+.rh-visual-body {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--rh-space-4);
+  padding: var(--rh-space-5);
+}
+
+.rh-visual-column {
+  display: grid;
+  gap: var(--rh-space-3);
+}
+
+.rh-visual-label {
+  font-size: var(--rh-font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--rh-color-text-muted);
+}
+
+.rh-visual-panel {
+  display: grid;
+  gap: var(--rh-space-3);
+  padding: var(--rh-space-4);
+  border: 1px solid rgba(31, 94, 255, 0.1);
+  border-radius: var(--rh-radius-md);
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.rh-visual-panel--muted {
+  background: rgba(238, 242, 247, 0.8);
+}
+
+.rh-visual-row {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--rh-space-3);
+  align-items: center;
+}
+
+.rh-visual-panel p,
+.rh-timeline {
+  margin: 0;
+  color: var(--rh-color-text-muted);
+  font-size: var(--rh-font-size-sm);
+}
+
+.rh-timeline {
+  display: grid;
+  gap: var(--rh-space-3);
+  padding-left: 1.1rem;
+}
+
+.rh-trust-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rh-space-3);
+  padding-top: var(--rh-space-5);
+  border-top: 1px solid var(--rh-color-border);
+}
+
+.rh-trust-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.55rem 0.85rem;
+  border-radius: 999px;
+  background: var(--rh-color-surface-muted);
+  color: var(--rh-color-text);
+  font-size: var(--rh-font-size-sm);
+  font-weight: 600;
+}
+
+.rh-trust-item::before {
+  content: "";
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--rh-color-accent);
+  box-shadow: 0 0 0 4px rgba(31, 94, 255, 0.12);
+}
+
+.rh-section-heading {
+  margin-bottom: var(--rh-space-4);
+}
+
+.rh-section-heading h2 {
+  font-size: clamp(1.5rem, 2.2vw, 2rem);
+  margin: var(--rh-space-2) 0 0;
 }
 
 .rh-role-grid {
@@ -149,6 +313,14 @@ button:focus-visible {
 }
 
 @media (max-width: 991.98px) {
+  .rh-hero-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rh-visual-body {
+    grid-template-columns: 1fr;
+  }
+
   .rh-role-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
@@ -169,5 +341,16 @@ button:focus-visible {
 
   .rh-hero {
     padding: var(--rh-space-5);
+  }
+
+  .rh-hero-actions,
+  .rh-trust-row {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .rh-visual-row {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
