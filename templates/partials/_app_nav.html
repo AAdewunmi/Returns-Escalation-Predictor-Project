@@ -11,20 +11,5 @@
       <a href="#workflow">Workflow</a>
       <a href="#support">Support</a>
     </div>
-    <div class="rh-topbar-actions">
-      {% if request.user.is_authenticated and active_role_groups %}
-        <div class="rh-topbar-meta">
-          {% for group_name in active_role_groups %}
-            {% include "partials/_status_badge.html" with label=group_name tone="neutral" %}
-          {% endfor %}
-        </div>
-      {% else %}
-        <div class="rh-topbar-meta">
-          <span class="rh-header-note">Public product preview</span>
-        </div>
-      {% endif %}
-      <a class="rh-topbar-secondary" href="#workspace-entry">Choose Workspace</a>
-      <a class="btn rh-btn-primary rh-topbar-primary" href="{% url 'ops-login' %}">Open Operations Queue</a>
-    </div>
   </div>
 </nav>
