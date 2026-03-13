@@ -348,12 +348,6 @@ button:focus-visible {
   color: var(--rh-color-text-muted);
 }
 
-.rh-role-grid {
-  display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
-  gap: var(--rh-space-4);
-}
-
 .rh-role-card,
 .rh-info-card {
   padding: var(--rh-space-5);
@@ -362,6 +356,81 @@ button:focus-visible {
 
 .rh-role-card {
   background: rgba(255, 252, 247, 0.84);
+  display: grid;
+  gap: var(--rh-space-4);
+}
+
+.rh-workspace-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: var(--rh-space-4);
+  align-items: stretch;
+}
+
+.rh-role-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--rh-space-4);
+}
+
+.rh-role-card--featured {
+  background: linear-gradient(155deg, rgba(28, 74, 56, 0.98) 0%, rgba(23, 53, 41, 0.96) 100%);
+  border-color: rgba(16, 34, 27, 0.2);
+  color: #f5f1e8;
+  box-shadow: 0 28px 54px rgba(23, 34, 28, 0.2);
+}
+
+.rh-role-marker {
+  display: flex;
+  gap: var(--rh-space-3);
+  align-items: flex-start;
+}
+
+.rh-role-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.4rem;
+  height: 2.4rem;
+  border-radius: 0.85rem;
+  background: rgba(27, 35, 28, 0.08);
+  border: 1px solid rgba(27, 35, 28, 0.08);
+  color: var(--rh-color-accent-strong);
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+}
+
+.rh-role-card--featured .rh-role-icon {
+  background: rgba(255, 248, 236, 0.12);
+  border-color: rgba(255, 248, 236, 0.14);
+  color: #fff2de;
+}
+
+.rh-role-audience {
+  font-size: var(--rh-font-size-sm);
+  font-weight: 800;
+  color: var(--rh-color-text);
+}
+
+.rh-role-card--featured .rh-role-audience {
+  color: #fff2de;
+}
+
+.rh-role-outcome {
+  font-size: var(--rh-font-size-sm);
+  color: var(--rh-color-text-muted);
+}
+
+.rh-role-card--featured .rh-role-outcome,
+.rh-role-card--featured p {
+  color: rgba(245, 241, 232, 0.8);
+}
+
+.rh-role-card--featured h2 {
+  color: #fffaf1;
+  font-size: clamp(1.55rem, 2vw, 2rem);
+  max-width: 18ch;
 }
 
 .rh-info-card {
@@ -384,6 +453,7 @@ button:focus-visible {
 .rh-role-card p,
 .rh-info-card p {
   color: var(--rh-color-text-muted);
+  margin: 0;
 }
 
 .rh-status-pill {
@@ -501,8 +571,9 @@ button:focus-visible {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 
+  .rh-workspace-layout,
   .rh-role-grid {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: 1fr;
   }
 
   .rh-hero {
@@ -511,10 +582,6 @@ button:focus-visible {
 }
 
 @media (max-width: 575.98px) {
-  .rh-role-grid {
-    grid-template-columns: 1fr;
-  }
-
   .rh-main {
     padding-block: var(--rh-space-5);
   }
