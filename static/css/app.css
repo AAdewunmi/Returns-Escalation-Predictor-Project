@@ -1,0 +1,173 @@
+/* path: static/css/app.css */
+body {
+  background: var(--rh-color-bg);
+  color: var(--rh-color-text);
+  font-size: var(--rh-font-size-base);
+}
+
+a {
+  color: var(--rh-color-accent);
+}
+
+a:focus-visible,
+button:focus-visible {
+  outline: 3px solid rgba(31, 94, 255, 0.25);
+  outline-offset: 2px;
+}
+
+.rh-shell {
+  min-height: 100vh;
+}
+
+.rh-topbar {
+  background: rgba(255, 255, 255, 0.92);
+  border-bottom: 1px solid var(--rh-color-border);
+  backdrop-filter: blur(10px);
+}
+
+.rh-brand {
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  color: var(--rh-color-text);
+  text-decoration: none;
+}
+
+.rh-main {
+  padding-block: var(--rh-space-6);
+}
+
+.rh-card {
+  background: var(--rh-color-surface);
+  border: 1px solid var(--rh-color-border);
+  border-radius: var(--rh-radius-lg);
+  box-shadow: var(--rh-shadow-sm);
+}
+
+.rh-hero {
+  padding: var(--rh-space-7);
+}
+
+.rh-kicker {
+  color: var(--rh-color-accent);
+  font-size: var(--rh-font-size-sm);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.rh-hero h1 {
+  font-size: clamp(2rem, 3vw, 3.25rem);
+  line-height: 1.1;
+  margin-bottom: var(--rh-space-4);
+}
+
+.rh-hero p {
+  max-width: 60ch;
+  color: var(--rh-color-text-muted);
+  margin-bottom: var(--rh-space-5);
+}
+
+.rh-role-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--rh-space-4);
+}
+
+.rh-role-card,
+.rh-info-card {
+  padding: var(--rh-space-5);
+  height: 100%;
+}
+
+.rh-role-card h2,
+.rh-info-card h2 {
+  font-size: var(--rh-font-size-lg);
+  margin-bottom: var(--rh-space-3);
+}
+
+.rh-role-card p,
+.rh-info-card p {
+  color: var(--rh-color-text-muted);
+}
+
+.rh-status-pill {
+  display: inline-flex;
+  align-items: center;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-size: var(--rh-font-size-xs);
+  font-weight: 700;
+  line-height: 1;
+}
+
+.rh-status-pill--neutral {
+  background: var(--rh-color-surface-muted);
+  color: var(--rh-color-text);
+}
+
+.rh-status-pill--success {
+  background: rgba(31, 143, 82, 0.12);
+  color: var(--rh-color-success);
+}
+
+.rh-status-pill--warning {
+  background: rgba(182, 117, 24, 0.12);
+  color: var(--rh-color-warning);
+}
+
+.rh-status-pill--danger {
+  background: rgba(193, 60, 60, 0.12);
+  color: var(--rh-color-danger);
+}
+
+.rh-empty-state {
+  padding: var(--rh-space-6);
+  text-align: left;
+}
+
+.rh-empty-state h2 {
+  font-size: var(--rh-font-size-lg);
+  margin-bottom: var(--rh-space-3);
+}
+
+.rh-empty-state p {
+  color: var(--rh-color-text-muted);
+  margin-bottom: 0;
+}
+
+.pagination-shell {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--rh-space-3);
+  justify-content: space-between;
+  align-items: center;
+}
+
+.pagination-count {
+  color: var(--rh-color-text-muted);
+  font-size: var(--rh-font-size-sm);
+}
+
+@media (max-width: 991.98px) {
+  .rh-role-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .rh-hero {
+    padding: var(--rh-space-6);
+  }
+}
+
+@media (max-width: 575.98px) {
+  .rh-role-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .rh-main {
+    padding-block: var(--rh-space-5);
+  }
+
+  .rh-hero {
+    padding: var(--rh-space-5);
+  }
+}
