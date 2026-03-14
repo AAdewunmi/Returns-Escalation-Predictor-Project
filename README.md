@@ -95,6 +95,42 @@ Sprint 1 ships the first real product-facing public surface:
 
 The landing page is branded and responsive, with clear role entry points and a shared app shell. These routes currently reserve the future login surfaces and keep the information architecture coherent before full auth routing lands.
 
+### UI walkthrough
+
+After local setup, the first visible Sprint 1 output is the public landing page at `/`. The page uses the shared ReturnHub shell: a top navigation bar with the product mark and links for How it works, Workflow, Admin, Ops, Customer, Merchant, and Support.
+
+The landing page opens with a hero card that positions ReturnHub as a returns workflow system rather than a developer placeholder. On the left, the copy explains the product promise and presents two primary actions:
+
+- `Open Operations Queue`
+- `View workflow`
+
+On the right, the hero includes a styled workflow preview window that makes the UI direction visible in Sprint 1. It shows:
+
+- a mock operations queue header
+- three queue metrics: Open today, Assigned, and Awaiting merchant
+- two example return cases with status pills such as `Needs review` and `Ready to resolve`
+- a compact case timeline with Evidence received, Shared review, and Decision recorded
+- a summary line reinforcing the product stance: clear evidence, clear owner, clear next step
+
+Below the hero, the page continues with two branded content bands:
+
+- a Product value section with three cards: Faster triage, Clear ownership, and Fewer manual handoffs
+- a Workflow section with four numbered steps: Capture the issue, Review the details, Route to the right team, and Resolve with a recorded outcome
+
+The landing page also includes a row of operational trust signals directly under the hero:
+
+- Audit-ready workflows
+- Role-based access
+- Predictable case handling
+- Shared case history
+
+Each role route currently renders a focused surface entry page rather than a full authenticated console. The Admin, Ops, Customer, and Merchant pages each inherit the same shell, show a role-specific heading and body message, and provide two actions:
+
+- return to the landing page
+- open Django admin
+
+This means Sprint 1 already exposes the intended information architecture and visual system in the browser, even though the deeper workflow screens arrive in later sprints.
+
 ### Shared pagination contract
 
 ReturnHub adopts one pagination contract early so later list pages do not drift. The shared utility and partial implement:
@@ -325,4 +361,3 @@ Sprint 1 delivers the foundation only. Later sprints add API-first workflow logi
 ## License
 
 MIT License.
-
