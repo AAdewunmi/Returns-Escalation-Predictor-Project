@@ -4,13 +4,100 @@
 {% block title %}ReturnHub | Server error{% endblock %}
 
 {% block content %}
-  <section class="rh-card rh-hero">
-    <div class="rh-kicker">500</div>
-    <h1>Something went wrong inside the application.</h1>
-    <p>
-      The request reached the service, but an unexpected server error interrupted the response.
-      This page keeps the shell consistent while the underlying issue is investigated.
-    </p>
-    <a class="btn btn-primary" href="{% url 'landing' %}">Return to landing page</a>
+  <section class="rh-card rh-hero mb-4">
+    <div class="rh-hero-grid">
+      <div class="rh-hero-copy">
+        <div class="rh-kicker">500 Server Error</div>
+        <h1>Something interrupted the response inside the application.</h1>
+        <p class="rh-hero-lead">
+          The request reached ReturnHub, but an unexpected failure stopped the page from rendering normally.
+          This screen keeps the product shell stable while the underlying issue is investigated.
+        </p>
+        <div class="rh-hero-actions">
+          <a class="btn btn-primary rh-btn-primary" href="{% url 'landing' %}">Return to landing page</a>
+          <a class="btn btn-outline-secondary rh-btn-secondary" href="/admin/">Open Django admin</a>
+        </div>
+      </div>
+      <aside class="rh-hero-visual" aria-label="Server error summary">
+        <div class="rh-visual-window">
+          <div class="rh-visual-topbar">
+            <span class="rh-visual-dot"></span>
+            <span class="rh-visual-dot"></span>
+            <span class="rh-visual-dot"></span>
+            <div class="rh-visual-window-title">Application state</div>
+          </div>
+          <div class="rh-visual-body">
+            <div class="rh-visual-column">
+              <div class="rh-visual-label">What happened</div>
+              <div class="rh-visual-panel rh-visual-panel--case">
+                <div class="rh-visual-row">
+                  <strong>Unexpected failure</strong>
+                  <span class="rh-status-pill rh-status-pill--danger">500</span>
+                </div>
+                <p>The application encountered an internal error after receiving the request.</p>
+                <div class="rh-visual-meta">
+                  <span>Request reached service</span>
+                  <span>Response interrupted</span>
+                </div>
+              </div>
+              <div class="rh-visual-summary">
+                <div class="rh-visual-summary-label">Next step</div>
+                <div class="rh-visual-summary-value">Retry from a safe route or return later after the issue is resolved.</div>
+              </div>
+            </div>
+            <div class="rh-visual-column">
+              <div class="rh-visual-label">What to do next</div>
+              <ol class="rh-timeline rh-timeline--visual">
+                <li>
+                  <strong>Return to a stable page</strong>
+                  <span>Use the landing page as the safe public fallback while the issue is being checked.</span>
+                </li>
+                <li>
+                  <strong>Retry the action</strong>
+                  <span>Some failures may be temporary and may clear after a refresh or a new request.</span>
+                </li>
+                <li>
+                  <strong>Investigate in admin or logs</strong>
+                  <span>Operational debugging in later sprints will build on this same branded failure state.</span>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+    <div class="rh-trust-row" aria-label="Server error principles">
+      <span class="rh-trust-item">Stable fallback shell</span>
+      <span class="rh-trust-item">Clear error signalling</span>
+      <span class="rh-trust-item">Consistent recovery paths</span>
+      <span class="rh-trust-item">Operational visibility</span>
+    </div>
+  </section>
+
+  <section class="rh-band rh-band--value rh-band--wide">
+    <div class="rh-section-heading">
+      <div class="rh-kicker">Why this page exists</div>
+      <h2>Unexpected failures should still look deliberate and recoverable.</h2>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <article class="rh-info-card rh-info-card--primary">
+          <h2>Stable experience</h2>
+          <p>Users stay inside the same product shell instead of falling onto an unstyled framework exception page.</p>
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="rh-info-card rh-info-card--primary">
+          <h2>Actionable recovery</h2>
+          <p>The page makes the safest next steps explicit rather than leaving the user at a dead end.</p>
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="rh-info-card rh-info-card--primary">
+          <h2>Operational consistency</h2>
+          <p>The error state uses the same tone, spacing, and components as the rest of ReturnHub’s public UI.</p>
+        </article>
+      </div>
+    </div>
   </section>
 {% endblock %}
