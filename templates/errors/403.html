@@ -1,0 +1,104 @@
+<!--path: templates/errors/403.html-->
+
+{% extends "base.html" %}
+
+{% block title %}ReturnHub | Forbidden{% endblock %}
+
+{% block content %}
+  <section class="rh-card rh-hero mb-4">
+    <div class="rh-hero-grid">
+      <div class="rh-hero-copy">
+        <div class="rh-kicker">403 Forbidden</div>
+        <h1>This surface is outside your current access level.</h1>
+        <p class="rh-hero-lead">
+          The route is live, but the current account or role is not allowed to open it.
+          ReturnHub keeps restricted surfaces explicit so access boundaries stay predictable.
+        </p>
+        <div class="rh-hero-actions">
+          <a class="btn btn-primary rh-btn-primary" href="{% url 'landing' %}">Return to landing page</a>
+          <a class="btn btn-outline-secondary rh-btn-secondary" href="/admin/">Open Django admin</a>
+        </div>
+      </div>
+      <aside class="rh-hero-visual" aria-label="Access restriction summary">
+        <div class="rh-visual-window">
+          <div class="rh-visual-topbar">
+            <span class="rh-visual-dot"></span>
+            <span class="rh-visual-dot"></span>
+            <span class="rh-visual-dot"></span>
+            <div class="rh-visual-window-title">Access control</div>
+          </div>
+          <div class="rh-visual-body">
+            <div class="rh-visual-column">
+              <div class="rh-visual-label">What happened</div>
+              <div class="rh-visual-panel rh-visual-panel--case">
+                <div class="rh-visual-row">
+                  <strong>Permission denied</strong>
+                  <span class="rh-status-pill rh-status-pill--warning">403</span>
+                </div>
+                <p>The requested page exists, but this user cannot view it with the current role.</p>
+                <div class="rh-visual-meta">
+                  <span>Route is active</span>
+                  <span>Access check failed</span>
+                </div>
+              </div>
+              <div class="rh-visual-summary">
+                <div class="rh-visual-summary-label">Next step</div>
+                <div class="rh-visual-summary-value">Use an allowed route or sign in with the correct role.</div>
+              </div>
+            </div>
+            <div class="rh-visual-column">
+              <div class="rh-visual-label">What to do next</div>
+              <ol class="rh-timeline rh-timeline--visual">
+                <li>
+                  <strong>Return to a public page</strong>
+                  <span>Go back to the landing page and choose a valid entry point.</span>
+                </li>
+                <li>
+                  <strong>Check the active role</strong>
+                  <span>Some later Sprint surfaces will be visible only to the right persona.</span>
+                </li>
+                <li>
+                  <strong>Retry with correct access</strong>
+                  <span>Admin and role-aware flows will build on this same restriction pattern.</span>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+    <div class="rh-trust-row" aria-label="Access control principles">
+      <span class="rh-trust-item">Clear role boundaries</span>
+      <span class="rh-trust-item">Predictable permission handling</span>
+      <span class="rh-trust-item">Shared product shell</span>
+      <span class="rh-trust-item">Consistent fallback routes</span>
+    </div>
+  </section>
+
+  <section class="rh-band rh-band--value rh-band--wide">
+    <div class="rh-section-heading">
+      <div class="rh-kicker">Why this page exists</div>
+      <h2>Restricted routes should fail clearly, not feel broken.</h2>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <article class="rh-info-card rh-info-card--primary">
+          <h2>Visible boundaries</h2>
+          <p>Users can tell the page exists and is intentionally restricted, which reduces ambiguity during testing and support flows.</p>
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="rh-info-card rh-info-card--primary">
+          <h2>Role-aware behaviour</h2>
+          <p>The same pattern will back wrong-role handling across ops, merchant, customer, and admin surfaces in later sprints.</p>
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="rh-info-card rh-info-card--primary">
+          <h2>Consistent recovery</h2>
+          <p>Users get a direct path back to a safe starting point instead of a dead end or an unstyled framework error page.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+{% endblock %}

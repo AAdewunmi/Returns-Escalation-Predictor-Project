@@ -1,0 +1,103 @@
+# path: templates/errors/404.html
+{% extends "base.html" %}
+
+{% block title %}ReturnHub | Page not found{% endblock %}
+
+{% block content %}
+  <section class="rh-card rh-hero mb-4">
+    <div class="rh-hero-grid">
+      <div class="rh-hero-copy">
+        <div class="rh-kicker">404 Not Found</div>
+        <h1>This route is not part of the current product surface.</h1>
+        <p class="rh-hero-lead">
+          The request reached ReturnHub, but there is no page at this address.
+          Use a known entry point to get back to an active surface.
+        </p>
+        <div class="rh-hero-actions">
+          <a class="btn btn-primary rh-btn-primary" href="{% url 'landing' %}">Return to landing page</a>
+          <a class="btn btn-outline-secondary rh-btn-secondary" href="/admin/">Open Django admin</a>
+        </div>
+      </div>
+      <aside class="rh-hero-visual" aria-label="Not found summary">
+        <div class="rh-visual-window">
+          <div class="rh-visual-topbar">
+            <span class="rh-visual-dot"></span>
+            <span class="rh-visual-dot"></span>
+            <span class="rh-visual-dot"></span>
+            <div class="rh-visual-window-title">Route lookup</div>
+          </div>
+          <div class="rh-visual-body">
+            <div class="rh-visual-column">
+              <div class="rh-visual-label">What happened</div>
+              <div class="rh-visual-panel rh-visual-panel--case">
+                <div class="rh-visual-row">
+                  <strong>Route not found</strong>
+                  <span class="rh-status-pill rh-status-pill--warning">404</span>
+                </div>
+                <p>The requested path does not map to a current ReturnHub page or surface.</p>
+                <div class="rh-visual-meta">
+                  <span>No matching route</span>
+                  <span>Request ended safely</span>
+                </div>
+              </div>
+              <div class="rh-visual-summary">
+                <div class="rh-visual-summary-label">Next step</div>
+                <div class="rh-visual-summary-value">Go back to a valid entry point and continue from there.</div>
+              </div>
+            </div>
+            <div class="rh-visual-column">
+              <div class="rh-visual-label">What to do next</div>
+              <ol class="rh-timeline rh-timeline--visual">
+                <li>
+                  <strong>Start from the landing page</strong>
+                  <span>Use the public home page to navigate to a supported route.</span>
+                </li>
+                <li>
+                  <strong>Check the address</strong>
+                  <span>Verify the path, especially if it was typed or copied manually.</span>
+                </li>
+                <li>
+                  <strong>Retry from a visible surface</strong>
+                  <span>ReturnHub’s public and role-entry pages are the expected browser entry points in Sprint 1.</span>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+    <div class="rh-trust-row" aria-label="Not found principles">
+      <span class="rh-trust-item">Safe fallback routes</span>
+      <span class="rh-trust-item">Predictable navigation</span>
+      <span class="rh-trust-item">Shared product shell</span>
+      <span class="rh-trust-item">Clear browser recovery</span>
+    </div>
+  </section>
+
+  <section class="rh-band rh-band--value rh-band--wide">
+    <div class="rh-section-heading">
+      <div class="rh-kicker">Why this page exists</div>
+      <h2>Missing pages should be obvious and recoverable.</h2>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <article class="rh-info-card rh-info-card--primary">
+          <h2>Explicit routing</h2>
+          <p>Users can see this is a route problem, not a broken shell or partially rendered page.</p>
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="rh-info-card rh-info-card--primary">
+          <h2>Faster recovery</h2>
+          <p>The page provides a direct path back to known entry surfaces without forcing users to backtrack blindly.</p>
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="rh-info-card rh-info-card--primary">
+          <h2>Consistent product feel</h2>
+          <p>Even failed route lookups still use the same shell, spacing, and messaging patterns as the main product.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+{% endblock %}
