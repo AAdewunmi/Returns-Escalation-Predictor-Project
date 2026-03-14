@@ -342,7 +342,11 @@ button:focus-visible {
 }
 
 .rh-visual-metric {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
   padding: 0.8rem 0.85rem;
+  min-height: 5rem;
   border-radius: 0.95rem;
   background: rgba(255, 252, 247, 0.72);
   border: 1px solid rgba(27, 35, 28, 0.06);
@@ -350,11 +354,12 @@ button:focus-visible {
 
 .rh-visual-metric-label {
   display: block;
-  margin-bottom: 0.3rem;
+  min-height: 2rem;
   color: var(--rh-color-text-muted);
-  font-size: 0.7rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
   text-transform: uppercase;
 }
 
