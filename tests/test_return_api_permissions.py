@@ -1,5 +1,6 @@
 """Tests for returns API permission helpers."""
 
+import pytest
 from django.contrib.auth.models import AnonymousUser, Group
 from django.test import RequestFactory
 
@@ -13,6 +14,7 @@ def _add_group(user, group_name: str) -> None:
     user.groups.add(group)
 
 
+@pytest.mark.django_db
 def test_user_can_access_case_for_supported_roles() -> None:
     """Access helper should allow the correct users for each role."""
     case = ReturnCaseFactory()
@@ -36,6 +38,7 @@ def test_user_can_access_case_for_supported_roles() -> None:
     assert user_can_access_case(AnonymousUser(), case) is False
 
 
+@pytest.mark.django_db
 def test_customer_or_admin_permission_allows_only_expected_roles() -> None:
     """Customer-or-admin permission should admit only those actors."""
     factory = RequestFactory()
@@ -64,6 +67,7 @@ def test_customer_or_admin_permission_allows_only_expected_roles() -> None:
     assert permission.has_permission(anonymous_request, None) is False
 
 
+@pytest.mark.django_db
 def test_ops_or_admin_permission_allows_only_expected_roles() -> None:
     """Ops-or-admin permission should admit only those actors."""
     factory = RequestFactory()
