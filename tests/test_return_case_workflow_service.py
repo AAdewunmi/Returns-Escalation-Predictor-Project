@@ -11,6 +11,7 @@ from apps.returns.services.cases import (
     ReturnCaseCreateInput,
     ReturnCaseWorkflowError,
     StatusUpdateInput,
+    _actor_role,
     add_case_note,
     create_return_case,
     update_return_case_status,
@@ -88,6 +89,28 @@ def test_create_return_case_rejects_non_customer_actor() -> None:
 
 
 @pytest.mark.django_db
+def test_create_return_case_rejects_customer_without_profile() -> None:
+    """A customer-group actor still needs an attached customer profile."""
+    actor = UserFactory()
+    merchant_profile = MerchantProfileFactory()
+    _add_group(actor, "Customer")
+
+    with pytest.raises(ReturnCaseWorkflowError):
+        create_return_case(
+            actor=actor,
+            input_data=ReturnCaseCreateInput(
+                merchant_profile=merchant_profile,
+                external_order_ref="ORD-1003",
+                item_category="apparel",
+                return_reason="damaged",
+                customer_message="Need help",
+                order_value=Decimal("10.00"),
+                delivery_date=datetime.date(2025, 1, 12),
+            ),
+        )
+
+
+@pytest.mark.django_db
 def test_update_return_case_status_updates_case_and_emits_event() -> None:
     """Ops should be able to move a case through allowed transitions."""
     ops_user = UserFactory()
@@ -117,6 +140,32 @@ def test_update_return_case_status_updates_case_and_emits_event() -> None:
 
 
 @pytest.mark.django_db
+def test_update_return_case_status_keeps_existing_priority_when_none_supplied() -> None:
+    """Status updates should not rewrite priority when none is provided."""
+    admin_user = UserFactory(is_superuser=True)
+    case = ReturnCaseFactory(
+        status=ReturnCase.Status.WAITING_CUSTOMER,
+        priority=ReturnCase.Priority.HIGH,
+    )
+
+    updated_case = update_return_case_status(
+        actor=admin_user,
+        case=case,
+        input_data=StatusUpdateInput(status=ReturnCase.Status.APPROVED),
+    )
+
+    updated_case.refresh_from_db()
+
+    assert updated_case.status == ReturnCase.Status.APPROVED
+    assert updated_case.priority == ReturnCase.Priority.HIGH
+
+    event = CaseEvent.objects.get(return_case=case, event_type="status_updated")
+    assert event.actor_role == "admin"
+    assert event.payload["previous_priority"] == ReturnCase.Priority.HIGH
+    assert event.payload["new_priority"] == ReturnCase.Priority.HIGH
+
+
+@pytest.mark.django_db
 def test_update_return_case_status_rejects_invalid_transition() -> None:
     """Invalid state changes should raise a workflow error."""
     ops_user = UserFactory()
@@ -126,6 +175,20 @@ def test_update_return_case_status_rejects_invalid_transition() -> None:
     with pytest.raises(ReturnCaseWorkflowError):
         update_return_case_status(
             actor=ops_user,
+            case=case,
+            input_data=StatusUpdateInput(status=ReturnCase.Status.IN_REVIEW),
+        )
+
+
+@pytest.mark.django_db
+def test_update_return_case_status_rejects_non_ops_actor() -> None:
+    """Status changes are restricted to ops/admin actors."""
+    actor = UserFactory()
+    case = ReturnCaseFactory(status=ReturnCase.Status.SUBMITTED)
+
+    with pytest.raises(PermissionDenied):
+        update_return_case_status(
+            actor=actor,
             case=case,
             input_data=StatusUpdateInput(status=ReturnCase.Status.IN_REVIEW),
         )
@@ -151,6 +214,16 @@ def test_add_case_note_persists_internal_note_and_event() -> None:
 
 
 @pytest.mark.django_db
+def test_add_case_note_rejects_non_ops_actor() -> None:
+    """Notes are restricted to ops/admin actors."""
+    actor = UserFactory()
+    case = ReturnCaseFactory()
+
+    with pytest.raises(PermissionDenied):
+        add_case_note(actor=actor, case=case, body="Need review")
+
+
+@pytest.mark.django_db
 def test_add_case_note_rejects_blank_body() -> None:
     """Blank notes should be rejected before persistence."""
     ops_user = UserFactory()
@@ -159,3 +232,21 @@ def test_add_case_note_rejects_blank_body() -> None:
 
     with pytest.raises(ReturnCaseWorkflowError):
         add_case_note(actor=ops_user, case=case, body="   ")
+
+
+@pytest.mark.django_db
+def test_actor_role_returns_expected_labels() -> None:
+    """Actor-role helper should map seeded role groups consistently."""
+    merchant_profile = MerchantProfileFactory()
+    _add_group(merchant_profile.user, "Merchant")
+
+    customer_profile = CustomerProfileFactory()
+    _add_group(customer_profile.user, "Customer")
+
+    anonymous_actor = UserFactory()
+    admin_user = UserFactory(is_superuser=True)
+
+    assert _actor_role(admin_user) == "admin"
+    assert _actor_role(merchant_profile.user) == "merchant"
+    assert _actor_role(customer_profile.user) == "customer"
+    assert _actor_role(anonymous_actor) == ""
