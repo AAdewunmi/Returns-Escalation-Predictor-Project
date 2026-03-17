@@ -9,13 +9,13 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from accounts.models import MerchantProfile
-from ..models import CaseNote, ReturnCase
-from ..services.cases import (
+from apps.returns.services.cases import (
     ReturnCaseCreateInput,
     StatusUpdateInput,
     add_case_note,
     create_return_case,
 )
+from returns.models import CaseNote, ReturnCase
 
 
 class ReturnCaseCreateSerializer(serializers.Serializer):
