@@ -7,7 +7,12 @@ from django.contrib.auth.models import Group
 from django.test import Client
 
 from returns.services.cases import ReturnCaseWorkflowError
-from tests.factories import CustomerProfileFactory, MerchantProfileFactory, ReturnCaseFactory, UserFactory
+from tests.factories import (
+    CustomerProfileFactory,
+    MerchantProfileFactory,
+    ReturnCaseFactory,
+    UserFactory,
+)
 
 
 def _add_group(user, group_name: str) -> None:
