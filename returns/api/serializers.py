@@ -28,7 +28,7 @@ class ReturnCaseCreateSerializer(serializers.Serializer):
     external_order_ref = serializers.CharField(max_length=64)
     item_category = serializers.CharField(max_length=64)
     return_reason = serializers.CharField(max_length=64)
-    customer_message = serializers.CharField(max_length=2000)
+    customer_message = serializers.CharField(max_length=2000, allow_blank=True)
     order_value = serializers.DecimalField(max_digits=10, decimal_places=2)
     delivery_date = serializers.DateField()
 
@@ -79,7 +79,7 @@ class ReturnCaseStatusUpdateSerializer(serializers.Serializer):
 class CaseNoteCreateSerializer(serializers.Serializer):
     """Validate payloads for ops note creation."""
 
-    body = serializers.CharField(max_length=4000)
+    body = serializers.CharField(max_length=4000, allow_blank=True)
 
     def validate_body(self, value: str) -> str:
         """Require a non-empty note body."""
