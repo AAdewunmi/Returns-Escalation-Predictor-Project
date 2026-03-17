@@ -1,45 +1,69 @@
+# path: returns/api/permissions.py
 """Permission helpers for the returns API."""
 
 from __future__ import annotations
 
+from django.contrib.auth.base_user import AbstractBaseUser
 from rest_framework.permissions import BasePermission
 
+from returns.models import ReturnCase
 
-def _user_in_group(user, group_name: str) -> bool:
-    """Return True when the user belongs to the supplied Django group."""
+
+def user_in_group(user: AbstractBaseUser, group_name: str) -> bool:
+    """Return True when the user belongs to the supplied group or is superuser."""
     return user.is_superuser or user.groups.filter(name__iexact=group_name).exists()
 
 
-def user_can_access_case(user, case) -> bool:
-    """Return True when the user can access the supplied return case."""
+def is_admin(user: AbstractBaseUser) -> bool:
+    """Return True when the user is an admin."""
+    return user_in_group(user, "admin")
+
+
+def is_ops(user: AbstractBaseUser) -> bool:
+    """Return True when the user is an ops user."""
+    return user_in_group(user, "ops")
+
+
+def is_customer(user: AbstractBaseUser) -> bool:
+    """Return True when the user is a customer."""
+    return user_in_group(user, "customer")
+
+
+def is_merchant(user: AbstractBaseUser) -> bool:
+    """Return True when the user is a merchant."""
+    return user_in_group(user, "merchant")
+
+
+def user_can_access_case(user: AbstractBaseUser, case: ReturnCase) -> bool:
+    """Return True when the user is allowed to view the supplied case."""
     if not user.is_authenticated:
         return False
-    if _user_in_group(user, "admin") or _user_in_group(user, "ops"):
+
+    if is_admin(user) or is_ops(user):
         return True
-    if _user_in_group(user, "customer"):
+
+    if is_customer(user):
         return getattr(case.customer, "user_id", None) == user.id
-    if _user_in_group(user, "merchant"):
+
+    if is_merchant(user):
         return getattr(case.merchant, "user_id", None) == user.id
+
     return False
 
 
 class IsCustomerOrAdmin(BasePermission):
-    """Allow access only to customer or admin users."""
+    """Allow only customers and admins."""
 
     def has_permission(self, request, view) -> bool:
-        """Return True when the current user is a customer or admin."""
-        user = request.user
-        return user.is_authenticated and (
-            _user_in_group(user, "customer") or _user_in_group(user, "admin")
+        """Evaluate the request-level permission."""
+        return request.user.is_authenticated and (
+            is_customer(request.user) or is_admin(request.user)
         )
 
 
 class IsOpsOrAdmin(BasePermission):
-    """Allow access only to ops or admin users."""
+    """Allow only ops and admins."""
 
     def has_permission(self, request, view) -> bool:
-        """Return True when the current user is ops or admin."""
-        user = request.user
-        return user.is_authenticated and (
-            _user_in_group(user, "ops") or _user_in_group(user, "admin")
-        )
+        """Evaluate the request-level permission."""
+        return request.user.is_authenticated and (is_ops(request.user) or is_admin(request.user))
