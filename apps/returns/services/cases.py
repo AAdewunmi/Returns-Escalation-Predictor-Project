@@ -12,9 +12,7 @@ from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.utils import timezone
 
-from returns.models import CaseEvent
-from returns.models import CaseNote
-from returns.models import ReturnCase
+from returns.models import CaseEvent, CaseNote, ReturnCase
 
 STATUS_SUBMITTED: Final[str] = ReturnCase.Status.SUBMITTED
 PRIORITY_NORMAL: Final[str] = ReturnCase.Priority.MEDIUM
@@ -75,7 +73,7 @@ class StatusUpdateInput:
 
 def _user_in_group(user: AbstractBaseUser, group_name: str) -> bool:
     """Return True when the user belongs to the supplied Django group."""
-    return user.is_superuser or user.groups.filter(name=group_name).exists()
+    return user.is_superuser or user.groups.filter(name__iexact=group_name).exists()
 
 
 def _require_customer(actor: AbstractBaseUser) -> None:
