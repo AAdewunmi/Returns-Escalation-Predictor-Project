@@ -16,7 +16,6 @@ from returns.api.serializers import (
 from returns.models import ReturnCase
 from returns.services.cases import ReturnCaseCreateInput, StatusUpdateInput
 from tests.factories import (
-    CustomerProfileFactory,
     MerchantProfileFactory,
     ReturnCaseFactory,
     UserFactory,
