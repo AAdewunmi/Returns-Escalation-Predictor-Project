@@ -1,4 +1,4 @@
-# path: apps/returns/services/cases.py
+# path: returns/services/cases.py
 """Service-layer workflow for ReturnHub return cases."""
 
 from __future__ import annotations
