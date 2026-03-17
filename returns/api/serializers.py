@@ -9,8 +9,8 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from accounts.models import MerchantProfile
-from ..models import CaseNote, ReturnCase
-from ..services.cases import (
+from returns.models import CaseNote, ReturnCase
+from returns.services.cases import (
     ReturnCaseCreateInput,
     StatusUpdateInput,
     add_case_note,

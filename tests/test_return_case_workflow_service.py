@@ -7,6 +7,7 @@ import pytest
 from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
 
+from returns.models import CaseEvent, ReturnCase
 from returns.services.cases import (
     ReturnCaseCreateInput,
     ReturnCaseWorkflowError,
@@ -16,7 +17,6 @@ from returns.services.cases import (
     create_return_case,
     update_return_case_status,
 )
-from returns.models import CaseEvent, ReturnCase
 from tests.factories import (
     CustomerProfileFactory,
     MerchantProfileFactory,
