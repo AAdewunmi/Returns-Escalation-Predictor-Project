@@ -1,4 +1,4 @@
-# path: apps/returns/api/urls.py
+# path: returns/api/urls.py
 """API routes for ReturnHub return workflow."""
 
 from __future__ import annotations

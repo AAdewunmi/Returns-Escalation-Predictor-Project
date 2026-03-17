@@ -10,4 +10,5 @@ handler500 = "ui.error_views.error_500"
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("ui.urls")),
+    path("api/returns/", include("returns.api.urls")),
 ]
