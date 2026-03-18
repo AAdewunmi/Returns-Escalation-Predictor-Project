@@ -88,3 +88,41 @@ def test_console_routes_forbid_wrong_role(client) -> None:
     response = client.get(reverse("console:ops-dashboard"))
 
     assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_superuser_can_access_console_routes_without_group_membership(client) -> None:
+    """Superusers should bypass group checks for authenticated console routes."""
+    admin_user = UserFactory(is_superuser=True, is_staff=True)
+
+    client.force_login(admin_user)
+    response = client.get(reverse("console:ops-dashboard"))
+
+    assert response.status_code == 200
+    assert "Ops Console" in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_customer_console_handles_customer_user_without_profile(client) -> None:
+    """Customer dashboard should render an empty state when no customer profile exists."""
+    customer_user = UserFactory(email="customer-no-profile@example.com")
+    add_group(customer_user, "Customer")
+
+    client.force_login(customer_user)
+    response = client.get(reverse("console:customer-dashboard"))
+
+    assert response.status_code == 200
+    assert "No customer cases yet" in response.content.decode()
+
+
+@pytest.mark.django_db
+def test_merchant_console_handles_merchant_user_without_profile(client) -> None:
+    """Merchant dashboard should render an empty state when no merchant profile exists."""
+    merchant_user = UserFactory(email="merchant-no-profile@example.com")
+    add_group(merchant_user, "Merchant")
+
+    client.force_login(merchant_user)
+    response = client.get(reverse("console:merchant-dashboard"))
+
+    assert response.status_code == 200
+    assert "No merchant-linked cases yet" in response.content.decode()
