@@ -1,4 +1,4 @@
-# path: apps/console/views.py
+# path: console/views.py
 """Authenticated shell views for ReturnHub role consoles."""
 
 from __future__ import annotations
