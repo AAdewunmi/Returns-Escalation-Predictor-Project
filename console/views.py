@@ -18,14 +18,17 @@ class RoleRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     def test_func(self) -> bool:
         """Validate group membership for the current request."""
         user = self.request.user
-        return user.is_superuser or user.groups.filter(name__in=self.allowed_groups).exists()
+        return user.is_superuser or any(
+            user.groups.filter(name__iexact=group_name).exists()
+            for group_name in self.allowed_groups
+        )
 
 
 class AdminConsoleView(RoleRequiredMixin, TemplateView):
     """In-product admin console shell."""
 
     template_name = "console/admin_dashboard.html"
-    allowed_groups = ("admin",)
+    allowed_groups = ("Admin",)
 
     def get_context_data(self, **kwargs):
         """Build the admin dashboard context."""
@@ -39,7 +42,7 @@ class OpsConsoleView(RoleRequiredMixin, TemplateView):
     """Ops console shell that will later host queue and case detail surfaces."""
 
     template_name = "console/ops_dashboard.html"
-    allowed_groups = ("ops", "admin")
+    allowed_groups = ("Ops", "Admin")
 
     def get_context_data(self, **kwargs):
         """Build the ops dashboard context."""
@@ -47,7 +50,7 @@ class OpsConsoleView(RoleRequiredMixin, TemplateView):
         queryset = ReturnCase.objects.order_by("-created_at")
         context["page_title"] = "Ops Console"
         context["submitted_count"] = queryset.filter(status="submitted").count()
-        context["under_review_count"] = queryset.filter(status="under_review").count()
+        context["in_review_count"] = queryset.filter(status="in_review").count()
         context["recent_cases"] = queryset[:5]
         return context
 
@@ -56,7 +59,7 @@ class CustomerConsoleView(RoleRequiredMixin, TemplateView):
     """Customer console shell."""
 
     template_name = "console/customer_dashboard.html"
-    allowed_groups = ("customer", "admin")
+    allowed_groups = ("Customer", "Admin")
 
     def get_context_data(self, **kwargs):
         """Build the customer dashboard context."""
@@ -64,7 +67,7 @@ class CustomerConsoleView(RoleRequiredMixin, TemplateView):
         queryset = ReturnCase.objects.none()
         if hasattr(self.request.user, "customer_profile"):
             queryset = ReturnCase.objects.filter(
-                customer_profile=self.request.user.customer_profile
+                customer=self.request.user.customer_profile
             ).order_by("-created_at")
         context["page_title"] = "Customer Console"
         context["recent_cases"] = queryset[:5]
@@ -75,7 +78,7 @@ class MerchantConsoleView(RoleRequiredMixin, TemplateView):
     """Merchant console shell."""
 
     template_name = "console/merchant_dashboard.html"
-    allowed_groups = ("merchant", "admin")
+    allowed_groups = ("Merchant", "Admin")
 
     def get_context_data(self, **kwargs):
         """Build the merchant dashboard context."""
@@ -83,7 +86,7 @@ class MerchantConsoleView(RoleRequiredMixin, TemplateView):
         queryset = ReturnCase.objects.none()
         if hasattr(self.request.user, "merchant_profile"):
             queryset = ReturnCase.objects.filter(
-                merchant_profile=self.request.user.merchant_profile
+                merchant=self.request.user.merchant_profile
             ).order_by("-created_at")
         context["page_title"] = "Merchant Console"
         context["recent_cases"] = queryset[:5]

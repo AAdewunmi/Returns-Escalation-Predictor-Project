@@ -12,4 +12,5 @@ urlpatterns = [
     path("", include("ui.urls")),
     path("api/analytics/", include("analytics.api.urls")),
     path("api/returns/", include("returns.api.urls")),
+    path("console/", include("console.urls")),
 ]

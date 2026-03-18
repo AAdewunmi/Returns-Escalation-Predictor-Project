@@ -1,4 +1,4 @@
-# path: tests/integration/returns/test_case_service_integration.py
+# path: tests/test_case_service_integration.py
 """DB-hitting integration tests for the ReturnHub case workflow service."""
 
 from __future__ import annotations
