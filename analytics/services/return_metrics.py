@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from datetime import date
 
 from django.db.models import Count
+
 from returns.models import ReturnCase
 
 
