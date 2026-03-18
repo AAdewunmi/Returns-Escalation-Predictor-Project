@@ -1,0 +1,30 @@
+{# path: templates/console/merchant_dashboard.html #}
+{% extends "base.html" %}
+
+{% block title %}Merchant Console | ReturnHub{% endblock %}
+
+{% block page_intro %}
+  <p class="text-muted mb-0">
+    Sprint 2 merchant shell. Case list, response uploads, and detail actions land in later sprints.
+  </p>
+{% endblock %}
+
+{% block content %}
+  <section class="card shadow-sm border-0">
+    <div class="card-body">
+      <h2 class="h5 mb-3">Recent merchant-linked cases</h2>
+      {% if recent_cases %}
+        <ul class="list-group list-group-flush">
+          {% for case in recent_cases %}
+            <li class="list-group-item px-0 d-flex justify-content-between align-items-center">
+              <span class="fw-semibold">{{ case.reference }}</span>
+              {% include "partials/_status_badge.html" with status=case.status %}
+            </li>
+          {% endfor %}
+        </ul>
+      {% else %}
+        <p class="text-muted mb-0">No cases are linked to this merchant yet.</p>
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}
