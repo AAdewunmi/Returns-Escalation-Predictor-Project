@@ -3,30 +3,96 @@
 
 {% block title %}Admin Console | ReturnHub{% endblock %}
 
-{% block page_intro %}
-  <p class="text-muted mb-0">
-    In-product admin shell linking operational surfaces with Django admin management.
-  </p>
-{% endblock %}
-
 {% block content %}
-  <section class="row g-3">
-    <div class="col-md-6">
-      <div class="card shadow-sm border-0 h-100">
-        <div class="card-body">
-          <h2 class="h5">System overview</h2>
-          <p class="text-muted">Total return cases in the platform.</p>
-          <p class="display-6 mb-0">{{ total_cases }}</p>
+  <section class="rh-card rh-hero mb-4">
+    <div class="rh-hero-grid">
+      <div class="rh-hero-copy">
+        <div class="rh-kicker">Admin Console</div>
+        <h1>Operate the platform shell with one clear management entry point.</h1>
+        <p class="rh-hero-lead">
+          This dashboard keeps the admin surface aligned with the shared ReturnHub shell while
+          linking user, configuration, and support management back to Django admin.
+        </p>
+        <div class="rh-hero-actions">
+          <a class="btn btn-primary rh-btn-primary" href="/admin/">Open Django admin</a>
+          <a class="btn btn-outline-secondary rh-btn-secondary" href="{% url 'landing' %}">Return to landing page</a>
         </div>
       </div>
-    </div>
-    <div class="col-md-6">
-      <div class="card shadow-sm border-0 h-100">
-        <div class="card-body">
-          <h2 class="h5">Management entry point</h2>
-          <p class="text-muted">Use Django admin for user, configuration, and support management.</p>
-          <a class="btn btn-primary" href="/admin/">Open Django admin</a>
+      <aside class="rh-hero-visual" aria-label="Admin console summary">
+        <div class="rh-visual-window">
+          <div class="rh-visual-topbar">
+            <span class="rh-visual-dot"></span>
+            <span class="rh-visual-dot"></span>
+            <span class="rh-visual-dot"></span>
+            <div class="rh-visual-window-title">Admin overview</div>
+          </div>
+          <div class="rh-visual-body">
+            <div class="rh-visual-column">
+              <div class="rh-visual-label">Platform status</div>
+              <div class="rh-visual-panel rh-visual-panel--case">
+                <div class="rh-visual-row">
+                  <strong>Total cases</strong>
+                  <span class="rh-status-pill rh-status-pill--neutral">Live</span>
+                </div>
+                <p>Current return-case volume available to operations, support, and merchant workflows.</p>
+                <div class="rh-visual-summary">
+                  <div class="rh-visual-summary-label">Recorded cases</div>
+                  <div class="rh-visual-summary-value">{{ total_cases }}</div>
+                </div>
+              </div>
+            </div>
+            <div class="rh-visual-column">
+              <div class="rh-visual-label">Admin focus</div>
+              <ol class="rh-timeline rh-timeline--visual">
+                <li>
+                  <strong>Manage platform users</strong>
+                  <span>Update access, inspect accounts, and keep role boundaries explicit.</span>
+                </li>
+                <li>
+                  <strong>Review support configuration</strong>
+                  <span>Keep shared admin settings and operational controls in one management path.</span>
+                </li>
+                <li>
+                  <strong>Stay inside the product shell</strong>
+                  <span>This route provides a branded handoff instead of a disconnected admin link.</span>
+                </li>
+              </ol>
+            </div>
+          </div>
         </div>
+      </aside>
+    </div>
+    <div class="rh-trust-row" aria-label="Admin console principles">
+      <span class="rh-trust-item">Shared shell</span>
+      <span class="rh-trust-item">Clear management path</span>
+      <span class="rh-trust-item">Role-aware access</span>
+      <span class="rh-trust-item">Operational visibility</span>
+    </div>
+  </section>
+
+  <section class="rh-band rh-band--value rh-band--wide">
+    <div class="rh-section-heading">
+      <div class="rh-kicker">Admin role</div>
+      <h2>Keep platform management connected to the same product frame used everywhere else.</h2>
+    </div>
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <article class="rh-info-card rh-info-card--primary">
+          <h2>User oversight</h2>
+          <p>Review users and access paths without dropping out of the ReturnHub shell entirely.</p>
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="rh-info-card rh-info-card--primary">
+          <h2>Consistent navigation</h2>
+          <p>The admin dashboard uses the same layout patterns as public, error, and workflow surfaces.</p>
+        </article>
+      </div>
+      <div class="col-lg-4">
+        <article class="rh-info-card rh-info-card--primary">
+          <h2>Platform context</h2>
+          <p>Total case volume stays visible so administration work remains grounded in live system activity.</p>
+        </article>
       </div>
     </div>
   </section>
