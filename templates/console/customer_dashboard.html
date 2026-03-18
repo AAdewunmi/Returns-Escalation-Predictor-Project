@@ -1,0 +1,110 @@
+<!-- path: templates/console/customer_dashboard.html -->
+{% extends "base.html" %}
+
+{% block title %}Customer Console | ReturnHub{% endblock %}
+
+{% block content %}
+  <section class="rh-card rh-hero mb-4">
+    <div class="rh-hero-grid">
+      <div class="rh-hero-copy">
+        <div class="rh-kicker">Customer Console</div>
+        <h1>Track the most recent return activity in one customer-facing shell.</h1>
+        <p class="rh-hero-lead">
+          This console keeps a customer’s own return cases visible inside the branded ReturnHub frame
+          while later sprints add evidence uploads, pagination, and deeper case detail.
+        </p>
+        <div class="rh-trust-row" aria-label="Customer console signals">
+          <span class="rh-trust-item">Own-case visibility</span>
+          <span class="rh-trust-item">Shared case history</span>
+          <span class="rh-trust-item">Role-aware access</span>
+        </div>
+      </div>
+      <aside class="rh-hero-visual" aria-label="Customer return summary">
+        <div class="rh-visual-window">
+          <div class="rh-visual-topbar">
+            <span class="rh-visual-dot"></span>
+            <span class="rh-visual-dot"></span>
+            <span class="rh-visual-dot"></span>
+            <div class="rh-visual-window-title">Customer cases</div>
+          </div>
+          <div class="rh-visual-body">
+            <div class="rh-visual-column">
+              <div class="rh-visual-label">Recent activity</div>
+              {% if recent_cases %}
+                {% for case in recent_cases %}
+                  <div class="rh-visual-panel rh-visual-panel--case">
+                    <div class="rh-visual-row">
+                      <strong>{{ case.order_reference }}</strong>
+                      {% include "partials/_status_badge.html" with status=case.status %}
+                    </div>
+                    <p>{{ case.customer_message|truncatechars:110 }}</p>
+                    <div class="rh-visual-meta">
+                      <span>{{ case.item_category|title }}</span>
+                      <span>{{ case.delivery_date }}</span>
+                    </div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <div class="rh-visual-panel rh-visual-panel--case">
+                  <div class="rh-visual-row">
+                    <strong>No cases yet</strong>
+                    <span class="rh-status-pill rh-status-pill--neutral">Waiting</span>
+                  </div>
+                  <p>No cases are associated with this customer yet.</p>
+                </div>
+              {% endif %}
+            </div>
+            <div class="rh-visual-column">
+              <div class="rh-visual-label">What comes next</div>
+              <ol class="rh-timeline rh-timeline--visual">
+                <li>
+                  <strong>Review recent cases</strong>
+                  <span>See the latest customer-linked cases without leaving the shared shell.</span>
+                </li>
+                <li>
+                  <strong>Follow status changes</strong>
+                  <span>Submitted, in-review, and later workflow states stay visible at a glance.</span>
+                </li>
+                <li>
+                  <strong>Expand in later sprints</strong>
+                  <span>Evidence uploads and richer case interactions can build on the same structure.</span>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="rh-band rh-band--value rh-band--wide">
+    <div class="rh-section-heading">
+      <div class="rh-kicker">Recent cases</div>
+      <h2>Keep the customer’s own return history visible and easy to scan.</h2>
+    </div>
+    <div class="rh-visual-panel">
+      {% if recent_cases %}
+        <div class="row g-3">
+          {% for case in recent_cases %}
+            <div class="col-12">
+              <div class="rh-visual-panel rh-visual-panel--case">
+                <div class="rh-visual-row">
+                  <strong>{{ case.order_reference }}</strong>
+                  {% include "partials/_status_badge.html" with status=case.status %}
+                </div>
+                <p>{{ case.customer_message|truncatechars:140 }}</p>
+                <div class="rh-visual-meta">
+                  <span>{{ case.item_category|title }}</span>
+                  <span>{{ case.return_reason|title }}</span>
+                  <span>{{ case.delivery_date }}</span>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        {% include "partials/_empty_state.html" with title="No customer cases yet" body="This customer account does not have any linked return cases yet." %}
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}

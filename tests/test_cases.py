@@ -1,4 +1,4 @@
-# path: tests/unit/returns/services/test_cases.py
+# path: tests/test_cases.py
 """Unit-style service tests for ReturnHub case workflow."""
 
 from __future__ import annotations

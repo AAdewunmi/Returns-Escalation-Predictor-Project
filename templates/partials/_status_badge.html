@@ -1,4 +1,18 @@
 <!-- path: templates/partials/_status_badge.html -->
-<span class="rh-status-pill rh-status-pill--{{ tone|default:'neutral' }}">
-  {{ label }}
-</span>
+{% if status == "submitted" %}
+  <span class="rh-status-pill rh-status-pill--warning">Submitted</span>
+{% elif status == "in_review" %}
+  <span class="rh-status-pill rh-status-pill--warning">In review</span>
+{% elif status == "waiting_customer" %}
+  <span class="rh-status-pill rh-status-pill--neutral">Waiting for customer</span>
+{% elif status == "waiting_merchant" %}
+  <span class="rh-status-pill rh-status-pill--neutral">Waiting for merchant</span>
+{% elif status == "approved" %}
+  <span class="rh-status-pill rh-status-pill--success">Approved</span>
+{% elif status == "rejected" %}
+  <span class="rh-status-pill rh-status-pill--danger">Rejected</span>
+{% else %}
+  <span class="rh-status-pill rh-status-pill--{{ tone|default:'neutral' }}">
+    {{ label|default:status|default:"Unknown" }}
+  </span>
+{% endif %}

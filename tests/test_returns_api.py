@@ -1,4 +1,4 @@
-# path: tests/integration/api/test_returns_api.py
+# path: tests/test_returns_api.py
 """Integration tests for ReturnHub return workflow API endpoints."""
 
 from __future__ import annotations

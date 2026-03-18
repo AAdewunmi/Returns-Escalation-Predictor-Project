@@ -1,0 +1,110 @@
+{# path: templates/console/merchant_dashboard.html #}
+{% extends "base.html" %}
+
+{% block title %}Merchant Console | ReturnHub{% endblock %}
+
+{% block content %}
+  <section class="rh-card rh-hero mb-4">
+    <div class="rh-hero-grid">
+      <div class="rh-hero-copy">
+        <div class="rh-kicker">Merchant Console</div>
+        <h1>Review merchant-linked return cases inside the shared operational shell.</h1>
+        <p class="rh-hero-lead">
+          This merchant view keeps linked cases visible in the same product frame used across ReturnHub,
+          ready for later response uploads and merchant-side case actions.
+        </p>
+        <div class="rh-trust-row" aria-label="Merchant console signals">
+          <span class="rh-trust-item">Merchant-linked cases</span>
+          <span class="rh-trust-item">Shared workflow context</span>
+          <span class="rh-trust-item">Future response handling</span>
+        </div>
+      </div>
+      <aside class="rh-hero-visual" aria-label="Merchant case summary">
+        <div class="rh-visual-window">
+          <div class="rh-visual-topbar">
+            <span class="rh-visual-dot"></span>
+            <span class="rh-visual-dot"></span>
+            <span class="rh-visual-dot"></span>
+            <div class="rh-visual-window-title">Merchant review</div>
+          </div>
+          <div class="rh-visual-body">
+            <div class="rh-visual-column">
+              <div class="rh-visual-label">Linked cases</div>
+              {% if recent_cases %}
+                {% for case in recent_cases %}
+                  <div class="rh-visual-panel rh-visual-panel--case">
+                    <div class="rh-visual-row">
+                      <strong>{{ case.order_reference }}</strong>
+                      {% include "partials/_status_badge.html" with status=case.status %}
+                    </div>
+                    <p>{{ case.customer_message|truncatechars:110 }}</p>
+                    <div class="rh-visual-meta">
+                      <span>{{ case.item_category|title }}</span>
+                      <span>{{ case.order_value }}</span>
+                    </div>
+                  </div>
+                {% endfor %}
+              {% else %}
+                <div class="rh-visual-panel rh-visual-panel--case">
+                  <div class="rh-visual-row">
+                    <strong>No linked cases</strong>
+                    <span class="rh-status-pill rh-status-pill--neutral">Idle</span>
+                  </div>
+                  <p>No cases are linked to this merchant yet.</p>
+                </div>
+              {% endif %}
+            </div>
+            <div class="rh-visual-column">
+              <div class="rh-visual-label">Merchant role</div>
+              <ol class="rh-timeline rh-timeline--visual">
+                <li>
+                  <strong>See linked cases</strong>
+                  <span>Keep merchant-specific work attached to the same shared case timeline.</span>
+                </li>
+                <li>
+                  <strong>Review case context</strong>
+                  <span>Order category, reason, and status stay visible without switching tools.</span>
+                </li>
+                <li>
+                  <strong>Prepare future actions</strong>
+                  <span>Later sprints can add responses and uploads on top of this shell.</span>
+                </li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </section>
+
+  <section class="rh-band rh-band--value rh-band--wide">
+    <div class="rh-section-heading">
+      <div class="rh-kicker">Merchant-linked cases</div>
+      <h2>Present merchant work in the same visual language as the rest of the product.</h2>
+    </div>
+    <div class="rh-visual-panel">
+      {% if recent_cases %}
+        <div class="row g-3">
+          {% for case in recent_cases %}
+            <div class="col-12">
+              <div class="rh-visual-panel rh-visual-panel--case">
+                <div class="rh-visual-row">
+                  <strong>{{ case.order_reference }}</strong>
+                  {% include "partials/_status_badge.html" with status=case.status %}
+                </div>
+                <p>{{ case.customer_message|truncatechars:140 }}</p>
+                <div class="rh-visual-meta">
+                  <span>{{ case.item_category|title }}</span>
+                  <span>{{ case.return_reason|title }}</span>
+                  <span>{{ case.order_value }}</span>
+                </div>
+              </div>
+            </div>
+          {% endfor %}
+        </div>
+      {% else %}
+        {% include "partials/_empty_state.html" with title="No merchant-linked cases yet" body="This merchant account does not have any linked return cases yet." %}
+      {% endif %}
+    </div>
+  </section>
+{% endblock %}
