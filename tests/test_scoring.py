@@ -93,7 +93,9 @@ def test_quantise_score_uses_half_up_rounding(value: float, expected: Decimal) -
         ),
     ],
 )
-def test_score_case_features_assigns_expected_labels_and_bounds(features, expected_label, expected_score) -> None:
+def test_score_case_features_assigns_expected_labels_and_bounds(
+    features, expected_label, expected_score
+) -> None:
     """Scoring should produce stable labels across low, medium, and high thresholds."""
     prediction = score_case_features(features)
 
