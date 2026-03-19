@@ -6,10 +6,9 @@ from __future__ import annotations
 from decimal import Decimal
 
 import pytest
-from django.apps import apps
 from django.contrib.auth.models import Group
 
-from returns.models import CaseEvent
+from returns.models import CaseEvent, RiskScore
 from returns.services.cases import ReturnCaseCreateInput, create_return_case
 from tests.factories import CustomerProfileFactory, MerchantProfileFactory, UserFactory
 
@@ -23,11 +22,6 @@ def add_group(user, group_name: str) -> None:
 @pytest.mark.django_db
 def test_case_creation_persists_risk_score_and_event() -> None:
     """Creating a case should persist placeholder risk output and an audit event."""
-    try:
-        risk_score_model = apps.get_model("returns", "RiskScore")
-    except LookupError:
-        pytest.skip("RiskScore model is not available in the current returns app.")
-
     customer_user = UserFactory(email="risk-create@example.com")
     add_group(customer_user, "customer")
     customer_profile = CustomerProfileFactory(user=customer_user)
@@ -48,9 +42,9 @@ def test_case_creation_persists_risk_score_and_event() -> None:
         ),
     )
 
-    risk_score = risk_score_model.objects.get(case=case)
+    risk_score = RiskScore.objects.get(case=case)
 
     assert risk_score.model_version == "return-risk-placeholder-v1"
     assert risk_score.label in {"low", "medium", "high"}
     assert isinstance(risk_score.reason_codes, list)
-    assert CaseEvent.objects.filter(case=case, event_type="risk_scored").exists()
+    assert CaseEvent.objects.filter(return_case=case, event_type="risk_scored").exists()

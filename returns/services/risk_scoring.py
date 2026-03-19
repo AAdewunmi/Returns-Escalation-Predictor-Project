@@ -29,11 +29,11 @@ def score_return_case(case) -> RiskScore:
     )
 
     CaseEvent.objects.create(
-        case=case,
+        return_case=case,
         actor=None,
+        actor_role="",
         event_type="risk_scored",
-        description="Placeholder escalation risk persisted for case.",
-        metadata={
+        payload={
             "model_version": prediction.model_version,
             "label": prediction.label,
             "score": str(prediction.score),

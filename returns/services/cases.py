@@ -13,6 +13,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from returns.models import CaseEvent, CaseNote, ReturnCase
+from returns.services.risk_scoring import score_return_case
 
 STATUS_SUBMITTED: Final[str] = ReturnCase.Status.SUBMITTED
 PRIORITY_NORMAL: Final[str] = ReturnCase.Priority.MEDIUM
@@ -120,16 +121,6 @@ def _actor_role(actor: AbstractBaseUser) -> str:
     return ""
 
 
-def _score_return_case_if_available(case: ReturnCase) -> None:
-    """Invoke the optional risk-scoring hook when its dependencies are available."""
-    try:
-        from returns.services.risk_scoring import score_return_case
-    except ImportError:
-        return
-
-    score_return_case(case)
-
-
 @transaction.atomic
 def create_return_case(
     *,
@@ -167,7 +158,7 @@ def create_return_case(
         },
     )
 
-    _score_return_case_if_available(case)
+    score_return_case(case)
     return case
 
 
