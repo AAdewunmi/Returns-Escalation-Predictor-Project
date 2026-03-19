@@ -68,6 +68,35 @@ def test_create_return_case_persists_case_and_event() -> None:
 
 
 @pytest.mark.django_db
+def test_create_return_case_calls_risk_scoring(monkeypatch) -> None:
+    """Creating a case should invoke the risk-scoring persistence hook."""
+    customer_profile = CustomerProfileFactory()
+    merchant_profile = MerchantProfileFactory()
+    _add_group(customer_profile.user, "Customer")
+    captured: dict[str, object] = {}
+
+    def fake_score_return_case(case):
+        captured["case"] = case
+
+    monkeypatch.setattr("returns.services.cases.score_return_case", fake_score_return_case)
+
+    case = create_return_case(
+        actor=customer_profile.user,
+        input_data=ReturnCaseCreateInput(
+            merchant_profile=merchant_profile,
+            external_order_ref="ORD-1001A",
+            item_category="Apparel",
+            return_reason="Damaged",
+            customer_message="Box arrived open.",
+            order_value=Decimal("59.99"),
+            delivery_date=datetime.date(2025, 1, 10),
+        ),
+    )
+
+    assert captured["case"] == case
+
+
+@pytest.mark.django_db
 def test_create_return_case_rejects_non_customer_actor() -> None:
     """Only customers and admins should be allowed to create cases."""
     actor = UserFactory()

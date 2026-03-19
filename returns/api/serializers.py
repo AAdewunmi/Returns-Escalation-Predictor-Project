@@ -9,7 +9,8 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from accounts.models import MerchantProfile
-from returns.models import CaseNote, ReturnCase
+from returns.api.permissions import is_admin, is_ops
+from returns.models import CaseNote, ReturnCase, RiskScore
 from returns.services.cases import (
     ReturnCaseCreateInput,
     StatusUpdateInput,
@@ -87,6 +88,10 @@ class CaseNoteCreateSerializer(serializers.Serializer):
             raise serializers.ValidationError("Note body cannot be empty.")
         return value
 
+    def create_note(self, *, actor, case: ReturnCase) -> CaseNote:
+        """Create a note for the supplied case using the validated payload."""
+        return add_case_note(actor=actor, case=case, body=self.validated_data["body"])
+
 
 class CaseNoteSerializer(serializers.ModelSerializer):
     """Serialise case notes for API responses."""
@@ -98,11 +103,20 @@ class CaseNoteSerializer(serializers.ModelSerializer):
         fields = ("id", "body", "author_email", "created_at")
 
 
+class RiskScoreSerializer(serializers.ModelSerializer):
+    """Serialise persisted risk output for ops users."""
+
+    class Meta:
+        model = RiskScore
+        fields = ("model_version", "score", "label", "reason_codes", "scored_at")
+
+
 class ReturnCaseDetailSerializer(serializers.ModelSerializer):
     """Serialise the canonical case detail response."""
 
     merchant_name = serializers.CharField(source="merchant.display_name", read_only=True)
     customer_email = serializers.EmailField(source="customer.user.email", read_only=True)
+    risk = serializers.SerializerMethodField()
 
     class Meta:
         model = ReturnCase
@@ -118,10 +132,23 @@ class ReturnCaseDetailSerializer(serializers.ModelSerializer):
             "customer_message",
             "order_value",
             "delivery_date",
+            "risk",
             "created_at",
             "updated_at",
         )
 
+    def get_risk(self, obj: ReturnCase):
+        """Expose risk only to ops and admin users."""
+        request = self.context.get("request")
+        if request is None or not (is_ops(request.user) or is_admin(request.user)):
+            return None
+
+        risk_score = RiskScore.objects.filter(case=obj).first()
+        if risk_score is None:
+            return None
+
+        return RiskScoreSerializer(risk_score).data
+
     def create_note(self, *, actor, case: ReturnCase) -> CaseNote:
-        """Create a note for the current case using the validated payload."""
+        """Delegate note creation for compatibility with existing callers."""
         return add_case_note(actor=actor, case=case, body=self.validated_data["body"])

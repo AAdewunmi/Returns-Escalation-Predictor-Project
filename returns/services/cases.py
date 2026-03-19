@@ -13,6 +13,7 @@ from django.db import transaction
 from django.utils import timezone
 
 from returns.models import CaseEvent, CaseNote, ReturnCase
+from returns.services.risk_scoring import score_return_case
 
 STATUS_SUBMITTED: Final[str] = ReturnCase.Status.SUBMITTED
 PRIORITY_NORMAL: Final[str] = ReturnCase.Priority.MEDIUM
@@ -156,6 +157,8 @@ def create_return_case(
             "priority": case.priority,
         },
     )
+
+    score_return_case(case)
     return case
 
 

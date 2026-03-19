@@ -153,3 +153,23 @@ class CaseEvent(TimeStampedModel):
         """Meta configuration for case events."""
 
         ordering = ["created_at", "id"]
+
+
+class RiskScore(TimeStampedModel):
+    """Persisted placeholder ML risk output for a return case."""
+
+    case = models.OneToOneField(
+        ReturnCase,
+        on_delete=models.CASCADE,
+        related_name="risk_score",
+    )
+    model_version = models.CharField(max_length=64)
+    score = models.DecimalField(max_digits=5, decimal_places=2)
+    label = models.CharField(max_length=16)
+    reason_codes = models.JSONField(default=list, blank=True)
+    scored_at = models.DateTimeField()
+
+    class Meta:
+        """Meta configuration for persisted risk scores."""
+
+        ordering = ["-scored_at", "id"]
