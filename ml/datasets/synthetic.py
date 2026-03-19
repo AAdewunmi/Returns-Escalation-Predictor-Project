@@ -23,11 +23,15 @@ def generate_synthetic_rows(*, seed: int = 7, size: int = 250) -> list[dict]:
         return_reason = rng.choice(reasons)
         item_category = rng.choice(categories)
 
-        label = 1 if (
-            delivery_to_return_days > 14
-            or prior_returns_count >= 2
-            or (return_reason == "damaged" and order_value_band >= 3)
-        ) else 0
+        label = (
+            1
+            if (
+                delivery_to_return_days > 14
+                or prior_returns_count >= 2
+                or (return_reason == "damaged" and order_value_band >= 3)
+            )
+            else 0
+        )
 
         rows.append(
             {
