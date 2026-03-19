@@ -1,4 +1,4 @@
-# path: apps/ml/registry.py
+# path: ml/registry.py
 """Registry helpers for ReturnHub ML artefacts."""
 
 from __future__ import annotations

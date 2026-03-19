@@ -1,4 +1,4 @@
-# path: apps/ml/scoring.py
+# path: ml/scoring.py
 """Deterministic placeholder scoring for ReturnHub escalation risk."""
 
 from __future__ import annotations
