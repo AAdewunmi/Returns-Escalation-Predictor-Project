@@ -1,4 +1,4 @@
-# path: tests/unit/ml/test_feature_contract.py
+# path: tests/test_feature_contract.py
 """Unit tests for ReturnHub ML feature contract stability."""
 
 from __future__ import annotations
