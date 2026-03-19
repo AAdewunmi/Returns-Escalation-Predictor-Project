@@ -74,7 +74,7 @@ def _order_value_band(value) -> int:
 
 def _prior_returns_count(case) -> int:
     """Count prior returns for the same customer, excluding the current case."""
-    return case.customer_profile.returncase_set.exclude(pk=case.pk).count()
+    return case.customer.return_cases.exclude(pk=case.pk).count()
 
 
 def extract_case_features(case) -> OrderedDict[str, int]:
