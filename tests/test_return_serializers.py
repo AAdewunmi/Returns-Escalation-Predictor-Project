@@ -13,9 +13,10 @@ from returns.api.serializers import (
     ReturnCaseDetailSerializer,
     ReturnCaseStatusUpdateSerializer,
 )
-from returns.models import ReturnCase
+from returns.models import ReturnCase, RiskScore
 from returns.services.cases import ReturnCaseCreateInput, StatusUpdateInput
 from tests.factories import (
+    CustomerProfileFactory,
     MerchantProfileFactory,
     ReturnCaseFactory,
     UserFactory,
@@ -217,6 +218,81 @@ def test_return_case_detail_serializer_exposes_current_domain_fields() -> None:
     assert data["customer_email"] == "customer@example.com"
     assert data["status"] == case.status
     assert data["priority"] == case.priority
+    assert data["risk"] is None
+
+
+@pytest.mark.django_db
+def test_return_case_detail_serializer_exposes_risk_to_ops_users() -> None:
+    """Ops users should receive persisted risk payloads in case detail responses."""
+    case = ReturnCaseFactory()
+    ops_user = UserFactory()
+    RiskScore.objects.create(
+        case=case,
+        model_version="return-risk-placeholder-v1",
+        score=Decimal("0.74"),
+        label="high",
+        reason_codes=[{"code": "high_order_value", "direction": "up", "detail": "High value."}],
+        scored_at=datetime.datetime(2025, 1, 11, 9, 0, 0, tzinfo=datetime.UTC),
+    )
+    request = RequestFactory().get(f"/api/returns/{case.pk}/")
+    request.user = ops_user
+
+    monkeypatch_group = pytest.MonkeyPatch()
+    monkeypatch_group.setattr("returns.api.serializers.is_ops", lambda user: True)
+    monkeypatch_group.setattr("returns.api.serializers.is_admin", lambda user: False)
+    try:
+        data = ReturnCaseDetailSerializer(case, context={"request": request}).data
+    finally:
+        monkeypatch_group.undo()
+
+    assert data["risk"]["model_version"] == "return-risk-placeholder-v1"
+    assert data["risk"]["label"] == "high"
+    assert data["risk"]["score"] == "0.74"
+
+
+@pytest.mark.django_db
+def test_return_case_detail_serializer_hides_risk_from_customers() -> None:
+    """Non-ops and non-admin users should not receive risk payloads."""
+    customer_profile = CustomerProfileFactory()
+    case = ReturnCaseFactory(customer=customer_profile)
+    RiskScore.objects.create(
+        case=case,
+        model_version="return-risk-placeholder-v1",
+        score=Decimal("0.40"),
+        label="medium",
+        reason_codes=[],
+        scored_at=datetime.datetime(2025, 1, 11, 9, 0, 0, tzinfo=datetime.UTC),
+    )
+    request = RequestFactory().get(f"/api/returns/{case.pk}/")
+    request.user = customer_profile.user
+
+    data = ReturnCaseDetailSerializer(case, context={"request": request}).data
+
+    assert data["risk"] is None
+
+
+@pytest.mark.django_db
+def test_case_note_create_serializer_calls_service(monkeypatch) -> None:
+    """Note-create serializer should delegate to the workflow service."""
+    actor = UserFactory()
+    case = ReturnCaseFactory()
+    serializer = CaseNoteCreateSerializer(data={"body": "Escalated"})
+    expected_note = case.notes.model(return_case=case, author=actor, body="Escalated")
+    captured: dict[str, object] = {}
+
+    def fake_add_case_note(*, actor, case, body):
+        captured["actor"] = actor
+        captured["case"] = case
+        captured["body"] = body
+        return expected_note
+
+    monkeypatch.setattr("returns.api.serializers.add_case_note", fake_add_case_note)
+
+    assert serializer.is_valid(), serializer.errors
+    note = serializer.create_note(actor=actor, case=case)
+
+    assert note == expected_note
+    assert captured == {"actor": actor, "case": case, "body": "Escalated"}
 
 
 @pytest.mark.django_db
