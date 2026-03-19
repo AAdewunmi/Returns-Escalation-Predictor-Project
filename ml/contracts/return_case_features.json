@@ -1,0 +1,12 @@
+{
+  "version": "return-risk-sprint2-v1",
+  "feature_names": [
+    "item_category_code",
+    "delivery_to_return_days",
+    "return_reason_code",
+    "customer_message_length_bucket",
+    "prior_returns_count",
+    "order_value_band"
+  ],
+  "notes": "Sprint 2 placeholder feature contract for deterministic risk scoring."
+}
