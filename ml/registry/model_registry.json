@@ -1,0 +1,9 @@
+{
+  "active_model": {
+    "version": "return-risk-placeholder-v1",
+    "model_type": "deterministic_baseline",
+    "contract_version": "return-risk-sprint2-v1",
+    "reason_code_schema_version": "return-risk-reasons-sprint2-v1",
+    "status": "active"
+  }
+}
