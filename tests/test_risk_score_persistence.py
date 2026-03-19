@@ -40,7 +40,9 @@ def test_case_creation_persists_risk_score_and_event() -> None:
             external_order_ref="ORDER-RISK-001",
             item_category="electronics",
             return_reason="damaged",
-            customer_message="The parcel corner was crushed and the screen is black after power on.",
+            customer_message=(
+                "The parcel corner was crushed and the screen is black after power on."
+            ),
             order_value=Decimal("950.00"),
             delivery_date=customer_profile.created_at.date(),
         ),
