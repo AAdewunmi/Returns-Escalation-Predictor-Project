@@ -28,6 +28,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "common.apps.CommonConfig",
     "accounts.apps.AccountsConfig",
+    "ml.apps.MlConfig",
     "returns.apps.ReturnsConfig",
     "ui.apps.UiConfig",
 ]
