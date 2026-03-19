@@ -1,4 +1,4 @@
-# path: apps/ml/management/commands/generate_risk_dataset.py
+# path: ml/management/commands/generate_risk_dataset.py
 """Management command to generate a deterministic synthetic risk dataset."""
 
 from __future__ import annotations
