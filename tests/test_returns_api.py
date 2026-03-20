@@ -3,11 +3,14 @@
 
 from __future__ import annotations
 
+import datetime
+from decimal import Decimal
+
 import pytest
 from django.contrib.auth.models import Group
 from rest_framework.test import APIClient
 
-from returns.models import CaseEvent, ReturnCase
+from returns.models import CaseEvent, ReturnCase, RiskScore
 from tests.factories import (
     CustomerProfileFactory,
     MerchantProfileFactory,
@@ -153,3 +156,51 @@ def test_ops_can_add_internal_note() -> None:
 
     assert response.status_code == 201
     assert response.data["body"] == "Packaging photos support a likely carrier damage claim."
+
+
+@pytest.mark.django_db
+def test_ops_can_retrieve_case_risk_output() -> None:
+    """Ops users should be able to fetch persisted risk output."""
+    client = APIClient()
+    ops_user = UserFactory(email="api-ops-risk@example.com")
+    add_group(ops_user, "ops")
+    case = ReturnCaseFactory()
+    RiskScore.objects.create(
+        case=case,
+        model_version="return-risk-placeholder-v1",
+        score=Decimal("0.81"),
+        label="high",
+        reason_codes=[{"code": "repeat_returns"}],
+        scored_at=datetime.datetime(2026, 3, 1, 10, 0, 0, tzinfo=datetime.UTC),
+    )
+
+    client.force_authenticate(ops_user)
+    response = client.get(f"/api/returns/{case.pk}/risk/")
+
+    assert response.status_code == 200
+    assert response.data["model_version"] == "return-risk-placeholder-v1"
+    assert response.data["score"] == "0.81"
+    assert response.data["label"] == "high"
+
+
+@pytest.mark.django_db
+def test_customer_cannot_retrieve_case_risk_output() -> None:
+    """Customers should be forbidden from viewing risk output."""
+    client = APIClient()
+    customer_user = UserFactory(email="api-customer-risk@example.com")
+    add_group(customer_user, "customer")
+    customer_profile = CustomerProfileFactory(user=customer_user)
+    case = ReturnCaseFactory(customer=customer_profile)
+    RiskScore.objects.create(
+        case=case,
+        model_version="return-risk-placeholder-v1",
+        score=Decimal("0.35"),
+        label="medium",
+        reason_codes=[],
+        scored_at=datetime.datetime(2026, 3, 1, 10, 0, 0, tzinfo=datetime.UTC),
+    )
+
+    client.force_authenticate(customer_user)
+    response = client.get(f"/api/returns/{case.pk}/risk/")
+
+    assert response.status_code == 403

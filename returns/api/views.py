@@ -5,20 +5,27 @@ from __future__ import annotations
 
 from django.shortcuts import get_object_or_404
 from rest_framework import status
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import NotFound, PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from returns.api.permissions import IsCustomerOrAdmin, IsOpsOrAdmin, user_can_access_case
+from returns.api.permissions import (
+    IsCustomerOrAdmin,
+    IsOpsOrAdmin,
+    is_admin,
+    is_ops,
+    user_can_access_case,
+)
 from returns.api.serializers import (
     CaseNoteCreateSerializer,
     CaseNoteSerializer,
     ReturnCaseCreateSerializer,
     ReturnCaseDetailSerializer,
     ReturnCaseStatusUpdateSerializer,
+    RiskScoreSerializer,
 )
-from returns.models import ReturnCase
+from returns.models import ReturnCase, RiskScore
 from returns.services.cases import (
     ReturnCaseWorkflowError,
     add_case_note,
@@ -101,3 +108,22 @@ class ReturnCaseNoteAPIView(APIView):
         note = add_case_note(actor=request.user, case=case, body=serializer.validated_data["body"])
         response_serializer = CaseNoteSerializer(note)
         return Response(response_serializer.data, status=status.HTTP_201_CREATED)
+
+
+class ReturnCaseRiskAPIView(APIView):
+    """Expose persisted risk output to ops and admin users only."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, case_id: str, *args, **kwargs):
+        """Return risk output when the actor is allowed to see it."""
+        case = _get_case_for_request(user=request.user, case_id=case_id)
+        if not (is_ops(request.user) or is_admin(request.user)):
+            raise PermissionDenied("Only ops and admins can view risk output.")
+
+        risk_score = RiskScore.objects.filter(case=case).first()
+        if risk_score is None:
+            raise NotFound("Risk score not available for this case.")
+
+        serializer = RiskScoreSerializer(risk_score)
+        return Response(serializer.data, status=status.HTTP_200_OK)
