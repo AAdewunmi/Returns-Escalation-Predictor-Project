@@ -3,12 +3,15 @@
 
 from __future__ import annotations
 
+import datetime
+from decimal import Decimal
+
 import pytest
 from django.contrib.auth.models import Group
 from rest_framework.test import APIClient
 
-from tests.factories.accounts import CustomerProfileFactory, UserFactory
-from tests.factories.returns import ReturnCaseFactory, RiskScoreFactory
+from returns.models import RiskScore
+from tests.factories import CustomerProfileFactory, ReturnCaseFactory, UserFactory
 
 
 def add_group(user, group_name: str) -> None:
@@ -24,7 +27,14 @@ def test_ops_can_fetch_risk_detail() -> None:
     ops_user = UserFactory(email="risk-api-ops@example.com")
     add_group(ops_user, "ops")
     case = ReturnCaseFactory()
-    RiskScoreFactory(case=case, label="medium")
+    RiskScore.objects.create(
+        case=case,
+        model_version="return-risk-placeholder-v1",
+        score=Decimal("0.55"),
+        label="medium",
+        reason_codes=[{"code": "repeat_returns"}],
+        scored_at=datetime.datetime(2026, 3, 1, 10, 0, 0, tzinfo=datetime.UTC),
+    )
 
     client.force_authenticate(ops_user)
     response = client.get(f"/api/returns/{case.pk}/risk/")
@@ -41,8 +51,15 @@ def test_customer_cannot_fetch_risk_detail() -> None:
     customer_user = UserFactory(email="risk-api-customer@example.com")
     add_group(customer_user, "customer")
     customer_profile = CustomerProfileFactory(user=customer_user)
-    case = ReturnCaseFactory(customer_profile=customer_profile)
-    RiskScoreFactory(case=case, label="high")
+    case = ReturnCaseFactory(customer=customer_profile)
+    RiskScore.objects.create(
+        case=case,
+        model_version="return-risk-placeholder-v1",
+        score=Decimal("0.80"),
+        label="high",
+        reason_codes=[],
+        scored_at=datetime.datetime(2026, 3, 1, 10, 0, 0, tzinfo=datetime.UTC),
+    )
 
     client.force_authenticate(customer_user)
     response = client.get(f"/api/returns/{case.pk}/risk/")
@@ -57,8 +74,15 @@ def test_customer_detail_response_hides_risk_payload() -> None:
     customer_user = UserFactory(email="risk-hidden-customer@example.com")
     add_group(customer_user, "customer")
     customer_profile = CustomerProfileFactory(user=customer_user)
-    case = ReturnCaseFactory(customer_profile=customer_profile)
-    RiskScoreFactory(case=case, label="high")
+    case = ReturnCaseFactory(customer=customer_profile)
+    RiskScore.objects.create(
+        case=case,
+        model_version="return-risk-placeholder-v1",
+        score=Decimal("0.80"),
+        label="high",
+        reason_codes=[],
+        scored_at=datetime.datetime(2026, 3, 1, 10, 0, 0, tzinfo=datetime.UTC),
+    )
 
     client.force_authenticate(customer_user)
     response = client.get(f"/api/returns/{case.pk}/")
