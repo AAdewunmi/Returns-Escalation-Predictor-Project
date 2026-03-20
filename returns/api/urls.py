@@ -9,6 +9,7 @@ from returns.api.views import (
     ReturnCaseCreateAPIView,
     ReturnCaseDetailAPIView,
     ReturnCaseNoteAPIView,
+    ReturnCaseRiskAPIView,
     ReturnCaseStatusAPIView,
 )
 
@@ -19,4 +20,5 @@ urlpatterns = [
     path("<str:case_id>/", ReturnCaseDetailAPIView.as_view(), name="case-detail"),
     path("<str:case_id>/status/", ReturnCaseStatusAPIView.as_view(), name="case-status"),
     path("<str:case_id>/notes/", ReturnCaseNoteAPIView.as_view(), name="case-notes"),
+    path("<str:case_id>/risk/", ReturnCaseRiskAPIView.as_view(), name="case-risk"),
 ]
