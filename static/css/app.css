@@ -502,6 +502,13 @@ button:focus-visible {
   max-width: 24ch;
 }
 
+.rh-page-title {
+  font-family: var(--rh-font-family-display);
+  font-size: 1.45rem;
+  line-height: 1.05;
+  letter-spacing: -0.02em;
+}
+
 .rh-band {
   position: relative;
   padding-top: var(--rh-space-3);
