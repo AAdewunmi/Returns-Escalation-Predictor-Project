@@ -89,3 +89,16 @@ def test_customer_detail_response_hides_risk_payload() -> None:
 
     assert response.status_code == 200
     assert response.data["risk"] is None
+
+
+@pytest.mark.django_db
+def test_admin_gets_404_when_risk_detail_is_missing() -> None:
+    """Admins may access the endpoint, but missing scores should return 404."""
+    client = APIClient()
+    admin_user = UserFactory(email="risk-api-admin@example.com", is_superuser=True)
+    case = ReturnCaseFactory()
+
+    client.force_authenticate(admin_user)
+    response = client.get(f"/api/returns/{case.pk}/risk/")
+
+    assert response.status_code == 404
