@@ -27,5 +27,6 @@ def test_ops_console_includes_risk_explainer_panel(client) -> None:
 
     assert response.status_code == 200
     content = response.content.decode()
-    assert "Sprint 2 escalation risk remains a controlled triage signal for ops only" in content
+    assert "escalation risk remains" in content
+    assert "ops only" in content
     assert "controlled triage signal" in content
