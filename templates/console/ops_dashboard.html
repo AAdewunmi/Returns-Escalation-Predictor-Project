@@ -2,6 +2,7 @@
 {% extends "base.html" %}
 
 {% block title %}Ops Console | ReturnHub{% endblock %}
+{% block page_title %}<span class="rh-page-title">Ops Console</span>{% endblock %}
 
 {% block content %}
   <section class="rh-card rh-hero mb-4">
@@ -11,7 +12,9 @@
         <h1>Keep the live return queue visible in the same operational shell.</h1>
         <p class="rh-hero-lead">
           This ops dashboard is the first authenticated queue-facing surface. It shows current case volume
-          and recent activity while later sprints add filters, ownership, and deeper case detail.
+          and recent activity while later sprints add filters, ownership, and deeper case detail. Sprint 2
+          escalation risk remains a controlled triage signal for ops only and does not replace status,
+          priority, or human review.
         </p>
         <div class="rh-hero-actions">
           <a class="btn btn-primary rh-btn-primary" href="{% url 'analytics-api:return-analytics' %}?from=2026-03-01&amp;to=2026-03-31">Open analytics endpoint</a>
@@ -89,6 +92,28 @@
       <span class="rh-trust-item">Shared case context</span>
       <span class="rh-trust-item">Operational metrics</span>
       <span class="rh-trust-item">Role-aware shell</span>
+    </div>
+  </section>
+
+  <section class="rh-band rh-band--workflow mb-4">
+    <div class="rh-section-heading">
+      <div class="rh-kicker">Queue metrics</div>
+      <h2>Track the live submitted and under-review counts in the same shared ops shell.</h2>
+      <p>These queue metrics sit alongside controlled risk scoring that is exposed to ops through the API and will flow into later queue surfaces.</p>
+    </div>
+    <div class="row g-3">
+      <div class="col-md-6">
+        <div class="rh-workflow-step h-100">
+          <div class="rh-kicker">Submitted</div>
+          <h3 class="mb-0">{{ submitted_count }}</h3>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="rh-workflow-step h-100">
+          <div class="rh-kicker">Under review</div>
+          <h3 class="mb-0">{{ in_review_count }}</h3>
+        </div>
+      </div>
     </div>
   </section>
 
