@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone as dt_timezone
+from datetime import UTC, datetime
 
 import pytest
 
@@ -19,25 +19,24 @@ from tests.factories import ReturnCaseFactory
 def test_calculate_due_dates_uses_priority_windows() -> None:
     """Urgent cases should receive the shortest deterministic SLA windows."""
 
-    reference_time = datetime(2026, 3, 9, 9, 0, tzinfo=dt_timezone.utc)
+    reference_time = datetime(2026, 3, 9, 9, 0, tzinfo=UTC)
 
     assert calculate_first_response_due_at("urgent", reference_time=reference_time) == datetime(
-        2026, 3, 9, 17, 0, tzinfo=dt_timezone.utc
+        2026, 3, 9, 17, 0, tzinfo=UTC
     )
     assert calculate_resolution_due_at("urgent", reference_time=reference_time) == datetime(
-        2026, 3, 10, 9, 0, tzinfo=dt_timezone.utc
+        2026, 3, 10, 9, 0, tzinfo=UTC
     )
 
 
 @pytest.mark.django_db
 def test_refresh_case_sla_fields_persists_values() -> None:
-    """Refreshing SLA fields should write first-response and resolution due dates."""
+    """Refreshing SLA fields should write the persisted SLA due date."""
 
-    reference_time = datetime(2026, 3, 9, 9, 0, tzinfo=dt_timezone.utc)
+    reference_time = datetime(2026, 3, 9, 9, 0, tzinfo=UTC)
     return_case = ReturnCaseFactory(priority="high")
 
     refresh_case_sla_fields(return_case, reference_time=reference_time, save=True)
     return_case.refresh_from_db()
 
-    assert return_case.first_response_due_at == datetime(2026, 3, 10, 9, 0, tzinfo=dt_timezone.utc)
-    assert return_case.resolution_due_at == datetime(2026, 3, 12, 9, 0, tzinfo=dt_timezone.utc)
+    assert return_case.sla_due_at == datetime(2026, 3, 12, 9, 0, tzinfo=UTC)

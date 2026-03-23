@@ -3,11 +3,22 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Mapping
 from urllib.parse import urlencode
 
-from django.db.models import Case, CharField, Count, IntegerField, OuterRef, Q, QuerySet, Subquery, Value, When
+from django.db.models import (
+    Case,
+    CharField,
+    Count,
+    IntegerField,
+    OuterRef,
+    Q,
+    QuerySet,
+    Subquery,
+    Value,
+    When,
+)
 from django.utils import timezone
 
 from ml import RiskScore
