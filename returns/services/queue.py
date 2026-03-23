@@ -100,44 +100,41 @@ def build_queue_queryset(filters: QueueFilters) -> QuerySet[ReturnCase]:
     """
 
     current_time = timezone.now()
-    latest_risk_scores = RiskScore.objects.filter(
-        return_case=OuterRef("pk")
-    ).order_by("-created_at")
+    latest_risk_scores = RiskScore.objects.filter(return_case=OuterRef("pk")).order_by(
+        "-created_at"
+    )
 
-    queryset = (
-        ReturnCase.objects.select_related(
-            "customer__user",
-            "merchant__user",
-        )
-        .annotate(
-            current_risk_score=Subquery(latest_risk_scores.values("score")[:1]),
-            current_risk_label=Subquery(
-                latest_risk_scores.values("label")[:1],
-                output_field=CharField(),
+    queryset = ReturnCase.objects.select_related(
+        "customer__user",
+        "merchant__user",
+    ).annotate(
+        current_risk_score=Subquery(latest_risk_scores.values("score")[:1]),
+        current_risk_label=Subquery(
+            latest_risk_scores.values("label")[:1],
+            output_field=CharField(),
+        ),
+        priority_rank=Case(
+            When(priority="urgent", then=Value(4)),
+            When(priority="high", then=Value(3)),
+            When(priority="normal", then=Value(2)),
+            When(priority="low", then=Value(1)),
+            default=Value(0),
+            output_field=IntegerField(),
+        ),
+        breached_rank=Case(
+            When(
+                first_response_due_at__lt=current_time,
+                status__in=[
+                    "submitted",
+                    "awaiting_customer",
+                    "awaiting_merchant",
+                    "under_review",
+                ],
+                then=Value(1),
             ),
-            priority_rank=Case(
-                When(priority="urgent", then=Value(4)),
-                When(priority="high", then=Value(3)),
-                When(priority="normal", then=Value(2)),
-                When(priority="low", then=Value(1)),
-                default=Value(0),
-                output_field=IntegerField(),
-            ),
-            breached_rank=Case(
-                When(
-                    first_response_due_at__lt=current_time,
-                    status__in=[
-                        "submitted",
-                        "awaiting_customer",
-                        "awaiting_merchant",
-                        "under_review",
-                    ],
-                    then=Value(1),
-                ),
-                default=Value(0),
-                output_field=IntegerField(),
-            ),
-        )
+            default=Value(0),
+            output_field=IntegerField(),
+        ),
     )
 
     if filters.status:
