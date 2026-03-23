@@ -1,4 +1,4 @@
-# path: apps/returns/services/sla.py
+# path: returns/services/sla.py
 """SLA calculation services for ReturnHub return cases."""
 
 from __future__ import annotations
