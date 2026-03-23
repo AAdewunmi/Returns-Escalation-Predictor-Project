@@ -3,9 +3,9 @@
 
 from __future__ import annotations
 
+from collections.abc import Mapping
 from dataclasses import dataclass
 from datetime import datetime, timedelta
-from typing import Mapping
 
 from django.db import transaction
 from django.utils import timezone
@@ -75,11 +75,7 @@ def refresh_case_sla_fields(
     priority. The caller can defer the database save when batching changes.
     """
 
-    return_case.first_response_due_at = calculate_first_response_due_at(
-        return_case.priority,
-        reference_time=reference_time,
-    )
-    return_case.resolution_due_at = calculate_resolution_due_at(
+    return_case.sla_due_at = calculate_resolution_due_at(
         return_case.priority,
         reference_time=reference_time,
     )
@@ -87,8 +83,7 @@ def refresh_case_sla_fields(
     if save:
         return_case.save(
             update_fields=[
-                "first_response_due_at",
-                "resolution_due_at",
+                "sla_due_at",
                 "updated_at",
             ]
         )
@@ -106,7 +101,7 @@ def is_case_breached(
     if return_case.status in TERMINAL_STATUSES:
         return False
 
-    due_at = return_case.first_response_due_at
+    due_at = return_case.sla_due_at
     if due_at is None:
         return False
 
