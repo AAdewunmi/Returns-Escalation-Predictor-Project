@@ -21,8 +21,7 @@ from django.db.models import (
 )
 from django.utils import timezone
 
-from ml import RiskScore
-from returns.models import ReturnCase
+from returns.models import ReturnCase, RiskScore
 
 QUEUE_PAGE_SIZE = 15
 RISK_LABELS = {"low", "medium", "high"}
@@ -100,9 +99,7 @@ def build_queue_queryset(filters: QueueFilters) -> QuerySet[ReturnCase]:
     """
 
     current_time = timezone.now()
-    latest_risk_scores = RiskScore.objects.filter(return_case=OuterRef("pk")).order_by(
-        "-created_at"
-    )
+    latest_risk_scores = RiskScore.objects.filter(case=OuterRef("pk")).order_by("-scored_at", "-id")
 
     queryset = ReturnCase.objects.select_related(
         "customer__user",
@@ -116,19 +113,19 @@ def build_queue_queryset(filters: QueueFilters) -> QuerySet[ReturnCase]:
         priority_rank=Case(
             When(priority="urgent", then=Value(4)),
             When(priority="high", then=Value(3)),
-            When(priority="normal", then=Value(2)),
+            When(priority="medium", then=Value(2)),
             When(priority="low", then=Value(1)),
             default=Value(0),
             output_field=IntegerField(),
         ),
         breached_rank=Case(
             When(
-                first_response_due_at__lt=current_time,
+                sla_due_at__lt=current_time,
                 status__in=[
                     "submitted",
-                    "awaiting_customer",
-                    "awaiting_merchant",
-                    "under_review",
+                    "waiting_customer",
+                    "waiting_merchant",
+                    "in_review",
                 ],
                 then=Value(1),
             ),
@@ -148,8 +145,7 @@ def build_queue_queryset(filters: QueueFilters) -> QuerySet[ReturnCase]:
 
     if filters.search:
         queryset = queryset.filter(
-            Q(public_case_reference__icontains=filters.search)
-            | Q(order_number__icontains=filters.search)
+            Q(order_reference__icontains=filters.search)
             | Q(customer__user__first_name__icontains=filters.search)
             | Q(customer__user__last_name__icontains=filters.search)
             | Q(customer__user__email__icontains=filters.search)
@@ -159,7 +155,7 @@ def build_queue_queryset(filters: QueueFilters) -> QuerySet[ReturnCase]:
     return queryset.order_by(
         "-breached_rank",
         "-priority_rank",
-        "first_response_due_at",
+        "sla_due_at",
         "created_at",
         "id",
     )
@@ -172,9 +168,9 @@ def get_queue_summary(queryset: QuerySet[ReturnCase]) -> dict[str, int]:
     summary = {
         "total": queryset.count(),
         "submitted": 0,
-        "awaiting_customer": 0,
-        "awaiting_merchant": 0,
-        "under_review": 0,
+        "waiting_customer": 0,
+        "waiting_merchant": 0,
+        "in_review": 0,
         "approved": 0,
         "rejected": 0,
     }
