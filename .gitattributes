@@ -33,3 +33,4 @@ coverage.xml -diff
 Makefile linguist-detectable=false
 Dockerfile linguist-detectable=false
 *.html linguist-detectable=false
+*.css linguist-detectable=false
