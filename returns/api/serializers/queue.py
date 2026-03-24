@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
-from apps.returns.models import ReturnCase
+from returns.models import ReturnCase
 
 
 class OpsQueueItemSerializer(serializers.ModelSerializer):
