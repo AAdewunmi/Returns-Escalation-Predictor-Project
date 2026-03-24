@@ -1,9 +1,13 @@
 """Tests for the shared pagination contract."""
 
+from django.core.paginator import InvalidPage, Page, Paginator
 from django.template.loader import render_to_string
 from django.test import RequestFactory
+from rest_framework.request import Request
+from rest_framework.test import APIRequestFactory
 
 from common.pagination import paginate_queryset
+from core.api.pagination import ContractPageNumberPagination
 from returns.models import ReturnCase
 from tests.factories import ReturnCaseFactory
 
@@ -56,3 +60,44 @@ def test_pagination_partial_preserves_active_filters(db) -> None:
     assert "search=damaged" in rendered
     assert "page=1" in rendered
     assert "page=3" in rendered
+
+
+def test_contract_api_pagination_handles_empty_querysets(db) -> None:
+    """Empty querysets should resolve safely to page one with no results."""
+    request = Request(APIRequestFactory().get("/api/returns/queue/"))
+    pagination = ContractPageNumberPagination()
+
+    page = pagination.paginate_queryset(ReturnCase.objects.none(), request)
+    response = pagination.get_paginated_response(page)
+
+    assert page == []
+    assert pagination.page.number == 1
+    assert response.data["count"] == 0
+    assert response.data["results"] == []
+
+
+def test_contract_api_pagination_falls_back_to_first_page_on_invalid_paginator_page(db) -> None:
+    """Paginator page errors should return the first page rather than raising."""
+
+    class FlakyPaginator(Paginator):
+        """Raise an invalid-page error once to exercise the defensive fallback."""
+
+        def __init__(self, object_list, per_page, *args, **kwargs):
+            super().__init__(object_list, per_page, *args, **kwargs)
+            self._first_call = True
+
+        def page(self, number) -> Page:
+            if self._first_call:
+                self._first_call = False
+                raise InvalidPage("simulated invalid page")
+            return super().page(number)
+
+    ReturnCaseFactory.create_batch(5)
+    request = Request(APIRequestFactory().get("/api/returns/queue/", {"page": "1"}))
+    pagination = ContractPageNumberPagination()
+    pagination.django_paginator_class = FlakyPaginator
+
+    page = pagination.paginate_queryset(ReturnCase.objects.order_by("id"), request)
+
+    assert len(page) == 5
+    assert pagination.page.number == 1

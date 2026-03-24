@@ -6,8 +6,11 @@ from __future__ import annotations
 import pytest
 from django.contrib.auth.models import Group
 from django.urls import reverse
+from rest_framework.request import Request
+from rest_framework.test import APIRequestFactory
 from rest_framework.test import APIClient
 
+from returns.api.views import OpsQueueListAPIView
 from returns.models import RiskScore
 from tests.factories import ReturnCaseFactory, UserFactory
 
@@ -128,3 +131,34 @@ def test_ops_queue_api_applies_filters_before_pagination() -> None:
 
     assert payload["count"] == 1
     assert payload["results"][0]["id"] == matching_case.id
+
+
+@pytest.mark.django_db
+def test_ops_queue_api_view_returns_unpaginated_payload_when_pagination_is_skipped() -> None:
+    """The list view should still return filters and results when pagination is bypassed."""
+    case = ReturnCaseFactory(order_reference="OPS-FALLBACK-1")
+    view = OpsQueueListAPIView()
+    request = Request(APIRequestFactory().get(_queue_url(), {"status": "submitted"}))
+    request.user = _ops_user()
+    view.request = request
+    view.args = ()
+    view.kwargs = {}
+
+    def fake_paginate_queryset(queryset):
+        return None
+
+    def fake_get_serializer(queryset, many=False):
+        class StubSerializer:
+            data = [{"id": case.id, "order_reference": case.order_reference}]
+
+        return StubSerializer()
+
+    view.paginate_queryset = fake_paginate_queryset
+    view.get_serializer = fake_get_serializer
+
+    response = view.list(request)
+
+    assert response.status_code == 200
+    assert response.data["count"] == 1
+    assert response.data["filters"]["status"] == "submitted"
+    assert response.data["results"] == [{"id": case.id, "order_reference": case.order_reference}]
