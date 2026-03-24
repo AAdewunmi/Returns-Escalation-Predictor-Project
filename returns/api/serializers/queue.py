@@ -49,7 +49,9 @@ class OpsQueueItemSerializer(serializers.ModelSerializer):
     def get_merchant_name(self, obj: ReturnCase) -> str:
         """Return a stable merchant display value."""
 
-        display_name = getattr(obj.merchant, "display_name", "") or getattr(obj.merchant, "name", "")
+        display_name = getattr(obj.merchant, "display_name", "") or getattr(
+            obj.merchant, "name", ""
+        )
         if display_name:
             return display_name
 
