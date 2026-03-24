@@ -6,6 +6,7 @@ from __future__ import annotations
 from django.urls import path
 
 from returns.api.views import (
+    OpsQueueListAPIView,
     ReturnCaseCreateAPIView,
     ReturnCaseDetailAPIView,
     ReturnCaseNoteAPIView,
@@ -17,6 +18,7 @@ app_name = "returns-api"
 
 urlpatterns = [
     path("", ReturnCaseCreateAPIView.as_view(), name="case-create"),
+    path("queue/", OpsQueueListAPIView.as_view(), name="ops-queue-api"),
     path("<str:case_id>/", ReturnCaseDetailAPIView.as_view(), name="case-detail"),
     path("<str:case_id>/status/", ReturnCaseStatusAPIView.as_view(), name="case-status"),
     path("<str:case_id>/notes/", ReturnCaseNoteAPIView.as_view(), name="case-notes"),

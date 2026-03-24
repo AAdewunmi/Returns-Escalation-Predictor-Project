@@ -152,3 +152,33 @@ class ReturnCaseDetailSerializer(serializers.ModelSerializer):
     def create_note(self, *, actor, case: ReturnCase) -> CaseNote:
         """Delegate note creation for compatibility with existing callers."""
         return add_case_note(actor=actor, case=case, body=self.validated_data["body"])
+
+
+class OpsQueueItemSerializer(serializers.ModelSerializer):
+    """Serialise queue rows for the ops API surface."""
+
+    merchant_name = serializers.CharField(source="merchant.display_name", read_only=True)
+    customer_email = serializers.EmailField(source="customer.user.email", read_only=True)
+    current_risk_score = serializers.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        read_only=True,
+        allow_null=True,
+    )
+    current_risk_label = serializers.CharField(read_only=True, allow_null=True)
+
+    class Meta:
+        model = ReturnCase
+        fields = (
+            "id",
+            "order_reference",
+            "status",
+            "priority",
+            "merchant_name",
+            "customer_email",
+            "current_risk_score",
+            "current_risk_label",
+            "sla_due_at",
+            "created_at",
+            "updated_at",
+        )
