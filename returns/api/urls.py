@@ -48,29 +48,39 @@ urlpatterns = [
     path("<str:case_id>/risk/", ReturnCaseRiskAPIView.as_view(), name="case-risk"),
 ]
 
-if ReturnCaseDocumentUploadApiView is not None:
-    urlpatterns.append(
-        path(
-            "<str:case_id>/documents/",
-            ReturnCaseDocumentUploadApiView.as_view(),
-            name="return-case-document-api",
-        )
-    )
+def build_optional_urlpatterns():
+    """Return optional placeholder routes for views that may exist later."""
 
-if ReturnAnalyticsApiView is not None:
-    urlpatterns.append(
-        path(
-            "analytics/returns/",
-            ReturnAnalyticsApiView.as_view(),
-            name="return-analytics-api",
-        )
-    )
+    patterns = []
 
-if ReturnCaseAuditExportApiView is not None:
-    urlpatterns.append(
-        path(
-            "<str:case_id>/audit-export/",
-            ReturnCaseAuditExportApiView.as_view(),
-            name="return-case-audit-export-api",
+    if ReturnCaseDocumentUploadApiView is not None:
+        patterns.append(
+            path(
+                "<str:case_id>/documents/",
+                ReturnCaseDocumentUploadApiView.as_view(),
+                name="return-case-document-api",
+            )
         )
-    )
+
+    if ReturnAnalyticsApiView is not None:
+        patterns.append(
+            path(
+                "analytics/returns/",
+                ReturnAnalyticsApiView.as_view(),
+                name="return-analytics-api",
+            )
+        )
+
+    if ReturnCaseAuditExportApiView is not None:
+        patterns.append(
+            path(
+                "<str:case_id>/audit-export/",
+                ReturnCaseAuditExportApiView.as_view(),
+                name="return-case-audit-export-api",
+            )
+        )
+
+    return patterns
+
+
+urlpatterns += build_optional_urlpatterns()
