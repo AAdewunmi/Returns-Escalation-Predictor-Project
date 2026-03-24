@@ -36,7 +36,11 @@ urlpatterns = [
     path("", ReturnCaseCreateAPIView.as_view(), name="return-case-create-api"),
     path("queue/", OpsQueueListAPIView.as_view(), name="ops-queue-api"),
     path("<str:case_id>/", ReturnCaseDetailAPIView.as_view(), name="case-detail"),
-    path("<str:case_id>/", ReturnCaseDetailAPIView.as_view(), name="return-case-detail-api"),
+    path(
+        "<str:case_id>/",
+        ReturnCaseDetailAPIView.as_view(),
+        name="return-case-detail-api",
+    ),
     path("<str:case_id>/status/", ReturnCaseStatusAPIView.as_view(), name="case-status"),
     path(
         "<str:case_id>/status/",
@@ -44,9 +48,14 @@ urlpatterns = [
         name="return-case-status-api",
     ),
     path("<str:case_id>/notes/", ReturnCaseNoteAPIView.as_view(), name="case-notes"),
-    path("<str:case_id>/notes/", ReturnCaseNoteAPIView.as_view(), name="return-case-note-api"),
+    path(
+        "<str:case_id>/notes/",
+        ReturnCaseNoteAPIView.as_view(),
+        name="return-case-note-api",
+    ),
     path("<str:case_id>/risk/", ReturnCaseRiskAPIView.as_view(), name="case-risk"),
 ]
+
 
 def build_optional_urlpatterns():
     """Return optional placeholder routes for views that may exist later."""
