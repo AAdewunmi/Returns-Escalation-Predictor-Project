@@ -21,6 +21,12 @@ def _ops_user():
     return user
 
 
+def _queue_url() -> str:
+    """Return the namespaced URL for the ops queue API."""
+
+    return reverse("returns-api:ops-queue-api")
+
+
 @pytest.mark.django_db
 def test_ops_queue_api_returns_paginated_results_with_summary() -> None:
     """The queue API should paginate at 15 and return summary metadata."""
@@ -39,7 +45,7 @@ def test_ops_queue_api_returns_paginated_results_with_summary() -> None:
     client = APIClient()
     client.force_authenticate(user=_ops_user())
 
-    response = client.get(reverse("ops-queue-api"), {"page": 2})
+    response = client.get(_queue_url(), {"page": 2})
 
     assert response.status_code == 200
     payload = response.json()
@@ -61,8 +67,8 @@ def test_ops_queue_api_invalid_and_out_of_range_pages_follow_contract() -> None:
     client = APIClient()
     client.force_authenticate(user=_ops_user())
 
-    invalid_response = client.get(reverse("ops-queue-api"), {"page": "banana"})
-    out_of_range_response = client.get(reverse("ops-queue-api"), {"page": 999})
+    invalid_response = client.get(_queue_url(), {"page": "banana"})
+    out_of_range_response = client.get(_queue_url(), {"page": 999})
 
     assert invalid_response.status_code == 200
     assert len(invalid_response.json()["results"]) == 15
@@ -80,7 +86,7 @@ def test_ops_queue_api_rejects_wrong_role() -> None:
     client = APIClient()
     client.force_authenticate(user=UserFactory())
 
-    response = client.get(reverse("ops-queue-api"))
+    response = client.get(_queue_url())
 
     assert response.status_code == 403
 
@@ -113,7 +119,7 @@ def test_ops_queue_api_applies_filters_before_pagination() -> None:
     client.force_authenticate(user=_ops_user())
 
     response = client.get(
-        reverse("ops-queue-api"),
+        _queue_url(),
         {"status": "submitted", "risk_label": "high"},
     )
 
@@ -121,4 +127,4 @@ def test_ops_queue_api_applies_filters_before_pagination() -> None:
     payload = response.json()
 
     assert payload["count"] == 1
-    assert payload["results"][0]["id"] == str(matching_case.id)
+    assert payload["results"][0]["id"] == matching_case.id
