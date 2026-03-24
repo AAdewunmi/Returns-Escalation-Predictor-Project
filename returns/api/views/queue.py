@@ -7,10 +7,10 @@ from rest_framework.generics import ListAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 
-from apps.core.api.pagination import ContractPageNumberPagination
-from apps.returns.api.serializers.queue import OpsQueueItemSerializer
-from apps.returns.permissions import IsOpsOrAdmin
-from apps.returns.services.queue import build_queue_queryset, get_queue_summary, parse_queue_filters
+from core.api.pagination import ContractPageNumberPagination
+from returns.api.permissions import IsOpsOrAdmin
+from returns.api.serializers import OpsQueueItemSerializer
+from returns.services.queue import build_queue_queryset, get_queue_summary, parse_queue_filters
 
 
 class OpsQueueListApiView(ListAPIView):
