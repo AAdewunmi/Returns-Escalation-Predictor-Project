@@ -7,8 +7,7 @@ import pytest
 from django.contrib.auth.models import Group
 from django.urls import reverse
 from rest_framework.request import Request
-from rest_framework.test import APIRequestFactory
-from rest_framework.test import APIClient
+from rest_framework.test import APIClient, APIRequestFactory
 
 from returns.api.views import OpsQueueListAPIView
 from returns.models import RiskScore
