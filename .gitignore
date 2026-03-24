@@ -43,3 +43,6 @@ coverage.xml
 .DS_Store
 .vscode/
 .idea/
+
+# Shell scripts
+*.sh
