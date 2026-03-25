@@ -3,44 +3,61 @@
 
 from __future__ import annotations
 
-from apps.ml.services.model_registry import ModelRegistryEntry, get_active_model_entry, register_model
+import pytest
+
+from ml.services.model_registry import (
+    ActiveModelEntry,
+    get_active_model_entry,
+    load_registry,
+    register_active_model,
+)
 
 
-def test_register_model_marks_latest_entry_active(tmp_path) -> None:
-    """The registry should keep only the latest model marked as active."""
+def test_load_registry_defaults_to_empty_active_model_structure(tmp_path) -> None:
+    """Missing registry files should load with the default active-model shape."""
 
     registry_path = tmp_path / "registry.json"
 
-    register_model(
+    assert load_registry(registry_path) == {"active_model": None}
+
+
+def test_register_active_model_writes_expected_active_model_entry(tmp_path) -> None:
+    """Registering a model should replace the single active-model entry."""
+
+    registry_path = tmp_path / "registry.json"
+
+    register_active_model(
         registry_path=registry_path,
-        entry=ModelRegistryEntry(
-            model_version="baseline-v1",
-            model_path="/tmp/baseline-v1.joblib",
-            metadata_path="/tmp/baseline-v1.json",
-            feature_contract_hash="hash-v1",
-            reason_code_schema_version="v1",
-            metrics={"accuracy": 0.82, "roc_auc": 0.90},
-            training_rows=100,
-            trained_at="2026-03-09T09:00:00+00:00",
-            is_active=True,
+        entry=ActiveModelEntry(
+            version="baseline-v1",
+            model_type="logistic_regression",
+            contract_version="return-risk-sprint2-v1",
+            reason_code_schema_version="return-risk-reasons-sprint2-v1",
+            status="active",
         ),
     )
-    register_model(
+    register_active_model(
         registry_path=registry_path,
-        entry=ModelRegistryEntry(
-            model_version="baseline-v2",
-            model_path="/tmp/baseline-v2.joblib",
-            metadata_path="/tmp/baseline-v2.json",
-            feature_contract_hash="hash-v1",
-            reason_code_schema_version="v1",
-            metrics={"accuracy": 0.84, "roc_auc": 0.91},
-            training_rows=150,
-            trained_at="2026-03-09T10:00:00+00:00",
-            is_active=True,
+        entry=ActiveModelEntry(
+            version="baseline-v2",
+            model_type="logistic_regression",
+            contract_version="return-risk-sprint2-v1",
+            reason_code_schema_version="return-risk-reasons-sprint2-v1",
+            status="active",
         ),
     )
 
     active_entry = get_active_model_entry(registry_path)
 
-    assert active_entry.model_version == "baseline-v2"
-    assert active_entry.is_active is True
+    assert active_entry.version == "baseline-v2"
+    assert active_entry.model_type == "logistic_regression"
+    assert active_entry.status == "active"
+
+
+def test_get_active_model_entry_raises_when_registry_has_no_active_model(tmp_path) -> None:
+    """The service should raise when no active-model payload is present."""
+
+    registry_path = tmp_path / "registry.json"
+
+    with pytest.raises(LookupError, match="No active model entry found in registry."):
+        get_active_model_entry(registry_path)
