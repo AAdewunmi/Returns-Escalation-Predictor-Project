@@ -53,7 +53,5 @@ class Command(BaseCommand):
         )
 
         self.stdout.write(
-            self.style.SUCCESS(
-                f"Trained and registered {training_output.model_version}"
-            )
+            self.style.SUCCESS(f"Trained and registered {training_output.model_version}")
         )
