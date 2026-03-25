@@ -1,17 +1,17 @@
-# path: apps/ml/management/commands/train_escalation_model.py
+# path: ml/management/commands/train_escalation_model.py
 """Management command to train and register the baseline escalation model."""
 
 from __future__ import annotations
 
-from datetime import datetime, timezone as dt_timezone
 from pathlib import Path
 
 from django.conf import settings
 from django.core.management.base import BaseCommand, CommandParser
 
-from apps.ml.contracts import REASON_CODE_SCHEMA_VERSION
-from apps.ml.services.model_registry import ModelRegistryEntry, register_model
-from apps.ml.training.baseline import train_and_save_baseline_model
+from ml.features import FEATURE_CONTRACT_VERSION
+from ml.reason_codes import REASON_CODE_SCHEMA_VERSION
+from ml.services.model_registry import ActiveModelEntry, register_active_model
+from ml.training.baseline import train_and_save_baseline_model
 
 
 class Command(BaseCommand):
@@ -27,7 +27,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--output-dir",
             type=str,
-            default=str(Path(settings.BASE_DIR) / "ml_artifacts" / "models"),
+            default=str(Path(settings.BASE_DIR) / "ml_artifacts"),
         )
 
     def handle(self, *args, **options) -> None:
@@ -40,19 +40,15 @@ class Command(BaseCommand):
             size=options["size"],
         )
 
-        registry_path = Path(settings.BASE_DIR) / "ml_artifacts" / "registry.json"
-        register_model(
+        registry_path = Path(settings.BASE_DIR) / "ml" / "registry" / "model_registry.json"
+        register_active_model(
             registry_path=registry_path,
-            entry=ModelRegistryEntry(
-                model_version=training_output.model_version,
-                model_path=str(training_output.model_path),
-                metadata_path=str(training_output.metadata_path),
-                feature_contract_hash=training_output.feature_contract_hash,
+            entry=ActiveModelEntry(
+                version=training_output.model_version,
+                model_type="logistic_regression",
+                contract_version=FEATURE_CONTRACT_VERSION,
                 reason_code_schema_version=REASON_CODE_SCHEMA_VERSION,
-                metrics=training_output.metrics,
-                training_rows=training_output.training_rows,
-                trained_at=datetime.now(tz=dt_timezone.utc).isoformat(),
-                is_active=True,
+                status="active",
             ),
         )
 
