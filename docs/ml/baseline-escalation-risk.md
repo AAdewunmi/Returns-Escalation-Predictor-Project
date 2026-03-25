@@ -44,8 +44,12 @@ The trained artefact is saved as a versioned `.pkl` file.
 
 ## Current implementation notes
 
-- The training entry point is the Python function
-  `train_and_save_baseline_model(...)` in `ml/training/baseline.py`.
+- The baseline trainer is exposed both as a Python function and as a Django
+  management command.
+- The core training function is `train_and_save_baseline_model(...)` in
+  `ml/training/baseline.py`.
+- The management command entry point is
+  `ml/management/commands/train_escalation_model.py`.
 - The trainer computes a SHA-256 hash of the committed feature contract file and
   stores it in the training metadata.
 - `scikit-learn` is imported inside the training function, so importing the
@@ -73,21 +77,53 @@ The metadata currently includes:
 
 ## Registry behavior
 
-The baseline trainer does not currently update the committed model registry
-automatically.
+The management command updates the committed active-model registry after a
+successful training run.
+
+The command writes the active model entry to:
+
+- `ml/registry/model_registry.json`
+
+The current registry contract stores a single `active_model` object with:
+
+- `version`
+- `model_type`
+- `contract_version`
+- `reason_code_schema_version`
+- `status`
 
 Related file locations:
 
 - training module: `ml/training/baseline.py`
+- training command: `ml/management/commands/train_escalation_model.py`
+- registry service: `ml/services/model_registry.py`
 - active model registry: `ml/registry/model_registry.json`
 
 ## How to run it currently
 
-There is no documented `manage.py train_escalation_model` command in the
-current project tree.
+The baseline trainer can now be run through Django management commands.
 
-The baseline trainer is currently exposed as an importable Python function. A
-minimal invocation looks like this:
+Example:
+
+```bash
+python manage.py train_escalation_model --seed 7 --size 500
+```
+
+Docker equivalent:
+
+```bash
+docker compose exec -T web python manage.py train_escalation_model --seed 7 --size 500
+```
+
+The command:
+
+- trains the baseline model
+- writes the model artefact and metadata to the configured output directory
+- registers the trained model as the active model in
+  `ml/registry/model_registry.json`
+
+The trainer is also still available as an importable Python function. A minimal
+invocation looks like this:
 
 ```bash
 python -c "from pathlib import Path; from ml.training.baseline import train_and_save_baseline_model; print(train_and_save_baseline_model(Path('tmp/ml_artifacts')))"
