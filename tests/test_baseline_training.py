@@ -1,4 +1,4 @@
-# path: apps/ml/tests/test_baseline_training.py
+# path: tests/test_baseline_training.py
 """Tests for baseline escalation-risk model training."""
 
 from __future__ import annotations
@@ -7,9 +7,11 @@ import json
 
 import pytest
 
-from apps.ml.contracts import FEATURE_CONTRACT_VERSION, REASON_CODE_SCHEMA_VERSION, get_feature_contract_hash
-from apps.ml.training.baseline import (
+from ml.features import FEATURE_CONTRACT_VERSION
+from ml.reason_codes import REASON_CODE_SCHEMA_VERSION
+from ml.training.baseline import (
     DEFAULT_TRAINING_SEED,
+    _get_feature_contract_hash,
     generate_synthetic_training_rows,
     train_and_save_baseline_model,
 )
@@ -38,21 +40,22 @@ def test_generate_synthetic_training_rows_changes_when_seed_changes() -> None:
 
 def test_train_and_save_baseline_model_writes_expected_files_and_metadata(tmp_path) -> None:
     """Training should persist both the model artefact and the metadata file."""
+    pytest.importorskip("sklearn")
 
     output = train_and_save_baseline_model(tmp_path, seed=7, size=120)
 
     assert output.model_path.exists()
     assert output.metadata_path.exists()
-    assert output.model_path.suffix == ".joblib"
+    assert output.model_path.suffix == ".pkl"
     assert output.metadata_path.suffix == ".json"
     assert output.training_rows == 120
-    assert output.feature_contract_hash == get_feature_contract_hash()
+    assert output.feature_contract_hash == _get_feature_contract_hash()
 
     metadata = json.loads(output.metadata_path.read_text())
 
     assert metadata["model_version"] == output.model_version
     assert metadata["feature_contract_version"] == FEATURE_CONTRACT_VERSION
-    assert metadata["feature_contract_hash"] == get_feature_contract_hash()
+    assert metadata["feature_contract_hash"] == _get_feature_contract_hash()
     assert metadata["reason_code_schema_version"] == REASON_CODE_SCHEMA_VERSION
     assert metadata["training_rows"] == 120
     assert metadata["training_seed"] == 7
@@ -65,6 +68,7 @@ def test_train_and_save_baseline_model_writes_expected_files_and_metadata(tmp_pa
 
 def test_train_and_save_baseline_model_is_stable_for_same_seed_and_size(tmp_path) -> None:
     """Repeated runs with the same inputs should yield stable metadata apart from timestamps."""
+    pytest.importorskip("sklearn")
 
     first_output = train_and_save_baseline_model(tmp_path / "first", seed=7, size=120)
     second_output = train_and_save_baseline_model(tmp_path / "second", seed=7, size=120)
@@ -93,6 +97,7 @@ def test_train_and_save_baseline_model_records_requested_training_shape(
     size: int,
 ) -> None:
     """Training metadata should reflect the requested seed and row count."""
+    pytest.importorskip("sklearn")
 
     output = train_and_save_baseline_model(tmp_path / f"run-{seed}-{size}", seed=seed, size=size)
     metadata = json.loads(output.metadata_path.read_text())
