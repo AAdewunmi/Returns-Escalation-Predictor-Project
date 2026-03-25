@@ -10,9 +10,9 @@ import types
 
 import pytest
 
+import ml.training.baseline as baseline_module
 from ml.features import FEATURE_CONTRACT_PATH, FEATURE_CONTRACT_VERSION
 from ml.reason_codes import REASON_CODE_SCHEMA_VERSION
-import ml.training.baseline as baseline_module
 from ml.training.baseline import (
     DEFAULT_TRAINING_SEED,
     _get_feature_contract_hash,
