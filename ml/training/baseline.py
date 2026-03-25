@@ -3,24 +3,48 @@
 
 from __future__ import annotations
 
+import hashlib
+import json
+import pickle
+import random
 from dataclasses import dataclass
 from datetime import datetime, timezone as dt_timezone
 from pathlib import Path
-import json
-import random
 from typing import Any
 
-import joblib
-from sklearn.feature_extraction import DictVectorizer
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score, roc_auc_score
-from sklearn.pipeline import Pipeline
-
-from ml.contracts import FEATURE_CONTRACT_VERSION, REASON_CODE_SCHEMA_VERSION, get_feature_contract_hash
-from ml.features.extraction import extract_features_from_payload
+from ml.features import (
+    FEATURE_CONTRACT_PATH,
+    FEATURE_CONTRACT_VERSION,
+    _encode_item_category,
+    _encode_return_reason,
+    _message_length_bucket,
+    _order_value_band,
+)
+from ml.reason_codes import REASON_CODE_SCHEMA_VERSION
 
 DEFAULT_TRAINING_SEED = 7
 DEFAULT_TRAINING_SIZE = 500
+
+
+def _get_feature_contract_hash() -> str:
+    """Return a stable hash of the committed feature contract file."""
+
+    return hashlib.sha256(FEATURE_CONTRACT_PATH.read_bytes()).hexdigest()
+
+
+def _extract_features_from_payload(payload: dict[str, Any]) -> dict[str, int]:
+    """Map a synthetic payload into the committed feature contract shape."""
+
+    return {
+        "item_category_code": _encode_item_category(payload["item_category"]),
+        "delivery_to_return_days": int(payload["delivery_to_return_days"]),
+        "return_reason_code": _encode_return_reason(payload["return_reason"]),
+        "customer_message_length_bucket": _message_length_bucket(
+            "x" * int(payload["customer_message_length"])
+        ),
+        "prior_returns_count": int(payload["prior_returns_count"]),
+        "order_value_band": _order_value_band(payload["order_value_band_value"]),
+    }
 
 
 @dataclass(frozen=True)
@@ -86,13 +110,18 @@ def generate_synthetic_training_rows(
             "return_reason": return_reason,
             "customer_message_length": customer_message_length,
             "prior_returns_count": prior_returns_count,
-            "order_value_band": order_value_band,
+            "order_value_band_value": {
+                "low": 25,
+                "mid": 100,
+                "high": 250,
+                "premium": 500,
+            }[order_value_band],
             "evidence_count": evidence_count,
         }
 
         rows.append(
             {
-                "features": extract_features_from_payload(payload),
+                "features": _extract_features_from_payload(payload),
                 "escalated": escalated,
             }
         )
@@ -107,6 +136,11 @@ def train_and_save_baseline_model(
     size: int = DEFAULT_TRAINING_SIZE,
 ) -> TrainingOutput:
     """Train the baseline model and save its artefact plus metadata."""
+
+    from sklearn.feature_extraction import DictVectorizer
+    from sklearn.linear_model import LogisticRegression
+    from sklearn.metrics import accuracy_score, roc_auc_score
+    from sklearn.pipeline import Pipeline
 
     training_rows = generate_synthetic_training_rows(seed=seed, size=size)
     feature_rows = [row["features"] for row in training_rows]
@@ -137,11 +171,12 @@ def train_and_save_baseline_model(
 
     output_dir.mkdir(parents=True, exist_ok=True)
     model_version = f"baseline-logreg-v1-seed-{seed}-rows-{size}"
-    model_path = output_dir / f"{model_version}.joblib"
+    model_path = output_dir / f"{model_version}.pkl"
     metadata_path = output_dir / f"{model_version}.json"
-    feature_contract_hash = get_feature_contract_hash()
+    feature_contract_hash = _get_feature_contract_hash()
 
-    joblib.dump(pipeline, model_path)
+    with model_path.open("wb") as artifact_file:
+        pickle.dump(pipeline, artifact_file)
 
     metadata = {
         "model_version": model_version,
