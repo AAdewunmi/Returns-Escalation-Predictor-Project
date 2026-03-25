@@ -48,7 +48,9 @@ def test_train_escalation_model_command_trains_and_registers_active_model(
         training_rows=120,
     )
 
-    def fake_train_and_save_baseline_model(output_dir: Path, *, seed: int, size: int) -> TrainingOutput:
+    def fake_train_and_save_baseline_model(
+        output_dir: Path, *, seed: int, size: int
+    ) -> TrainingOutput:
         captured["output_dir"] = output_dir
         captured["seed"] = seed
         captured["size"] = size
@@ -75,7 +77,9 @@ def test_train_escalation_model_command_trains_and_registers_active_model(
     assert captured["output_dir"] == Path("/tmp/ml-artifacts")
     assert captured["seed"] == 7
     assert captured["size"] == 120
-    assert captured["registry_path"] == Path(settings.BASE_DIR) / "ml" / "registry" / "model_registry.json"
+    assert captured["registry_path"] == (
+        Path(settings.BASE_DIR) / "ml" / "registry" / "model_registry.json"
+    )
     assert captured["entry"] == ActiveModelEntry(
         version="baseline-logreg-v1-seed-7-rows-120",
         model_type="logistic_regression",
