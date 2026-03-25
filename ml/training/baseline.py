@@ -8,7 +8,7 @@ import json
 import pickle
 import random
 from dataclasses import dataclass
-from datetime import datetime, timezone as dt_timezone
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
@@ -80,9 +80,7 @@ def generate_synthetic_training_rows(
         customer_message_length = generator.randint(30, 1200)
         evidence_count = generator.randint(0, 3)
 
-        item_category = generator.choice(
-            ["electronics", "fashion", "home", "beauty", "sports"]
-        )
+        item_category = generator.choice(["electronics", "fashion", "home", "beauty", "sports"])
         return_reason = generator.choice(
             ["damaged", "wrong_item", "not_as_described", "changed_mind", "missing_parts"]
         )
@@ -186,7 +184,7 @@ def train_and_save_baseline_model(
         "training_rows": size,
         "training_seed": seed,
         "metrics": metrics,
-        "trained_at": datetime.now(tz=dt_timezone.utc).isoformat(),
+        "trained_at": datetime.now(tz=UTC).isoformat(),
     }
     metadata_path.write_text(json.dumps(metadata, indent=2, sort_keys=True))
 
