@@ -3,12 +3,16 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
+import sys
+import types
 
 import pytest
 
-from ml.features import FEATURE_CONTRACT_VERSION
+from ml.features import FEATURE_CONTRACT_PATH, FEATURE_CONTRACT_VERSION
 from ml.reason_codes import REASON_CODE_SCHEMA_VERSION
+import ml.training.baseline as baseline_module
 from ml.training.baseline import (
     DEFAULT_TRAINING_SEED,
     _get_feature_contract_hash,
@@ -36,6 +40,86 @@ def test_generate_synthetic_training_rows_changes_when_seed_changes() -> None:
     second_rows = generate_synthetic_training_rows(seed=12, size=20)
 
     assert first_rows != second_rows
+
+
+def test_get_feature_contract_hash_matches_committed_contract_file() -> None:
+    """The helper should hash the committed feature contract file directly."""
+
+    expected_hash = hashlib.sha256(FEATURE_CONTRACT_PATH.read_bytes()).hexdigest()
+
+    assert _get_feature_contract_hash() == expected_hash
+
+
+def test_train_and_save_baseline_model_runs_with_stubbed_sklearn(tmp_path, monkeypatch) -> None:
+    """Training should complete when sklearn APIs behave as expected."""
+
+    class FakeProbabilities:
+        def __init__(self, rows: int) -> None:
+            self.rows = rows
+
+        def __getitem__(self, key):
+            assert key == (slice(None, None, None), 1)
+            return [0.8] * self.rows
+
+    class FakeDictVectorizer:
+        def __init__(self, sparse: bool = False) -> None:
+            self.sparse = sparse
+
+    class FakeLogisticRegression:
+        def __init__(self, **kwargs) -> None:
+            self.kwargs = kwargs
+
+    class FakePipeline:
+        def __init__(self, steps) -> None:
+            self.steps = steps
+            self.fitted_feature_rows = None
+            self.fitted_labels = None
+
+        def fit(self, feature_rows, labels):
+            self.fitted_feature_rows = feature_rows
+            self.fitted_labels = labels
+            return self
+
+        def predict_proba(self, feature_rows):
+            return FakeProbabilities(len(feature_rows))
+
+        def predict(self, feature_rows):
+            return [1] * len(feature_rows)
+
+    fake_sklearn = types.ModuleType("sklearn")
+    fake_feature_extraction = types.ModuleType("sklearn.feature_extraction")
+    fake_linear_model = types.ModuleType("sklearn.linear_model")
+    fake_metrics = types.ModuleType("sklearn.metrics")
+    fake_pipeline = types.ModuleType("sklearn.pipeline")
+
+    fake_feature_extraction.DictVectorizer = FakeDictVectorizer
+    fake_linear_model.LogisticRegression = FakeLogisticRegression
+    fake_metrics.accuracy_score = lambda labels, predictions: 0.5
+    fake_metrics.roc_auc_score = lambda labels, probabilities: 0.75
+    fake_pipeline.Pipeline = FakePipeline
+
+    monkeypatch.setitem(sys.modules, "sklearn", fake_sklearn)
+    monkeypatch.setitem(sys.modules, "sklearn.feature_extraction", fake_feature_extraction)
+    monkeypatch.setitem(sys.modules, "sklearn.linear_model", fake_linear_model)
+    monkeypatch.setitem(sys.modules, "sklearn.metrics", fake_metrics)
+    monkeypatch.setitem(sys.modules, "sklearn.pipeline", fake_pipeline)
+    monkeypatch.setattr(
+        baseline_module.pickle,
+        "dump",
+        lambda pipeline, artifact_file: artifact_file.write(b"stub-model"),
+    )
+
+    output = train_and_save_baseline_model(tmp_path, seed=5, size=12)
+    metadata = json.loads(output.metadata_path.read_text())
+
+    assert output.model_path.exists()
+    assert output.metadata_path.exists()
+    assert output.model_path.suffix == ".pkl"
+    assert output.training_rows == 12
+    assert metadata["training_seed"] == 5
+    assert metadata["training_rows"] == 12
+    assert metadata["metrics"] == {"accuracy": 0.5, "roc_auc": 0.75}
+    assert metadata["feature_contract_hash"] == _get_feature_contract_hash()
 
 
 def test_train_and_save_baseline_model_writes_expected_files_and_metadata(tmp_path) -> None:
