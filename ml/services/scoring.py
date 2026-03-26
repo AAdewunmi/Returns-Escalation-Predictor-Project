@@ -8,6 +8,7 @@ import pickle
 from dataclasses import dataclass
 from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
+from typing import Any
 
 from django.conf import settings
 
@@ -23,10 +24,14 @@ class ScoringResult:
 
     score: Decimal
     label: str
-    reason_codes: list[str]
+    reason_codes: list[dict[str, str]]
     model_version: str
     feature_contract_hash: str
     reason_code_schema_version: str
+
+
+class ArtifactScoringUnavailableError(RuntimeError):
+    """Raised when the active model artefact cannot be loaded safely."""
 
 
 def get_registry_path() -> Path:
@@ -73,23 +78,47 @@ def label_from_score(score: float) -> str:
 def quantise_score(score: float) -> Decimal:
     """Normalise a score to the persisted decimal precision."""
 
-    return Decimal(str(score)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
+    return Decimal(str(score)).quantize(Decimal("0.01"), rounding=ROUND_HALF_UP)
 
 
-def generate_reason_codes(feature_vector: dict[str, int]) -> list[str]:
-    """Generate stable reason-code identifiers from extracted features."""
+def generate_reason_codes(feature_vector: dict[str, int]) -> list[dict[str, str]]:
+    """Generate stable reason-code objects from extracted features."""
 
-    return [item["code"] for item in build_reason_codes(feature_vector)]
+    return build_reason_codes(feature_vector)
+
+
+def load_active_model() -> tuple[Any, dict[str, object], str]:
+    """Load the active model artefact plus metadata and schema version."""
+
+    try:
+        registry_entry = get_active_model_entry(get_registry_path())
+        model_path = get_model_path(registry_entry.version)
+        metadata = load_model_metadata(registry_entry.version)
+        with model_path.open("rb") as artifact_file:
+            model = pickle.load(artifact_file)
+    except (
+        LookupError,
+        FileNotFoundError,
+        OSError,
+        json.JSONDecodeError,
+        pickle.PickleError,
+    ) as exc:
+        raise ArtifactScoringUnavailableError(
+            "Active ML model artefact is unavailable or invalid."
+        ) from exc
+
+    if "feature_contract_hash" not in metadata:
+        raise ArtifactScoringUnavailableError(
+            "Active ML model metadata is missing feature_contract_hash."
+        )
+
+    return model, metadata, registry_entry.reason_code_schema_version
 
 
 def score_return_case(return_case: ReturnCase) -> ScoringResult:
     """Score a return case using the active registered model."""
 
-    registry_entry = get_active_model_entry(get_registry_path())
-    with get_model_path(registry_entry.version).open("rb") as artifact_file:
-        model = pickle.load(artifact_file)
-    metadata = load_model_metadata(registry_entry.version)
-
+    model, metadata, reason_code_schema_version = load_active_model()
     feature_vector = extract_case_features(return_case)
     probability = float(model.predict_proba([feature_vector])[0][1])
 
@@ -97,7 +126,7 @@ def score_return_case(return_case: ReturnCase) -> ScoringResult:
         score=quantise_score(probability),
         label=label_from_score(probability),
         reason_codes=generate_reason_codes(feature_vector),
-        model_version=registry_entry.version,
+        model_version=str(metadata["model_version"]),
         feature_contract_hash=str(metadata["feature_contract_hash"]),
-        reason_code_schema_version=registry_entry.reason_code_schema_version,
+        reason_code_schema_version=reason_code_schema_version,
     )
