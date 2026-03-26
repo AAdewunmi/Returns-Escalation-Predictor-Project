@@ -22,7 +22,7 @@ def add_group(user, group_name: str) -> None:
 
 @pytest.mark.django_db
 def test_case_creation_persists_risk_score_and_event() -> None:
-    """Creating a case should persist placeholder risk output and an audit event."""
+    """Creating a case should persist risk output and an audit event."""
     customer_user = UserFactory(email="risk-create@example.com")
     add_group(customer_user, "customer")
     customer_profile = CustomerProfileFactory(user=customer_user)
@@ -45,7 +45,7 @@ def test_case_creation_persists_risk_score_and_event() -> None:
 
     risk_score = RiskScore.objects.get(case=case)
 
-    assert risk_score.model_version == "return-risk-placeholder-v1"
+    assert risk_score.model_version
     assert risk_score.label in {"low", "medium", "high"}
     assert isinstance(risk_score.reason_codes, list)
     assert CaseEvent.objects.filter(return_case=case, event_type="risk_scored").exists()
