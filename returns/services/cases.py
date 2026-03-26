@@ -13,7 +13,8 @@ from django.db import transaction
 from django.utils import timezone
 
 from returns.models import CaseEvent, CaseNote, ReturnCase
-from returns.services.risk_scoring import score_return_case
+from returns.services.risk import score_case_and_persist
+from returns.services.sla import refresh_case_sla_fields
 
 STATUS_SUBMITTED: Final[str] = ReturnCase.Status.SUBMITTED
 PRIORITY_NORMAL: Final[str] = ReturnCase.Priority.MEDIUM
@@ -70,6 +71,7 @@ class StatusUpdateInput:
 
     status: str
     priority: str | None = None
+    note: str = ""
 
 
 def _user_in_group(user: AbstractBaseUser, group_name: str) -> bool:
@@ -127,7 +129,7 @@ def create_return_case(
     actor: AbstractBaseUser,
     input_data: ReturnCaseCreateInput,
 ) -> ReturnCase:
-    """Create a return case, set deterministic defaults, and emit an audit event."""
+    """Create a return case, refresh SLA fields, and persist fresh risk output."""
     _require_customer(actor)
 
     if not hasattr(actor, "customer_profile"):
@@ -146,6 +148,8 @@ def create_return_case(
         priority=PRIORITY_NORMAL,
         last_status_changed_at=timezone.now(),
     )
+    refresh_case_sla_fields(case, save=False)
+    case.save(update_fields=["sla_due_at", "updated_at"])
 
     _emit_case_event(
         case=case,
@@ -158,7 +162,7 @@ def create_return_case(
         },
     )
 
-    score_return_case(case)
+    score_case_and_persist(case, triggered_by="case_created")
     return case
 
 
@@ -169,7 +173,7 @@ def update_return_case_status(
     case: ReturnCase,
     input_data: StatusUpdateInput,
 ) -> ReturnCase:
-    """Update status and optional priority after validating allowed transitions."""
+    """Update status, refresh SLA fields, and persist fresh risk output."""
     _require_ops_or_admin(actor)
 
     current_status = (case.status or "").strip().lower()
@@ -189,8 +193,14 @@ def update_return_case_status(
         case.priority = input_data.priority.strip().lower()
         update_fields.append("priority")
     case.last_status_changed_at = timezone.now()
+    refresh_case_sla_fields(case, save=False)
+    update_fields.append("sla_due_at")
 
     case.save(update_fields=update_fields)
+
+    note_body = input_data.note.strip()
+    if note_body:
+        CaseNote.objects.create(return_case=case, author=actor, body=note_body)
 
     _emit_case_event(
         case=case,
@@ -203,6 +213,7 @@ def update_return_case_status(
             "new_priority": case.priority,
         },
     )
+    score_case_and_persist(case, triggered_by="status_updated")
     return case
 
 

@@ -56,6 +56,7 @@ def test_create_return_case_sets_defaults_and_emits_event() -> None:
     assert created_case.customer == customer_profile
     assert created_case.status == ReturnCase.Status.SUBMITTED
     assert created_case.priority == ReturnCase.Priority.MEDIUM
+    assert created_case.sla_due_at is not None
     assert (
         CaseEvent.objects.filter(return_case=created_case, event_type="case_created").count() == 1
     )

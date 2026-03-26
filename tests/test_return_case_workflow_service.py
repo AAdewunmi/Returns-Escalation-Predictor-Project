@@ -7,7 +7,7 @@ import pytest
 from django.contrib.auth.models import Group
 from django.core.exceptions import PermissionDenied
 
-from returns.models import CaseEvent, ReturnCase
+from returns.models import CaseEvent, CaseNote, ReturnCase
 from returns.services.cases import (
     ReturnCaseCreateInput,
     ReturnCaseWorkflowError,
@@ -60,6 +60,7 @@ def test_create_return_case_persists_case_and_event() -> None:
     assert case.status == ReturnCase.Status.SUBMITTED
     assert case.priority == ReturnCase.Priority.MEDIUM
     assert case.last_status_changed_at is not None
+    assert case.sla_due_at is not None
 
     event = CaseEvent.objects.get(return_case=case, event_type="case_created")
     assert event.actor == customer_profile.user
@@ -68,17 +69,21 @@ def test_create_return_case_persists_case_and_event() -> None:
 
 
 @pytest.mark.django_db
-def test_create_return_case_calls_risk_scoring(monkeypatch) -> None:
-    """Creating a case should invoke the risk-scoring persistence hook."""
+def test_create_return_case_calls_risk_persistence(monkeypatch) -> None:
+    """Creating a case should invoke the risk-persistence hook."""
     customer_profile = CustomerProfileFactory()
     merchant_profile = MerchantProfileFactory()
     _add_group(customer_profile.user, "Customer")
     captured: dict[str, object] = {}
 
-    def fake_score_return_case(case):
+    def fake_score_case_and_persist(case, *, triggered_by):
         captured["case"] = case
+        captured["triggered_by"] = triggered_by
 
-    monkeypatch.setattr("returns.services.cases.score_return_case", fake_score_return_case)
+    monkeypatch.setattr(
+        "returns.services.cases.score_case_and_persist",
+        fake_score_case_and_persist,
+    )
 
     case = create_return_case(
         actor=customer_profile.user,
@@ -94,6 +99,7 @@ def test_create_return_case_calls_risk_scoring(monkeypatch) -> None:
     )
 
     assert captured["case"] == case
+    assert captured["triggered_by"] == "case_created"
 
 
 @pytest.mark.django_db
@@ -160,12 +166,40 @@ def test_update_return_case_status_updates_case_and_emits_event() -> None:
     assert updated_case.status == ReturnCase.Status.IN_REVIEW
     assert updated_case.priority == ReturnCase.Priority.HIGH
     assert updated_case.last_status_changed_at is not None
+    assert updated_case.sla_due_at is not None
 
     event = CaseEvent.objects.get(return_case=case, event_type="status_updated")
     assert event.actor == ops_user
     assert event.actor_role == "ops"
     assert event.payload["previous_status"] == ReturnCase.Status.SUBMITTED
     assert event.payload["new_status"] == ReturnCase.Status.IN_REVIEW
+
+
+@pytest.mark.django_db
+def test_update_return_case_status_calls_risk_persistence(monkeypatch) -> None:
+    """Status updates should persist a fresh risk score."""
+    ops_user = UserFactory()
+    _add_group(ops_user, "Ops")
+    case = ReturnCaseFactory(status=ReturnCase.Status.SUBMITTED)
+    captured: dict[str, object] = {}
+
+    def fake_score_case_and_persist(return_case, *, triggered_by):
+        captured["case"] = return_case
+        captured["triggered_by"] = triggered_by
+
+    monkeypatch.setattr(
+        "returns.services.cases.score_case_and_persist",
+        fake_score_case_and_persist,
+    )
+
+    update_return_case_status(
+        actor=ops_user,
+        case=case,
+        input_data=StatusUpdateInput(status=ReturnCase.Status.IN_REVIEW),
+    )
+
+    assert captured["case"] == case
+    assert captured["triggered_by"] == "status_updated"
 
 
 @pytest.mark.django_db
@@ -192,6 +226,27 @@ def test_update_return_case_status_keeps_existing_priority_when_none_supplied() 
     assert event.actor_role == "admin"
     assert event.payload["previous_priority"] == ReturnCase.Priority.HIGH
     assert event.payload["new_priority"] == ReturnCase.Priority.HIGH
+
+
+@pytest.mark.django_db
+def test_update_return_case_status_persists_optional_note() -> None:
+    """Status updates may include an inline note for operational context."""
+    ops_user = UserFactory()
+    _add_group(ops_user, "Ops")
+    case = ReturnCaseFactory(status=ReturnCase.Status.SUBMITTED)
+
+    update_return_case_status(
+        actor=ops_user,
+        case=case,
+        input_data=StatusUpdateInput(
+            status=ReturnCase.Status.IN_REVIEW,
+            note="Customer evidence is incomplete and needs follow-up.",
+        ),
+    )
+
+    note = CaseNote.objects.get(return_case=case)
+    assert note.author == ops_user
+    assert note.body == "Customer evidence is incomplete and needs follow-up."
 
 
 @pytest.mark.django_db
