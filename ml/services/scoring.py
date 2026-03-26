@@ -6,7 +6,7 @@ from __future__ import annotations
 import json
 import pickle
 from dataclasses import dataclass
-from decimal import Decimal, ROUND_HALF_UP
+from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 
 from django.conf import settings

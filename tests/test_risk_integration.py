@@ -15,7 +15,12 @@ from returns.services.cases import (
     create_return_case,
     update_return_case_status,
 )
-from tests.factories import CustomerProfileFactory, MerchantProfileFactory, ReturnCaseFactory, UserFactory
+from tests.factories import (
+    CustomerProfileFactory,
+    MerchantProfileFactory,
+    ReturnCaseFactory,
+    UserFactory,
+)
 
 
 def add_group(user, group_name: str) -> None:
