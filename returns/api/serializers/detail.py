@@ -5,76 +5,53 @@ from __future__ import annotations
 
 from rest_framework import serializers
 
-from apps.returns.models import ReturnCase
+from returns.api.permissions import is_admin, is_ops
+from returns.models import ReturnCase, RiskScore
 
 
-class EmbeddedRiskScoreSerializer(serializers.Serializer):
-    """Serialise the latest risk score embedded in a return-case response."""
+class EmbeddedRiskScoreSerializer(serializers.ModelSerializer):
+    """Serialise the persisted risk payload embedded in a return-case response."""
 
-    model_version = serializers.CharField()
-    score = serializers.DecimalField(max_digits=6, decimal_places=4)
-    label = serializers.CharField()
-    reason_codes = serializers.ListField(child=serializers.CharField())
-    created_at = serializers.DateTimeField()
+    class Meta:
+        model = RiskScore
+        fields = ("model_version", "score", "label", "reason_codes", "scored_at")
 
 
 class ReturnCaseDetailSerializer(serializers.ModelSerializer):
-    """Detailed return-case read model with the latest embedded risk."""
+    """Detailed return-case read model aligned with the current project schema."""
 
-    customer_name = serializers.SerializerMethodField()
-    merchant_name = serializers.SerializerMethodField()
+    merchant_name = serializers.CharField(source="merchant.display_name", read_only=True)
+    customer_email = serializers.EmailField(source="customer.user.email", read_only=True)
     risk = serializers.SerializerMethodField()
 
     class Meta:
         model = ReturnCase
-        fields = [
+        fields = (
             "id",
-            "public_case_reference",
-            "order_number",
+            "order_reference",
             "status",
             "priority",
+            "merchant_name",
+            "customer_email",
             "item_category",
             "return_reason",
             "customer_message",
             "order_value",
-            "delivered_at",
-            "created_at",
-            "first_response_due_at",
-            "resolution_due_at",
-            "customer_name",
-            "merchant_name",
+            "delivery_date",
             "risk",
-        ]
-
-    def get_customer_name(self, obj: ReturnCase) -> str:
-        """Return the customer display name or email."""
-
-        full_name = obj.customer.user.get_full_name().strip()
-        return full_name or obj.customer.user.email
-
-    def get_merchant_name(self, obj: ReturnCase) -> str:
-        """Return the merchant display name."""
-
-        display_name = getattr(obj.merchant, "display_name", "") or getattr(obj.merchant, "name", "")
-        if display_name:
-            return display_name
-
-        merchant_user = getattr(obj.merchant, "user", None)
-        if merchant_user is None:
-            return "Unknown merchant"
-
-        full_name = merchant_user.get_full_name().strip()
-        return full_name or merchant_user.email
+            "created_at",
+            "updated_at",
+        )
 
     def get_risk(self, obj: ReturnCase):
-        """Return the latest risk score as an embedded object."""
+        """Expose risk only to ops and admin users, matching the live API contract."""
 
-        try:
-            latest_risk = obj.risk_scores.order_by("-created_at").first()
-        except AttributeError:
-            latest_risk = obj.riskscore_set.order_by("-created_at").first()
-
-        if latest_risk is None:
+        request = self.context.get("request")
+        if request is None or not (is_ops(request.user) or is_admin(request.user)):
             return None
 
-        return EmbeddedRiskScoreSerializer(latest_risk).data
+        risk_score = RiskScore.objects.filter(case=obj).first()
+        if risk_score is None:
+            return None
+
+        return EmbeddedRiskScoreSerializer(risk_score).data
