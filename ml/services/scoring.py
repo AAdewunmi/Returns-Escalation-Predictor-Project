@@ -1,20 +1,20 @@
-# path: apps/ml/services/scoring.py
+# path: ml/services/scoring.py
 """Inference services for ReturnHub escalation-risk scoring."""
 
 from __future__ import annotations
 
+import json
+import pickle
 from dataclasses import dataclass
 from decimal import Decimal, ROUND_HALF_UP
 from pathlib import Path
-from typing import Any, Mapping
 
-import joblib
 from django.conf import settings
 
-from apps.ml.contracts import REASON_CODE_SCHEMA_VERSION
-from apps.ml.features.extraction import extract_features_from_return_case
-from apps.ml.services.model_registry import get_active_model_entry
-from apps.returns.models import ReturnCase
+from ml.features import extract_case_features
+from ml.reason_codes import build_reason_codes
+from ml.services.model_registry import get_active_model_entry
+from returns.models import ReturnCase
 
 
 @dataclass(frozen=True)
@@ -32,7 +32,32 @@ class ScoringResult:
 def get_registry_path() -> Path:
     """Return the default registry path for ML artefacts."""
 
-    return Path(settings.BASE_DIR) / "ml_artifacts" / "registry.json"
+    return Path(settings.BASE_DIR) / "ml" / "registry" / "model_registry.json"
+
+
+def get_artifact_dir() -> Path:
+    """Return the default output directory for trained model artefacts."""
+
+    return Path(settings.BASE_DIR) / "ml_artifacts"
+
+
+def get_model_path(model_version: str) -> Path:
+    """Build the expected model artefact path for a registered model version."""
+
+    return get_artifact_dir() / f"{model_version}.pkl"
+
+
+def get_metadata_path(model_version: str) -> Path:
+    """Build the expected metadata path for a registered model version."""
+
+    return get_artifact_dir() / f"{model_version}.json"
+
+
+def load_model_metadata(model_version: str) -> dict[str, object]:
+    """Load metadata produced during training for the supplied model version."""
+
+    metadata_path = get_metadata_path(model_version)
+    return json.loads(metadata_path.read_text(encoding="utf-8"))
 
 
 def label_from_score(score: float) -> str:
@@ -51,51 +76,28 @@ def quantise_score(score: float) -> Decimal:
     return Decimal(str(score)).quantize(Decimal("0.0001"), rounding=ROUND_HALF_UP)
 
 
-def generate_reason_codes(
-    feature_vector: Mapping[str, Any],
-    *,
-    score: float,
-) -> list[str]:
-    """
-    Generate stable reason codes in a deterministic order.
+def generate_reason_codes(feature_vector: dict[str, int]) -> list[str]:
+    """Generate stable reason-code identifiers from extracted features."""
 
-    Ordering is explicit. The service does not sort codes by any dynamic score,
-    which avoids unstable output across repeated runs.
-    """
-
-    reason_codes: list[str] = []
-
-    if int(feature_vector.get("prior_returns_count", 0)) >= 3:
-        reason_codes.append("PRIOR_RETURNS_HIGH")
-    if int(feature_vector.get("delivery_to_return_days", 99)) <= 2:
-        reason_codes.append("RETURN_AFTER_DELIVERY_SHORT")
-    if str(feature_vector.get("order_value_band", "")) in {"high", "premium"}:
-        reason_codes.append("ORDER_VALUE_BAND_HIGH")
-    if int(feature_vector.get("customer_message_length", 0)) >= 600:
-        reason_codes.append("CUSTOMER_MESSAGE_LONG")
-    if int(feature_vector.get("evidence_count", 0)) == 0 and score >= 0.45:
-        reason_codes.append("EVIDENCE_MISSING_EARLY")
-
-    if not reason_codes:
-        reason_codes.append("BASELINE_PATTERN_LOW_SIGNAL")
-
-    return reason_codes[:3]
+    return [item["code"] for item in build_reason_codes(feature_vector)]
 
 
 def score_return_case(return_case: ReturnCase) -> ScoringResult:
     """Score a return case using the active registered model."""
 
     registry_entry = get_active_model_entry(get_registry_path())
-    model = joblib.load(registry_entry.model_path)
+    with get_model_path(registry_entry.version).open("rb") as artifact_file:
+        model = pickle.load(artifact_file)
+    metadata = load_model_metadata(registry_entry.version)
 
-    feature_vector = extract_features_from_return_case(return_case)
+    feature_vector = extract_case_features(return_case)
     probability = float(model.predict_proba([feature_vector])[0][1])
 
     return ScoringResult(
         score=quantise_score(probability),
         label=label_from_score(probability),
-        reason_codes=generate_reason_codes(feature_vector, score=probability),
-        model_version=registry_entry.model_version,
-        feature_contract_hash=registry_entry.feature_contract_hash,
-        reason_code_schema_version=REASON_CODE_SCHEMA_VERSION,
+        reason_codes=generate_reason_codes(feature_vector),
+        model_version=registry_entry.version,
+        feature_contract_hash=str(metadata["feature_contract_hash"]),
+        reason_code_schema_version=registry_entry.reason_code_schema_version,
     )
