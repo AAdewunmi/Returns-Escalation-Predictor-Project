@@ -34,7 +34,7 @@ def add_group(user, group_name: str) -> None:
 def test_create_return_case_persists_risk_score(monkeypatch) -> None:
     """Creating a case should persist a RiskScore record."""
 
-    def fake_score_return_case(case):
+    def fake_score_case_and_persist(case, *, triggered_by):
         return RiskScore.objects.create(
             case=case,
             model_version="baseline-v1",
@@ -44,7 +44,10 @@ def test_create_return_case_persists_risk_score(monkeypatch) -> None:
             scored_at=case.created_at,
         )
 
-    monkeypatch.setattr("returns.services.cases.score_return_case", fake_score_return_case)
+    monkeypatch.setattr(
+        "returns.services.cases.score_case_and_persist",
+        fake_score_case_and_persist,
+    )
 
     customer_user = UserFactory(email="risk-integration-create@example.com")
     add_group(customer_user, "customer")
@@ -84,6 +87,14 @@ def test_update_return_case_status_keeps_one_risk_score_record(monkeypatch) -> N
         label="low",
         reason_codes=["BASELINE_PATTERN_LOW_SIGNAL"],
         scored_at=return_case.created_at,
+    )
+
+    def fake_score_case_and_persist(case, *, triggered_by):
+        return RiskScore.objects.get(case=case)
+
+    monkeypatch.setattr(
+        "returns.services.cases.score_case_and_persist",
+        fake_score_case_and_persist,
     )
 
     update_return_case_status(

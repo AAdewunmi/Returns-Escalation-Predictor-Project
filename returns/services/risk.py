@@ -3,11 +3,29 @@
 
 from __future__ import annotations
 
+import logging
+
 from django.db import transaction
 from django.utils import timezone
 
+from ml.features import extract_case_features
+from ml.scoring import score_case_features
+from ml.services.scoring import ArtifactScoringUnavailableError
 from ml.services.scoring import score_return_case as score_ml_return_case
 from returns.models import CaseEvent, ReturnCase, RiskScore
+
+logger = logging.getLogger(__name__)
+
+
+def _get_scoring_result(return_case: ReturnCase):
+    """Prefer artefact-backed scoring and fall back to the placeholder scorer."""
+
+    try:
+        return score_ml_return_case(return_case)
+    except ArtifactScoringUnavailableError:
+        logger.warning("Falling back to placeholder risk scoring for case_id=%s", return_case.pk)
+        features = extract_case_features(return_case)
+        return score_case_features(features)
 
 
 @transaction.atomic
@@ -23,7 +41,7 @@ def score_case_and_persist(
     current record and emits a fresh audit event.
     """
 
-    scoring_result = score_ml_return_case(return_case)
+    scoring_result = _get_scoring_result(return_case)
 
     risk_score, _ = RiskScore.objects.update_or_create(
         case=return_case,
