@@ -3,19 +3,35 @@
 
 from __future__ import annotations
 
+import logging
+
 from django.db import transaction
 from django.utils import timezone
 
 from ml.features import extract_case_features
 from ml.scoring import score_case_features
+from ml.services.scoring import ArtifactScoringUnavailableError
+from ml.services.scoring import score_return_case as score_active_model
 from returns.models import CaseEvent, RiskScore
+
+logger = logging.getLogger(__name__)
+
+
+def _get_prediction_for_case(case):
+    """Prefer the active artefact-backed scorer and fall back to the placeholder scorer."""
+
+    try:
+        return score_active_model(case)
+    except ArtifactScoringUnavailableError:
+        logger.warning("Falling back to placeholder risk scoring for case_id=%s", case.pk)
+        features = extract_case_features(case)
+        return score_case_features(features)
 
 
 @transaction.atomic
 def score_return_case(case) -> RiskScore:
-    """Extract deterministic features, score the case, and persist RiskScore."""
-    features = extract_case_features(case)
-    prediction = score_case_features(features)
+    """Score the case, persist RiskScore, and emit a matching event."""
+    prediction = _get_prediction_for_case(case)
 
     risk_score, _ = RiskScore.objects.update_or_create(
         case=case,
