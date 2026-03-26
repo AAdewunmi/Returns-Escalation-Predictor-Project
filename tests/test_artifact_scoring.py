@@ -10,7 +10,11 @@ from pathlib import Path
 
 import pytest
 
-from ml.services.scoring import ArtifactScoringUnavailableError, load_active_model
+from ml.services.scoring import (
+    ArtifactScoringUnavailableError,
+    label_from_score,
+    load_active_model,
+)
 from ml.services.scoring import score_return_case as score_artifact_return_case
 from returns.models import RiskScore
 from returns.services.risk_scoring import score_return_case as persist_risk_score
@@ -135,6 +139,48 @@ def test_load_active_model_raises_clean_error_when_artifact_is_missing(settings,
         match="Active ML model artefact is unavailable or invalid.",
     ):
         load_active_model()
+
+
+def test_load_active_model_raises_when_metadata_lacks_feature_contract_hash(
+    settings, tmp_path
+) -> None:
+    """Metadata must include the feature contract hash used by the active model."""
+
+    settings.BASE_DIR = tmp_path
+    version = "baseline-logreg-v1-seed-7-rows-500"
+    write_active_model_artifacts(base_dir=tmp_path, version=version, probability=0.61)
+    metadata_path = tmp_path / "ml_artifacts" / f"{version}.json"
+    metadata_path.write_text(
+        json.dumps(
+            {
+                "model_version": version,
+                "reason_code_schema_version": "return-risk-reasons-sprint2-v1",
+            },
+            indent=2,
+            sort_keys=True,
+        ),
+        encoding="utf-8",
+    )
+
+    with pytest.raises(
+        ArtifactScoringUnavailableError,
+        match="Active ML model metadata is missing feature_contract_hash.",
+    ):
+        load_active_model()
+
+
+@pytest.mark.parametrize(
+    ("score", "expected_label"),
+    [
+        (0.80, "high"),
+        (0.45, "medium"),
+        (0.44, "low"),
+    ],
+)
+def test_label_from_score_uses_stable_thresholds(score: float, expected_label: str) -> None:
+    """Label assignment should stay stable at the configured probability thresholds."""
+
+    assert label_from_score(score) == expected_label
 
 
 @pytest.mark.django_db
