@@ -1,5 +1,5 @@
 # path: tests/test_ops_console_shell.py
-"""Integration tests for the ops console risk shell presentation."""
+"""Integration tests for the ops console queue presentation."""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ def add_group(user, group_name: str) -> None:
 
 @pytest.mark.django_db
 def test_ops_console_includes_risk_explainer_panel(client) -> None:
-    """Ops shell should explain risk as a controlled triage signal."""
+    """Ops queue shell should explain risk as a controlled triage signal."""
     ops_user = UserFactory(email="ops-console-risk@example.com")
     add_group(ops_user, "ops")
     ReturnCaseFactory.create_batch(2, status="submitted")
@@ -26,7 +26,9 @@ def test_ops_console_includes_risk_explainer_panel(client) -> None:
     response = client.get("/console/ops/")
 
     assert response.status_code == 200
-    content = response.content.decode()
+    content = response.content.decode().lower()
     assert "escalation risk remains" in content
     assert "ops only" in content
     assert "controlled triage signal" in content
+    assert "queue filters" in content
+    assert "return cases" in content

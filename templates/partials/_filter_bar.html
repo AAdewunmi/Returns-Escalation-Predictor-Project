@@ -22,9 +22,9 @@
       <select id="queue-status" name="status" class="form-select rh-filter-bar__control">
         <option value="">All statuses</option>
         <option value="submitted" {% if queue_filters.status == "submitted" %}selected{% endif %}>Submitted</option>
-        <option value="awaiting_customer" {% if queue_filters.status == "awaiting_customer" %}selected{% endif %}>Awaiting customer</option>
-        <option value="awaiting_merchant" {% if queue_filters.status == "awaiting_merchant" %}selected{% endif %}>Awaiting merchant</option>
-        <option value="under_review" {% if queue_filters.status == "under_review" %}selected{% endif %}>Under review</option>
+        <option value="waiting_customer" {% if queue_filters.status == "waiting_customer" %}selected{% endif %}>Waiting for customer</option>
+        <option value="waiting_merchant" {% if queue_filters.status == "waiting_merchant" %}selected{% endif %}>Waiting for merchant</option>
+        <option value="in_review" {% if queue_filters.status == "in_review" %}selected{% endif %}>In review</option>
         <option value="approved" {% if queue_filters.status == "approved" %}selected{% endif %}>Approved</option>
         <option value="rejected" {% if queue_filters.status == "rejected" %}selected{% endif %}>Rejected</option>
       </select>
@@ -35,7 +35,7 @@
       <select id="queue-priority" name="priority" class="form-select rh-filter-bar__control">
         <option value="">All priorities</option>
         <option value="low" {% if queue_filters.priority == "low" %}selected{% endif %}>Low</option>
-        <option value="normal" {% if queue_filters.priority == "normal" %}selected{% endif %}>Normal</option>
+        <option value="medium" {% if queue_filters.priority == "medium" %}selected{% endif %}>Medium</option>
         <option value="high" {% if queue_filters.priority == "high" %}selected{% endif %}>High</option>
         <option value="urgent" {% if queue_filters.priority == "urgent" %}selected{% endif %}>Urgent</option>
       </select>
@@ -53,7 +53,7 @@
 
     <div class="col-12 col-lg-2 d-flex gap-2 rh-filter-bar__actions">
       <button type="submit" class="btn btn-primary rh-btn-primary flex-grow-1">Apply</button>
-      <a href="{% url 'ops-console' %}" class="btn btn-outline-secondary rh-btn-secondary">Reset</a>
+      <a href="{% url 'console:ops-dashboard' %}" class="btn btn-outline-secondary rh-btn-secondary">Reset</a>
     </div>
   </div>
 </form>

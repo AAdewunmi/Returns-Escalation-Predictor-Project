@@ -5,145 +5,109 @@
 {% block page_title %}<span class="rh-page-title">Ops Console</span>{% endblock %}
 
 {% block content %}
-  <section class="rh-card rh-hero mb-4">
-    <div class="rh-hero-grid">
-      <div class="rh-hero-copy">
-        <div class="rh-kicker">Ops Console</div>
-        <h1>Keep the live return queue visible in the same operational shell.</h1>
-        <p class="rh-hero-lead">
-          This ops dashboard is the first authenticated queue-facing surface. It shows current case volume
-          and recent activity while later sprints add filters, ownership, and deeper case detail. Sprint 2
-          escalation risk remains a controlled triage signal for ops only and does not replace status,
-          priority, or human review.
-        </p>
-        <div class="rh-hero-actions">
-          <a class="btn btn-primary rh-btn-primary" href="{% url 'analytics-api:return-analytics' %}?from=2026-03-01&amp;to=2026-03-31">Open analytics endpoint</a>
-          <a class="btn btn-outline-secondary rh-btn-secondary" href="{% url 'landing' %}">Return to landing page</a>
-        </div>
-      </div>
-      <aside class="rh-hero-visual" aria-label="Operations queue summary">
-        <div class="rh-visual-window">
-          <div class="rh-visual-topbar">
-            <span class="rh-visual-dot"></span>
-            <span class="rh-visual-dot"></span>
-            <span class="rh-visual-dot"></span>
-            <div class="rh-visual-window-title">Queue metrics</div>
-          </div>
-          <div class="rh-visual-body">
-            <div class="rh-visual-column">
-              <div class="rh-visual-label">Current queue</div>
-              <div class="rh-visual-metrics">
-                <div class="rh-visual-metric">
-                  <span class="rh-visual-metric-label">Submitted</span>
-                  <strong>{{ submitted_count }}</strong>
-                </div>
-                <div class="rh-visual-metric">
-                  <span class="rh-visual-metric-label">In review</span>
-                  <strong>{{ in_review_count }}</strong>
-                </div>
-              </div>
-              {% if recent_cases %}
-                {% for case in recent_cases|slice:":2" %}
-                  <div class="rh-visual-panel rh-visual-panel--case">
-                    <div class="rh-visual-row">
-                      <strong>{{ case.order_reference }}</strong>
-                      {% include "partials/_status_badge.html" with status=case.status %}
-                    </div>
-                    <p>{{ case.customer_message|truncatechars:110 }}</p>
-                    <div class="rh-visual-meta">
-                      <span>{{ case.item_category|title }}</span>
-                      <span>{{ case.return_reason|title }}</span>
-                    </div>
-                  </div>
-                {% endfor %}
-              {% else %}
-                <div class="rh-visual-panel rh-visual-panel--case">
-                  <div class="rh-visual-row">
-                    <strong>No queue items</strong>
-                    <span class="rh-status-pill rh-status-pill--neutral">Idle</span>
-                  </div>
-                  <p>No return cases exist yet. Seed demo data or create a case through the API.</p>
-                </div>
-              {% endif %}
-            </div>
-            <div class="rh-visual-column">
-              <div class="rh-visual-label">Ops workflow</div>
-              <ol class="rh-timeline rh-timeline--visual">
-                <li>
-                  <strong>Monitor queue volume</strong>
-                  <span>Watch submitted and in-review case counts without leaving the shared shell.</span>
-                </li>
-                <li>
-                  <strong>Inspect recent cases</strong>
-                  <span>Keep order references, reasons, and status labels visible at a glance.</span>
-                </li>
-                <li>
-                  <strong>Grow into later sprints</strong>
-                  <span>Filters, ownership controls, and case detail can slot into the same structure.</span>
-                </li>
-              </ol>
-            </div>
-          </div>
-        </div>
-      </aside>
+  <section class="rh-band rh-band--workflow mb-4">
+    <div class="rh-section-heading">
+      <div class="rh-kicker">Operations console</div>
+      <h2>Work the live return queue inside the same shared ReturnHub shell.</h2>
+      <p>
+        This queue view uses the stable filter and pagination contract already defined for the product.
+        Escalation risk remains a controlled triage signal for ops only and does not replace status,
+        priority, or human review.
+      </p>
+    </div>
+    <div class="rh-hero-actions">
+      <a class="btn btn-primary rh-btn-primary" href="{% url 'analytics-api:return-analytics' %}?from=2026-03-01&amp;to=2026-03-31">Open analytics endpoint</a>
+      <a class="btn btn-outline-secondary rh-btn-secondary" href="{% url 'landing' %}">Return to landing page</a>
     </div>
     <div class="rh-trust-row" aria-label="Ops console signals">
-      <span class="rh-trust-item">Queue visibility</span>
-      <span class="rh-trust-item">Shared case context</span>
-      <span class="rh-trust-item">Operational metrics</span>
+      <span class="rh-trust-item">Live queue view</span>
+      <span class="rh-trust-item">Filter-aware counts</span>
+      <span class="rh-trust-item">Controlled risk signal</span>
       <span class="rh-trust-item">Role-aware shell</span>
     </div>
   </section>
 
-  <section class="rh-band rh-band--workflow mb-4">
-    <div class="rh-section-heading">
-      <div class="rh-kicker">Queue metrics</div>
-      <h2>Track the live submitted and under-review counts in the same shared ops shell.</h2>
-      <p>These queue metrics sit alongside controlled risk scoring that is exposed to ops through the API and will flow into later queue surfaces.</p>
-    </div>
-    <div class="row g-3">
-      <div class="col-md-6">
-        <div class="rh-workflow-step h-100">
-          <div class="rh-kicker">Submitted</div>
-          <h3 class="mb-0">{{ submitted_count }}</h3>
-        </div>
-      </div>
-      <div class="col-md-6">
-        <div class="rh-workflow-step h-100">
-          <div class="rh-kicker">Under review</div>
-          <h3 class="mb-0">{{ in_review_count }}</h3>
-        </div>
-      </div>
-    </div>
-  </section>
+  {% include "partials/_filter_bar.html" %}
+  {% include "partials/_queue_summary_cards.html" %}
 
   <section class="rh-band rh-band--workflow rh-band--wide">
-    <div class="rh-section-heading">
-      <div class="rh-kicker">Recent cases</div>
-      <h2>Review the latest queue items in the same structured markup used across the product.</h2>
+    <div class="rh-section-heading rh-queue-shell__heading">
+      <div>
+        <div class="rh-kicker">Queue workspace</div>
+        <h2>Review return cases in a stable operational table.</h2>
+        <p>Filters, summary counts, pagination, and the current risk signal stay in one restrained workflow surface.</p>
+      </div>
+      <div class="rh-queue-shell__count">{{ pagination.count_line }}</div>
     </div>
-    <div class="row g-3">
-      {% if recent_cases %}
-          {% for case in recent_cases %}
-            <div class="col-12 col-lg-6">
-              <div class="rh-workflow-step">
-                <span class="rh-workflow-index">{{ forloop.counter|stringformat:"02d" }}</span>
-                <h3>{{ case.order_reference }}</h3>
-                <p>{{ case.customer_message|truncatechars:150 }}</p>
-                <div class="rh-visual-meta">
-                  <span>{{ case.item_category|title }}</span>
-                  <span>{{ case.return_reason|title }}</span>
-                </div>
-                <div class="mt-3">
-                  {% include "partials/_status_badge.html" with status=case.status %}
-                </div>
-              </div>
-            </div>
-          {% endfor %}
-      {% else %}
-        <div class="col-12">
-          {% include "partials/_empty_state.html" with title="No return cases yet" body="Seed demo data or create a case through the API to populate the ops queue." %}
+
+    <div class="rh-queue-shell">
+      <div class="rh-queue-shell__header">
+        <div>
+          <h3>Return cases</h3>
+          <p>{{ pagination.count_line }}</p>
         </div>
+      </div>
+
+      {% if pagination.page_obj.object_list %}
+        <div class="table-responsive rh-queue-table-wrap">
+          <table class="table rh-queue-table align-middle mb-0">
+            <thead>
+              <tr>
+                <th scope="col">Case</th>
+                <th scope="col">Customer</th>
+                <th scope="col">Merchant</th>
+                <th scope="col">Status</th>
+                <th scope="col">Priority</th>
+                <th scope="col">SLA due</th>
+                <th scope="col">Risk</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for return_case in pagination.page_obj.object_list %}
+                <tr>
+                  <td>
+                    <div class="rh-queue-table__primary">{{ return_case.order_reference }}</div>
+                    <div class="rh-queue-table__meta">
+                      <span>{{ return_case.item_category|title }}</span>
+                      <span>{{ return_case.return_reason|title }}</span>
+                    </div>
+                  </td>
+                  <td>
+                    <div class="rh-queue-table__primary">{{ return_case.customer.display_name }}</div>
+                    <div class="rh-queue-table__subtle">{{ return_case.customer.user.email }}</div>
+                  </td>
+                  <td>
+                    <div class="rh-queue-table__primary">{{ return_case.merchant.display_name|default:"Unknown merchant" }}</div>
+                    <div class="rh-queue-table__subtle">{{ return_case.merchant.support_email|default:return_case.merchant.user.email }}</div>
+                  </td>
+                  <td>{% include "partials/_status_badge.html" with status=return_case.status %}</td>
+                  <td>
+                    <span class="rh-priority-pill rh-priority-pill--{{ return_case.priority }}">
+                      {{ return_case.get_priority_display }}
+                    </span>
+                  </td>
+                  <td>
+                    {% if return_case.sla_due_at %}
+                      <div class="rh-queue-table__primary">{{ return_case.sla_due_at|date:"d M Y" }}</div>
+                      <div class="rh-queue-table__subtle">{{ return_case.sla_due_at|date:"H:i" }}</div>
+                    {% else %}
+                      <span class="rh-queue-table__subtle">Not set</span>
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% include "partials/_risk_badge.html" with risk_label=return_case.current_risk_label risk_score=return_case.current_risk_score %}
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+
+        <div class="rh-queue-shell__pagination">
+          {% include "partials/_pagination.html" %}
+        </div>
+      {% else %}
+        {% include "partials/_empty_state.html" with title="No cases match these filters" body="Try broadening the current search, status, priority, or risk filters to bring cases back into view." %}
       {% endif %}
     </div>
   </section>
