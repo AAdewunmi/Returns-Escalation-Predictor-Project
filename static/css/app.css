@@ -646,6 +646,20 @@ button:focus-visible {
   line-height: 1.65;
 }
 
+.rh-queue-summary-card {
+  display: grid;
+  align-content: start;
+  gap: var(--rh-space-2);
+}
+
+.rh-queue-summary-card__value {
+  margin: 0;
+  font-family: var(--rh-font-family-display);
+  font-size: clamp(2.1rem, 4vw, 3rem);
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+}
+
 .rh-workflow-figure {
   margin: var(--rh-space-5) 0 0;
 }

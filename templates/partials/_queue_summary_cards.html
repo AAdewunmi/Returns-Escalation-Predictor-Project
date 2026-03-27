@@ -1,31 +1,31 @@
 <!-- path: templates/partials/_queue_summary_cards.html -->
 <div class="row g-3 mb-4">
   <div class="col-12 col-md-6 col-xl-3">
-    <section class="rh-summary-card">
-      <p class="rh-summary-card__eyebrow">Queue total</p>
-      <h2 class="rh-summary-card__value">{{ queue_summary.total }}</h2>
-      <p class="rh-summary-card__meta">All cases matching current filters</p>
+    <section class="rh-workflow-step rh-queue-summary-card h-100">
+      <div class="rh-kicker">Queue total</div>
+      <h2 class="rh-queue-summary-card__value">{{ queue_summary.total }}</h2>
+      <p>All cases matching current filters</p>
     </section>
   </div>
   <div class="col-12 col-md-6 col-xl-3">
-    <section class="rh-summary-card">
-      <p class="rh-summary-card__eyebrow">Submitted</p>
-      <h2 class="rh-summary-card__value">{{ queue_summary.submitted }}</h2>
-      <p class="rh-summary-card__meta">New work entering triage</p>
+    <section class="rh-workflow-step rh-queue-summary-card h-100">
+      <div class="rh-kicker">Submitted</div>
+      <h2 class="rh-queue-summary-card__value">{{ queue_summary.submitted }}</h2>
+      <p>New work entering triage</p>
     </section>
   </div>
   <div class="col-12 col-md-6 col-xl-3">
-    <section class="rh-summary-card">
-      <p class="rh-summary-card__eyebrow">Awaiting customer</p>
-      <h2 class="rh-summary-card__value">{{ queue_summary.awaiting_customer }}</h2>
-      <p class="rh-summary-card__meta">Waiting for customer evidence</p>
+    <section class="rh-workflow-step rh-queue-summary-card h-100">
+      <div class="rh-kicker">Awaiting customer</div>
+      <h2 class="rh-queue-summary-card__value">{{ queue_summary.awaiting_customer }}</h2>
+      <p>Waiting for customer evidence</p>
     </section>
   </div>
   <div class="col-12 col-md-6 col-xl-3">
-    <section class="rh-summary-card">
-      <p class="rh-summary-card__eyebrow">Under review</p>
-      <h2 class="rh-summary-card__value">{{ queue_summary.under_review }}</h2>
-      <p class="rh-summary-card__meta">Active analyst workload</p>
+    <section class="rh-workflow-step rh-queue-summary-card h-100">
+      <div class="rh-kicker">Under review</div>
+      <h2 class="rh-queue-summary-card__value">{{ queue_summary.under_review }}</h2>
+      <p>Active analyst workload</p>
     </section>
   </div>
 </div>
