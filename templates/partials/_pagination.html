@@ -4,8 +4,8 @@
   <div class="pagination-count">{{ pagination.count_line }}</div>
 
   {% if pagination.page_obj.paginator.num_pages > 1 %}
-    <nav aria-label="Pagination">
-      <ul class="pagination pagination-sm mb-0">
+    <nav aria-label="Queue pagination">
+      <ul class="pagination pagination-sm flex-wrap gap-1 mb-0">
         <li class="page-item {% if not pagination.page_obj.has_previous %}disabled{% endif %}">
           <a
             class="page-link"
