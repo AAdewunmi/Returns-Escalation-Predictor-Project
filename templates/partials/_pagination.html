@@ -4,8 +4,8 @@
   <div class="pagination-count">{{ pagination.count_line }}</div>
 
   {% if pagination.page_obj.paginator.num_pages > 1 %}
-    <nav aria-label="Pagination">
-      <ul class="pagination pagination-sm mb-0">
+    <nav aria-label="Queue pagination">
+      <ul class="pagination pagination-sm flex-wrap gap-1 mb-0">
         <li class="page-item {% if not pagination.page_obj.has_previous %}disabled{% endif %}">
           <a
             class="page-link"
@@ -16,7 +16,7 @@
         <li class="page-item {% if not pagination.page_obj.has_previous %}disabled{% endif %}">
           <a
             class="page-link"
-            href="?{% replace_query page=pagination.page_obj.previous_page_number|default:1 %}"
+            href="?{% if pagination.page_obj.has_previous %}{% replace_query page=pagination.page_obj.previous_page_number %}{% else %}{% replace_query page=1 %}{% endif %}"
             aria-label="Previous page"
           >Previous</a>
         </li>
@@ -34,7 +34,7 @@
         <li class="page-item {% if not pagination.page_obj.has_next %}disabled{% endif %}">
           <a
             class="page-link"
-            href="?{% replace_query page=pagination.page_obj.next_page_number|default:pagination.page_obj.paginator.num_pages %}"
+            href="?{% if pagination.page_obj.has_next %}{% replace_query page=pagination.page_obj.next_page_number %}{% else %}{% replace_query page=pagination.page_obj.paginator.num_pages %}{% endif %}"
             aria-label="Next page"
           >Next</a>
         </li>

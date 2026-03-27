@@ -6,7 +6,9 @@ from __future__ import annotations
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.views.generic import TemplateView
 
+from common.pagination import paginate_queryset
 from returns.models import ReturnCase
+from returns.services.queue import build_queue_queryset, get_queue_summary, parse_queue_filters
 
 
 class RoleRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
@@ -39,19 +41,21 @@ class AdminConsoleView(RoleRequiredMixin, TemplateView):
 
 
 class OpsConsoleView(RoleRequiredMixin, TemplateView):
-    """Ops console shell that will later host queue and case detail surfaces."""
+    """Ops console shell for the server-rendered return queue."""
 
     template_name = "console/ops_dashboard.html"
     allowed_groups = ("Ops", "Admin")
 
     def get_context_data(self, **kwargs):
-        """Build the ops dashboard context."""
+        """Build the ops queue context."""
         context = super().get_context_data(**kwargs)
-        queryset = ReturnCase.objects.order_by("-created_at")
+        queue_filters = parse_queue_filters(self.request.GET)
+        queryset = build_queue_queryset(queue_filters)
+        pagination = paginate_queryset(queryset, self.request.GET.get("page"))
         context["page_title"] = "Ops Console"
-        context["submitted_count"] = queryset.filter(status="submitted").count()
-        context["in_review_count"] = queryset.filter(status="in_review").count()
-        context["recent_cases"] = queryset[:5]
+        context["queue_filters"] = queue_filters
+        context["queue_summary"] = get_queue_summary(queryset)
+        context["pagination"] = pagination
         return context
 
 

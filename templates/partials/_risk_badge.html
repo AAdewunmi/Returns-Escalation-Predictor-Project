@@ -1,0 +1,13 @@
+<!-- path: templates/partials/_risk_badge.html -->
+{% if risk_label %}
+  <span class="rh-risk-badge rh-risk-badge--{{ risk_label }}">
+    <span class="rh-risk-badge__label">{{ risk_label|title }} risk</span>
+    {% if risk_score %}
+      <span class="rh-risk-badge__score">{{ risk_score }}</span>
+    {% endif %}
+  </span>
+{% else %}
+  <span class="rh-risk-badge rh-risk-badge--none">
+    <span class="rh-risk-badge__label">No score yet</span>
+  </span>
+{% endif %}

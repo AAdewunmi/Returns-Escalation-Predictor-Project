@@ -1,0 +1,59 @@
+<!-- path: templates/partials/_filter_bar.html -->
+<form method="get" class="rh-filter-bar rh-band rh-band--workflow mb-4" novalidate>
+  <div class="rh-filter-bar__header">
+    <div class="rh-kicker">Queue filters</div>
+    <p>Refine the live queue by case reference, workflow status, priority, and triage risk.</p>
+  </div>
+  <div class="row g-3 align-items-end">
+    <div class="col-12 col-lg-4">
+      <label for="queue-search" class="form-label rh-filter-bar__label">Search</label>
+      <input
+        id="queue-search"
+        name="search"
+        type="text"
+        class="form-control rh-filter-bar__control"
+        placeholder="Case reference, order, customer, merchant"
+        value="{{ queue_filters.search }}"
+      >
+    </div>
+
+    <div class="col-6 col-lg-2">
+      <label for="queue-status" class="form-label rh-filter-bar__label">Status</label>
+      <select id="queue-status" name="status" class="form-select rh-filter-bar__control">
+        <option value="">All statuses</option>
+        <option value="submitted" {% if queue_filters.status == "submitted" %}selected{% endif %}>Submitted</option>
+        <option value="waiting_customer" {% if queue_filters.status == "waiting_customer" %}selected{% endif %}>Waiting for customer</option>
+        <option value="waiting_merchant" {% if queue_filters.status == "waiting_merchant" %}selected{% endif %}>Waiting for merchant</option>
+        <option value="in_review" {% if queue_filters.status == "in_review" %}selected{% endif %}>In review</option>
+        <option value="approved" {% if queue_filters.status == "approved" %}selected{% endif %}>Approved</option>
+        <option value="rejected" {% if queue_filters.status == "rejected" %}selected{% endif %}>Rejected</option>
+      </select>
+    </div>
+
+    <div class="col-6 col-lg-2">
+      <label for="queue-priority" class="form-label rh-filter-bar__label">Priority</label>
+      <select id="queue-priority" name="priority" class="form-select rh-filter-bar__control">
+        <option value="">All priorities</option>
+        <option value="low" {% if queue_filters.priority == "low" %}selected{% endif %}>Low</option>
+        <option value="medium" {% if queue_filters.priority == "medium" %}selected{% endif %}>Medium</option>
+        <option value="high" {% if queue_filters.priority == "high" %}selected{% endif %}>High</option>
+        <option value="urgent" {% if queue_filters.priority == "urgent" %}selected{% endif %}>Urgent</option>
+      </select>
+    </div>
+
+    <div class="col-6 col-lg-2">
+      <label for="queue-risk" class="form-label rh-filter-bar__label">Risk</label>
+      <select id="queue-risk" name="risk_label" class="form-select rh-filter-bar__control">
+        <option value="">All risk</option>
+        <option value="low" {% if queue_filters.risk_label == "low" %}selected{% endif %}>Low</option>
+        <option value="medium" {% if queue_filters.risk_label == "medium" %}selected{% endif %}>Medium</option>
+        <option value="high" {% if queue_filters.risk_label == "high" %}selected{% endif %}>High</option>
+      </select>
+    </div>
+
+    <div class="col-12 col-lg-2 d-flex gap-2 rh-filter-bar__actions">
+      <button type="submit" class="btn btn-primary rh-btn-primary flex-grow-1">Apply</button>
+      <a href="{% url 'console:ops-dashboard' %}" class="btn btn-outline-secondary rh-btn-secondary">Reset</a>
+    </div>
+  </div>
+</form>
