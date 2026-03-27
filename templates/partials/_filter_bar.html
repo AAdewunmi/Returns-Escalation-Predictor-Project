@@ -1,21 +1,25 @@
 <!-- path: templates/partials/_filter_bar.html -->
-<form method="get" class="rh-filter-bar card card-body border-0 shadow-sm mb-4" novalidate>
+<form method="get" class="rh-filter-bar rh-band rh-band--workflow mb-4" novalidate>
+  <div class="rh-filter-bar__header">
+    <div class="rh-kicker">Queue filters</div>
+    <p>Refine the live queue by case reference, workflow status, priority, and triage risk.</p>
+  </div>
   <div class="row g-3 align-items-end">
     <div class="col-12 col-lg-4">
-      <label for="queue-search" class="form-label">Search</label>
+      <label for="queue-search" class="form-label rh-filter-bar__label">Search</label>
       <input
         id="queue-search"
         name="search"
         type="text"
-        class="form-control"
+        class="form-control rh-filter-bar__control"
         placeholder="Case reference, order, customer, merchant"
         value="{{ queue_filters.search }}"
       >
     </div>
 
     <div class="col-6 col-lg-2">
-      <label for="queue-status" class="form-label">Status</label>
-      <select id="queue-status" name="status" class="form-select">
+      <label for="queue-status" class="form-label rh-filter-bar__label">Status</label>
+      <select id="queue-status" name="status" class="form-select rh-filter-bar__control">
         <option value="">All statuses</option>
         <option value="submitted" {% if queue_filters.status == "submitted" %}selected{% endif %}>Submitted</option>
         <option value="awaiting_customer" {% if queue_filters.status == "awaiting_customer" %}selected{% endif %}>Awaiting customer</option>
@@ -27,8 +31,8 @@
     </div>
 
     <div class="col-6 col-lg-2">
-      <label for="queue-priority" class="form-label">Priority</label>
-      <select id="queue-priority" name="priority" class="form-select">
+      <label for="queue-priority" class="form-label rh-filter-bar__label">Priority</label>
+      <select id="queue-priority" name="priority" class="form-select rh-filter-bar__control">
         <option value="">All priorities</option>
         <option value="low" {% if queue_filters.priority == "low" %}selected{% endif %}>Low</option>
         <option value="normal" {% if queue_filters.priority == "normal" %}selected{% endif %}>Normal</option>
@@ -38,8 +42,8 @@
     </div>
 
     <div class="col-6 col-lg-2">
-      <label for="queue-risk" class="form-label">Risk</label>
-      <select id="queue-risk" name="risk_label" class="form-select">
+      <label for="queue-risk" class="form-label rh-filter-bar__label">Risk</label>
+      <select id="queue-risk" name="risk_label" class="form-select rh-filter-bar__control">
         <option value="">All risk</option>
         <option value="low" {% if queue_filters.risk_label == "low" %}selected{% endif %}>Low</option>
         <option value="medium" {% if queue_filters.risk_label == "medium" %}selected{% endif %}>Medium</option>
@@ -47,9 +51,9 @@
       </select>
     </div>
 
-    <div class="col-6 col-lg-2 d-flex gap-2">
-      <button type="submit" class="btn btn-primary flex-grow-1">Apply</button>
-      <a href="{% url 'ops-console' %}" class="btn btn-outline-secondary">Reset</a>
+    <div class="col-12 col-lg-2 d-flex gap-2 rh-filter-bar__actions">
+      <button type="submit" class="btn btn-primary rh-btn-primary flex-grow-1">Apply</button>
+      <a href="{% url 'ops-console' %}" class="btn btn-outline-secondary rh-btn-secondary">Reset</a>
     </div>
   </div>
 </form>

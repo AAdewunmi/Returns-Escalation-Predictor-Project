@@ -547,6 +547,58 @@ button:focus-visible {
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55);
 }
 
+.rh-filter-bar {
+  display: grid;
+  gap: var(--rh-space-5);
+}
+
+.rh-filter-bar__header {
+  max-width: 42rem;
+}
+
+.rh-filter-bar__header p {
+  margin: 0;
+  color: var(--rh-color-text-muted);
+  font-size: 0.96rem;
+}
+
+.rh-filter-bar__label {
+  margin-bottom: 0.55rem;
+  color: var(--rh-color-text);
+  font-size: var(--rh-font-size-xs);
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.rh-filter-bar__control {
+  min-height: 3.2rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(27, 35, 28, 0.1);
+  background: rgba(255, 252, 247, 0.88);
+  color: var(--rh-color-text);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+}
+
+.rh-filter-bar__control::placeholder {
+  color: var(--rh-color-text-muted);
+}
+
+.rh-filter-bar__control:focus {
+  border-color: rgba(31, 90, 67, 0.42);
+  box-shadow:
+    0 0 0 0.2rem rgba(31, 90, 67, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+.rh-filter-bar__actions {
+  align-items: stretch;
+}
+
+.rh-filter-bar__actions .btn {
+  min-height: 3.2rem;
+}
+
 .rh-band--narrow {
   max-width: 72rem;
   margin-inline: auto;
