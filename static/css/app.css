@@ -817,6 +817,61 @@ button:focus-visible {
   border-color: rgba(193, 60, 60, 0.2);
 }
 
+.rh-risk-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  border-radius: 999px;
+  padding: 0.28rem 0.35rem 0.28rem 0.72rem;
+  font-size: var(--rh-font-size-xs);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  line-height: 1;
+  border: 1px solid transparent;
+}
+
+.rh-risk-badge__label {
+  display: inline-flex;
+  align-items: center;
+}
+
+.rh-risk-badge__score {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 2.1rem;
+  min-height: 1.75rem;
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(255, 252, 247, 0.72);
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  font-weight: 800;
+}
+
+.rh-risk-badge--low {
+  background: rgba(31, 143, 82, 0.12);
+  color: var(--rh-color-success);
+  border-color: rgba(31, 143, 82, 0.18);
+}
+
+.rh-risk-badge--medium {
+  background: rgba(182, 117, 24, 0.12);
+  color: var(--rh-color-warning);
+  border-color: rgba(182, 117, 24, 0.2);
+}
+
+.rh-risk-badge--high {
+  background: rgba(193, 60, 60, 0.12);
+  color: var(--rh-color-danger);
+  border-color: rgba(193, 60, 60, 0.2);
+}
+
+.rh-risk-badge--none {
+  background: var(--rh-color-surface-muted);
+  color: var(--rh-color-text-muted);
+  border-color: rgba(27, 35, 28, 0.08);
+}
+
 .rh-empty-state {
   padding: var(--rh-space-6);
   text-align: left;
