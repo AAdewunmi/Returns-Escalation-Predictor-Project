@@ -1,76 +1,97 @@
 # path: core/views/console.py
-"""Role-specific console views for ReturnHub."""
+"""Role-specific console views aligned with the live console shell."""
 
 from __future__ import annotations
 
-from django.contrib.auth.decorators import login_required
-from django.core.exceptions import PermissionDenied
-from django.core.paginator import Paginator
-from django.shortcuts import render
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.views.generic import TemplateView
 
-from apps.returns.services.queue import (
-    QUEUE_PAGE_SIZE,
-    build_filter_querystring,
-    build_queue_queryset,
-    get_queue_summary,
-    parse_queue_filters,
-)
+from common.pagination import paginate_queryset
+from returns.models import ReturnCase
+from returns.services.queue import build_queue_queryset, get_queue_summary, parse_queue_filters
 
 
-def _user_has_ops_access(user) -> bool:
-    """Return whether the user can access the ops console."""
+class RoleRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
+    """Require the current user to belong to one of the configured groups."""
 
-    return user.is_superuser or user.groups.filter(name="ops").exists()
+    allowed_groups: tuple[str, ...] = ()
+    raise_exception = True
 
-
-def _build_page_window(
-    *,
-    current_page: int,
-    total_pages: int,
-    radius: int = 2,
-) -> list[int]:
-    """Return a small page window around the current page."""
-
-    if total_pages <= 0:
-        return []
-
-    start = max(1, current_page - radius)
-    end = min(total_pages, current_page + radius)
-    return list(range(start, end + 1))
+    def test_func(self) -> bool:
+        """Validate group membership for the current request."""
+        user = self.request.user
+        return user.is_superuser or any(
+            user.groups.filter(name__iexact=group_name).exists()
+            for group_name in self.allowed_groups
+        )
 
 
-@login_required
-def ops_console(request):
-    """Render the ops console queue preview."""
+class AdminConsoleView(RoleRequiredMixin, TemplateView):
+    """In-product admin console shell."""
 
-    if not _user_has_ops_access(request.user):
-        raise PermissionDenied
+    template_name = "console/admin_dashboard.html"
+    allowed_groups = ("Admin",)
 
-    queue_filters = parse_queue_filters(request.GET)
-    queryset = build_queue_queryset(queue_filters)
+    def get_context_data(self, **kwargs):
+        """Build the admin dashboard context."""
+        context = super().get_context_data(**kwargs)
+        context["page_title"] = "Admin Console"
+        context["total_cases"] = ReturnCase.objects.count()
+        return context
 
-    paginator = Paginator(queryset, QUEUE_PAGE_SIZE)
-    page_number = queue_filters.page
 
-    if paginator.count == 0:
-        page_number = 1
-    elif page_number > paginator.num_pages:
-        page_number = paginator.num_pages
+class OpsConsoleView(RoleRequiredMixin, TemplateView):
+    """Ops console shell for the server-rendered return queue."""
 
-    page_obj = paginator.get_page(page_number)
-    start_index = page_obj.start_index() if paginator.count else 0
-    end_index = page_obj.end_index() if paginator.count else 0
+    template_name = "console/ops_dashboard.html"
+    allowed_groups = ("Ops", "Admin")
 
-    context = {
-        "queue_filters": queue_filters,
-        "queue_summary": get_queue_summary(queryset),
-        "page_obj": page_obj,
-        "page_window": _build_page_window(
-            current_page=page_obj.number,
-            total_pages=paginator.num_pages,
-        ),
-        "filter_querystring": build_filter_querystring(request.GET),
-        "total_count": paginator.count,
-        "count_line": f"Showing {start_index}-{end_index} of {paginator.count}",
-    }
-    return render(request, "console/ops_dashboard.html", context)
+    def get_context_data(self, **kwargs):
+        """Build the ops queue context."""
+        context = super().get_context_data(**kwargs)
+        queue_filters = parse_queue_filters(self.request.GET)
+        queryset = build_queue_queryset(queue_filters)
+        pagination = paginate_queryset(queryset, self.request.GET.get("page"))
+        context["page_title"] = "Ops Console"
+        context["queue_filters"] = queue_filters
+        context["queue_summary"] = get_queue_summary(queryset)
+        context["pagination"] = pagination
+        return context
+
+
+class CustomerConsoleView(RoleRequiredMixin, TemplateView):
+    """Customer console shell."""
+
+    template_name = "console/customer_dashboard.html"
+    allowed_groups = ("Customer", "Admin")
+
+    def get_context_data(self, **kwargs):
+        """Build the customer dashboard context."""
+        context = super().get_context_data(**kwargs)
+        queryset = ReturnCase.objects.none()
+        if hasattr(self.request.user, "customer_profile"):
+            queryset = ReturnCase.objects.filter(
+                customer=self.request.user.customer_profile
+            ).order_by("-created_at")
+        context["page_title"] = "Customer Console"
+        context["recent_cases"] = queryset[:5]
+        return context
+
+
+class MerchantConsoleView(RoleRequiredMixin, TemplateView):
+    """Merchant console shell."""
+
+    template_name = "console/merchant_dashboard.html"
+    allowed_groups = ("Merchant", "Admin")
+
+    def get_context_data(self, **kwargs):
+        """Build the merchant dashboard context."""
+        context = super().get_context_data(**kwargs)
+        queryset = ReturnCase.objects.none()
+        if hasattr(self.request.user, "merchant_profile"):
+            queryset = ReturnCase.objects.filter(
+                merchant=self.request.user.merchant_profile
+            ).order_by("-created_at")
+        context["page_title"] = "Merchant Console"
+        context["recent_cases"] = queryset[:5]
+        return context
