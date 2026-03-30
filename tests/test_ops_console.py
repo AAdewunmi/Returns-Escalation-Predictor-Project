@@ -50,7 +50,7 @@ def test_ops_console_renders_page_two_and_preserves_filters(client) -> None:
 
     assert response.status_code == 200
     assert "Showing 16-18 of 18" in body
-    assert '?status=submitted&amp;page=1' in body or "?page=1&amp;status=submitted" in body
+    assert "?status=submitted&amp;page=1" in body or "?page=1&amp;status=submitted" in body
     assert "High risk" in body
 
 
