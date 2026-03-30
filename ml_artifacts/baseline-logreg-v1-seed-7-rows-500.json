@@ -7,7 +7,7 @@
   },
   "model_version": "baseline-logreg-v1-seed-7-rows-500",
   "reason_code_schema_version": "return-risk-reasons-sprint2-v1",
-  "trained_at": "2026-03-26T17:21:47.974612+00:00",
+  "trained_at": "2026-03-30T09:39:35.848215+00:00",
   "training_rows": 500,
   "training_seed": 7
 }
