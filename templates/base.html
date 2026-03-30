@@ -25,10 +25,12 @@
       <main class="rh-main">
         <div class="container">
           {% include "partials/_flash_messages.html" %}
-          <header class="mb-4">
-            <h1 class="h3 mb-1">{% block page_title %}{{ page_title|default:brand_name }}{% endblock %}</h1>
-            {% block page_intro %}{% endblock %}
-          </header>
+          {% block page_header %}
+            <header class="mb-4">
+              <h1 class="h3 mb-1">{% block page_title %}{{ page_title|default:brand_name }}{% endblock %}</h1>
+              {% block page_intro %}{% endblock %}
+            </header>
+          {% endblock %}
           {% block content %}{% endblock %}
           {% include "partials/_site_footer.html" %}
         </div>

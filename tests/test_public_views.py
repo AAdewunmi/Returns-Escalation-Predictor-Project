@@ -17,6 +17,7 @@ def test_landing_page_renders_role_entry_buttons(client) -> None:
     assert reverse("ops-login") in body
     assert reverse("customer-login") in body
     assert reverse("merchant-login") in body
+    assert '<h1 class="h3 mb-1">ReturnHub</h1>' not in body
 
 
 @pytest.mark.parametrize(
@@ -37,4 +38,7 @@ def test_surface_entry_pages_render_surface_specific_copy(
     response = client.get(reverse(route_name))
 
     assert response.status_code == 200
-    assert expected_text in response.content.decode()
+    body = response.content.decode()
+
+    assert expected_text in body
+    assert '<h1 class="h3 mb-1">ReturnHub</h1>' not in body
