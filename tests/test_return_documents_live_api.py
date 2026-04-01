@@ -4,11 +4,18 @@ from __future__ import annotations
 
 import pytest
 from django.contrib.auth.models import Group
+from django.core.exceptions import PermissionDenied as DjangoPermissionDenied
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
-from rest_framework.test import APIClient
+from rest_framework.test import APIClient, APIRequestFactory, force_authenticate
 
+from api.serializers.return_documents import (
+    ReturnDocumentSerializer,
+    ReturnDocumentUploadSerializer,
+)
+from api.views.return_documents import ReturnDocumentsLiveView
 from returns.models import CaseEvent, EvidenceDocument
+from returns.services.documents import DocumentServiceError
 from tests.factories import EvidenceDocumentFactory, ReturnCaseFactory, UserFactory
 
 
@@ -17,6 +24,92 @@ def _ensure_group(name: str) -> Group:
 
     group, _ = Group.objects.get_or_create(name=name)
     return group
+
+
+def test_return_document_serializer_uses_fallback_file_name_when_file_path_missing() -> None:
+    """The serializer should fall back to the stored file name when file_path is blank."""
+
+    document = EvidenceDocumentFactory.build(
+        file_path="",
+        file=SimpleUploadedFile("fallback.jpg", b"abcde", content_type="image/jpeg"),
+    )
+
+    serializer = ReturnDocumentSerializer(document)
+
+    assert serializer.data["file_path"] == document.file.name
+
+
+def test_return_document_serializer_returns_empty_path_without_file_or_file_path() -> None:
+    """The serializer should emit an empty path when no persisted location exists."""
+
+    document = EvidenceDocumentFactory.build(file_path="", file="")
+
+    serializer = ReturnDocumentSerializer(document)
+
+    assert serializer.data["file_path"] == ""
+
+
+def test_return_document_upload_serializer_rejects_unsupported_kind() -> None:
+    """The live route currently supports evidence uploads only."""
+
+    serializer = ReturnDocumentUploadSerializer(
+        data={
+            "kind": "response",
+            "file": SimpleUploadedFile("photo.jpg", b"abcde", content_type="image/jpeg"),
+        }
+    )
+
+    assert not serializer.is_valid()
+    assert serializer.errors["kind"] == ["Only kind='evidence' is currently supported."]
+
+
+@pytest.mark.django_db
+def test_live_view_get_translates_service_permission_denial(monkeypatch) -> None:
+    """The live view should convert domain permission denial into DRF permission denial."""
+
+    request = APIRequestFactory().get("/returns/1/documents/")
+    force_authenticate(request, user=UserFactory())
+    return_case = ReturnCaseFactory()
+
+    monkeypatch.setattr(ReturnDocumentsLiveView, "_get_case", lambda self, return_id: return_case)
+
+    def deny(**kwargs):
+        raise DjangoPermissionDenied("Forbidden list")
+
+    monkeypatch.setattr("api.views.return_documents.list_documents_for_case", deny)
+
+    response = ReturnDocumentsLiveView.as_view()(request, return_id=return_case.pk)
+
+    assert response.status_code == 403
+    assert response.data == {"detail": "Forbidden list"}
+
+
+@pytest.mark.django_db
+def test_live_view_post_returns_400_for_service_error(monkeypatch) -> None:
+    """The live view should surface document service workflow errors as 400 responses."""
+
+    request = APIRequestFactory().post(
+        "/returns/1/documents/",
+        {
+            "kind": "evidence",
+            "file": SimpleUploadedFile("photo.jpg", b"abcde", content_type="image/jpeg"),
+            "notes": "Visible damage",
+        },
+        format="multipart",
+    )
+    force_authenticate(request, user=UserFactory())
+    return_case = ReturnCaseFactory()
+
+    monkeypatch.setattr(ReturnDocumentsLiveView, "_get_case", lambda self, return_id: return_case)
+    monkeypatch.setattr(
+        "api.views.return_documents.upload_document_for_case",
+        lambda **kwargs: (_ for _ in ()).throw(DocumentServiceError("Bad upload")),
+    )
+
+    response = ReturnDocumentsLiveView.as_view()(request, return_id=return_case.pk)
+
+    assert response.status_code == 400
+    assert response.data == {"detail": "Bad upload"}
 
 
 @pytest.mark.django_db
