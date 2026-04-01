@@ -19,7 +19,7 @@ except ImportError:
     ReturnCaseDocumentUploadApiView = None
 
 try:
-    from returns.api.views.analytics import ReturnAnalyticsApiView
+    from analytics.api.views import ReturnAnalyticsApiView
 except ImportError:
     ReturnAnalyticsApiView = None
 
