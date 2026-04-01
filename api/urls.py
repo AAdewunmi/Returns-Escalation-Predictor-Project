@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from importlib import import_module
+
 from django.urls import path
 
 from returns.api.views import (
@@ -22,11 +24,6 @@ try:
     from analytics.api.views import ReturnAnalyticsApiView
 except ImportError:
     ReturnAnalyticsApiView = None
-
-try:
-    from returns.api.views.audit_export import ReturnCaseAuditExportApiView
-except ImportError:
-    ReturnCaseAuditExportApiView = None
 
 app_name = "api"
 
@@ -52,6 +49,7 @@ def build_optional_urlpatterns():
     """Return optional compatibility routes for API views that may exist later."""
 
     patterns = []
+    audit_export_view = None
 
     if ReturnCaseDocumentUploadApiView is not None:
         patterns.append(
@@ -71,11 +69,18 @@ def build_optional_urlpatterns():
             )
         )
 
-    if ReturnCaseAuditExportApiView is not None:
+    try:
+        audit_export_view = import_module(
+            "returns.api.views.audit_export"
+        ).ReturnCaseAuditExportApiView
+    except (ImportError, AttributeError):
+        audit_export_view = None
+
+    if audit_export_view is not None:
         patterns.append(
             path(
                 "returns/<str:case_id>/audit-export/",
-                ReturnCaseAuditExportApiView.as_view(),
+                audit_export_view.as_view(),
                 name="api-return-audit-export",
             )
         )
