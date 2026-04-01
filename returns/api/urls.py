@@ -5,6 +5,8 @@ from __future__ import annotations
 
 from django.urls import path
 
+from api.views.documents import ReturnCaseDocumentUploadApiView
+from api.views.return_documents import ReturnDocumentsLiveView
 from returns.api.views import (
     OpsQueueListAPIView,
     ReturnCaseCreateAPIView,
@@ -15,7 +17,7 @@ from returns.api.views import (
 )
 
 try:
-    from returns.api.views.analytics import ReturnAnalyticsApiView
+    from analytics.api.views import ReturnAnalyticsAPIView as ReturnAnalyticsApiView
 except ImportError:
     ReturnAnalyticsApiView = None
 
@@ -23,11 +25,6 @@ try:
     from returns.api.views.audit_export import ReturnCaseAuditExportApiView
 except ImportError:
     ReturnCaseAuditExportApiView = None
-
-try:
-    from returns.api.views.documents import ReturnCaseDocumentUploadApiView
-except ImportError:
-    ReturnCaseDocumentUploadApiView = None
 
 app_name = "returns-api"
 
@@ -52,6 +49,11 @@ urlpatterns = [
         "<str:case_id>/notes/",
         ReturnCaseNoteAPIView.as_view(),
         name="return-case-note-api",
+    ),
+    path(
+        "<int:return_id>/documents/",
+        ReturnDocumentsLiveView.as_view(),
+        name="return-case-document-api",
     ),
     path("<str:case_id>/risk/", ReturnCaseRiskAPIView.as_view(), name="case-risk"),
 ]
