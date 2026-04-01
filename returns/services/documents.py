@@ -1,160 +1,165 @@
-# path: returns/services/documents.py
-"""
-Services for uploading and listing evidence documents.
-"""
+"""Services for uploading and listing evidence documents."""
 
 from __future__ import annotations
 
 import hashlib
+import logging
 from dataclasses import dataclass
 
-from django.contrib.auth.models import Group
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.core.exceptions import PermissionDenied
 from django.db import transaction
 
-from apps.returns.models import CaseEvent, CaseEventType, EvidenceDocument, EvidenceDocumentKind
+from returns.models import CaseEvent, EvidenceDocument, ReturnCase
+from returns.services.cases import _actor_role
+from returns.services.risk import score_case_and_persist
+
+logger = logging.getLogger(__name__)
+
+
+class DocumentServiceError(ValueError):
+    """Raised when a document workflow action violates a business rule."""
 
 
 @dataclass(frozen=True)
 class DocumentUploadInput:
-    """
-    Input contract for document uploads.
-    """
+    """Structured input for document uploads."""
 
-    document_kind: str
+    kind: str
     uploaded_file: object
-    note: str = ""
+    notes: str = ""
+    visible_to_customer: bool | None = None
+    visible_to_merchant: bool | None = None
 
 
-def _user_in_group(user, name: str) -> bool:
-    """
-    Return True when the user belongs to the given Django group.
-    """
+def _assert_upload_allowed(
+    *,
+    return_case: ReturnCase,
+    actor: AbstractBaseUser,
+    kind: str,
+) -> str:
+    """Validate upload permissions and return the resolved actor role."""
 
-    return user.is_superuser or Group.objects.filter(user=user, name=name).exists()
+    actor_role = _actor_role(actor)
 
-
-def resolve_actor_role(user) -> str:
-    """
-    Resolve the user's workflow role used in events and permissions.
-    """
-
-    if user.is_superuser:
-        return "admin"
-    if _user_in_group(user, "ops"):
-        return "ops"
-    if _user_in_group(user, "merchant"):
-        return "merchant"
-    if _user_in_group(user, "customer"):
-        return "customer"
-    return "unknown"
-
-
-def _assert_upload_allowed(return_case, actor, document_kind: str) -> None:
-    """
-    Assert that the actor can upload the requested document kind to the case.
-    """
-
-    actor_role = resolve_actor_role(actor)
-
-    if actor_role == "admin":
-        return
-
-    if actor_role == "ops" and document_kind == EvidenceDocumentKind.OPS_ATTACHMENT:
-        return
+    if actor_role in {"admin", "ops"}:
+        return actor_role
 
     if actor_role == "customer":
-        owns_case = return_case.customer_profile.user_id == actor.id
-        if owns_case and document_kind == EvidenceDocumentKind.CUSTOMER_EVIDENCE:
-            return
+        if (
+            return_case.customer.user_id == actor.id
+            and kind == EvidenceDocument.DocumentKind.EVIDENCE
+        ):
+            return actor_role
+        raise PermissionDenied("Customers can only upload evidence to their own cases.")
 
     if actor_role == "merchant":
-        related_case = return_case.merchant_profile.user_id == actor.id
-        if related_case and document_kind == EvidenceDocumentKind.MERCHANT_RESPONSE:
-            return
+        if (
+            return_case.merchant.user_id == actor.id
+            and kind == EvidenceDocument.DocumentKind.RESPONSE
+        ):
+            return actor_role
+        raise PermissionDenied("Merchants can only upload responses to their own cases.")
 
-    raise PermissionError("You do not have permission to upload this document for the case.")
+    raise PermissionDenied("You do not have permission to upload documents for this case.")
 
 
-def list_documents_for_case(return_case, actor):
-    """
-    List documents visible to the actor.
-    """
+def _resolve_visibility(upload_input: DocumentUploadInput) -> tuple[bool, bool]:
+    """Resolve default or explicit visibility for the uploaded document."""
 
-    actor_role = resolve_actor_role(actor)
+    default_customer_visible = upload_input.kind == EvidenceDocument.DocumentKind.EVIDENCE
+    default_merchant_visible = upload_input.kind == EvidenceDocument.DocumentKind.RESPONSE
+
+    return (
+        upload_input.visible_to_customer
+        if upload_input.visible_to_customer is not None
+        else default_customer_visible,
+        upload_input.visible_to_merchant
+        if upload_input.visible_to_merchant is not None
+        else default_merchant_visible,
+    )
+
+
+def list_documents_for_case(*, return_case: ReturnCase, actor: AbstractBaseUser):
+    """Return the document queryset visible to the requesting actor."""
+
+    actor_role = _actor_role(actor)
     queryset = return_case.documents.all()
 
     if actor_role in {"admin", "ops"}:
         return queryset
 
     if actor_role == "customer":
-        if return_case.customer_profile.user_id != actor.id:
-            raise PermissionError("You do not have access to this case.")
+        if return_case.customer.user_id != actor.id:
+            raise PermissionDenied("You do not have access to this case.")
         return queryset.filter(visible_to_customer=True)
 
     if actor_role == "merchant":
-        if return_case.merchant_profile.user_id != actor.id:
-            raise PermissionError("You do not have access to this case.")
+        if return_case.merchant.user_id != actor.id:
+            raise PermissionDenied("You do not have access to this case.")
         return queryset.filter(visible_to_merchant=True)
 
-    raise PermissionError("You do not have access to this case.")
+    raise PermissionDenied("You do not have access to this case.")
 
 
 @transaction.atomic
-def upload_document_for_case(*, return_case, actor, upload_input: DocumentUploadInput) -> EvidenceDocument:
-    """
-    Upload a document for a return case and emit an audit event.
+def upload_document_for_case(
+    *,
+    return_case: ReturnCase,
+    actor: AbstractBaseUser,
+    upload_input: DocumentUploadInput,
+) -> EvidenceDocument:
+    """Upload a document, emit an audit event, and trigger a best-effort rescore."""
 
-    The rescore hook is intentionally lightweight and tolerant. If the evidence-aware
-    model is not yet trained in a local environment, the upload should still succeed.
-    """
+    if upload_input.kind not in EvidenceDocument.DocumentKind.values:
+        raise DocumentServiceError(f"Unsupported document kind '{upload_input.kind}'.")
 
-    _assert_upload_allowed(return_case, actor, upload_input.document_kind)
+    actor_role = _assert_upload_allowed(
+        return_case=return_case,
+        actor=actor,
+        kind=upload_input.kind,
+    )
+    visible_to_customer, visible_to_merchant = _resolve_visibility(upload_input)
 
     file_bytes = upload_input.uploaded_file.read()
     upload_input.uploaded_file.seek(0)
 
-    actor_role = resolve_actor_role(actor)
-    visibility = {
-        EvidenceDocumentKind.CUSTOMER_EVIDENCE: (True, True),
-        EvidenceDocumentKind.MERCHANT_RESPONSE: (True, True),
-        EvidenceDocumentKind.OPS_ATTACHMENT: (False, False),
-    }[upload_input.document_kind]
-
     document = EvidenceDocument.objects.create(
         return_case=return_case,
-        document_kind=upload_input.document_kind,
+        kind=upload_input.kind,
         uploaded_by=actor,
-        uploaded_by_role=actor_role,
+        actor_role=actor_role,
         file=upload_input.uploaded_file,
-        original_filename=upload_input.uploaded_file.name,
-        content_type=getattr(upload_input.uploaded_file, "content_type", "application/octet-stream"),
-        size_bytes=getattr(upload_input.uploaded_file, "size", 0),
+        file_path="",
+        original_filename="",
+        content_type="",
+        byte_size=0,
         checksum_sha256=hashlib.sha256(file_bytes).hexdigest(),
-        note=upload_input.note,
-        visible_to_customer=visibility[0],
-        visible_to_merchant=visibility[1],
+        notes=upload_input.notes.strip(),
+        visible_to_customer=visible_to_customer,
+        visible_to_merchant=visible_to_merchant,
     )
 
     CaseEvent.objects.create(
         return_case=return_case,
-        event_type=CaseEventType.DOCUMENT_UPLOADED,
+        event_type="document_uploaded",
         actor=actor,
         actor_role=actor_role,
         payload={
-            "document_id": str(document.id),
-            "document_kind": document.document_kind,
+            "document_id": str(document.pk),
+            "kind": document.kind,
             "original_filename": document.original_filename,
             "content_type": document.content_type,
-            "size_bytes": document.size_bytes,
+            "byte_size": document.byte_size,
         },
     )
 
     try:
-        from apps.returns.services.risk import score_case_for_escalation
-
-        score_case_for_escalation(return_case=return_case, trigger_source="document_upload")
+        score_case_and_persist(return_case, triggered_by="document_uploaded")
     except Exception:
-        # Uploads must remain available even when the local model artefact is absent.
-        pass
+        logger.exception(
+            "Risk re-score failed after document upload for case_id=%s",
+            return_case.pk,
+        )
 
     return document
