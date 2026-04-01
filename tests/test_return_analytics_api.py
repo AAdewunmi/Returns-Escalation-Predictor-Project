@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import pytest
 from django.contrib.auth.models import Group
+from django.utils import timezone
 from rest_framework.test import APIClient
 
 from returns.models import ReturnCase
@@ -23,12 +24,13 @@ def test_ops_can_fetch_return_metrics() -> None:
     client = APIClient()
     ops_user = UserFactory(email="analytics-ops@example.com")
     add_group(ops_user, "ops")
+    today = timezone.localdate()
 
     ReturnCaseFactory.create_batch(3, status="submitted")
     ReturnCaseFactory.create_batch(2, status=ReturnCase.Status.IN_REVIEW)
 
     client.force_authenticate(ops_user)
-    response = client.get("/api/analytics/returns/?from=2026-03-01&to=2026-03-31")
+    response = client.get(f"/api/analytics/returns/?from={today}&to={today}")
 
     assert response.status_code == 200
     assert response.data["total_cases"] >= 5
@@ -42,8 +44,9 @@ def test_customer_cannot_fetch_return_metrics() -> None:
     customer_user = UserFactory(email="analytics-customer@example.com")
     add_group(customer_user, "customer")
     CustomerProfileFactory(user=customer_user)
+    today = timezone.localdate()
 
     client.force_authenticate(customer_user)
-    response = client.get("/api/analytics/returns/?from=2026-03-01&to=2026-03-31")
+    response = client.get(f"/api/analytics/returns/?from={today}&to={today}")
 
     assert response.status_code == 403

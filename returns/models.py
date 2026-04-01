@@ -16,7 +16,7 @@ from accounts.models import CustomerProfile, MerchantProfile
 from common.models import TimeStampedModel
 
 
-def build_document_upload_path(instance: "EvidenceDocument", filename: str) -> str:
+def build_document_upload_path(instance: EvidenceDocument, filename: str) -> str:
     """Build a traceable upload path for stored evidence files."""
 
     extension = Path(filename).suffix.lower()
