@@ -25,9 +25,10 @@ def build_document_upload_path(instance: EvidenceDocument, filename: str) -> str
     case_id = instance.return_case_id or "unassigned"
     document_kind = instance.kind or "document"
     suffix = instance.pk or uuid.uuid4()
+    suffix_token = str(suffix).replace("-", "")[:12]
     return (
         f"return-cases/{case_id}/{document_kind}/{created_at:%Y/%m}/"
-        f"{stem}-{suffix.hex[:12]}{extension}"
+        f"{stem}-{suffix_token}{extension}"
     )
 
 
@@ -175,19 +176,28 @@ class EvidenceDocument(TimeStampedModel):
     def save(self, *args, **kwargs):
         """Persist uploaded file metadata into stable model fields."""
 
+        has_file = bool(self.file)
+
         if self.file:
-            if not self.file_path:
-                self.file_path = self.file.name
+            uploaded_file = getattr(self.file, "file", self.file)
             if not self.original_filename:
                 self.original_filename = os.path.basename(self.file.name)
             if not self.content_type:
-                self.content_type = getattr(self.file, "content_type", "application/octet-stream")
+                self.content_type = getattr(
+                    uploaded_file,
+                    "content_type",
+                    "application/octet-stream",
+                )
             if not self.byte_size:
                 self.byte_size = getattr(self.file, "size", 0)
             if not self.checksum_sha256:
                 self.checksum_sha256 = _calculate_file_checksum(self.file)
 
         super().save(*args, **kwargs)
+
+        if has_file and self.file_path != self.file.name:
+            self.file_path = self.file.name
+            super().save(update_fields=["file_path", "updated_at"])
 
 
 class CaseNote(TimeStampedModel):
