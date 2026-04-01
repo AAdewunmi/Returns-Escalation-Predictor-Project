@@ -6,7 +6,6 @@ from importlib import import_module
 
 from django.urls import path
 
-from analytics.api.views import ReturnAnalyticsAPIView
 from api.views.return_documents import ReturnDocumentsLiveView
 from returns.api.views import (
     OpsQueueListAPIView,
@@ -16,6 +15,16 @@ from returns.api.views import (
     ReturnCaseRiskAPIView,
     ReturnCaseStatusAPIView,
 )
+
+try:
+    from analytics.api.views import ReturnAnalyticsAPIView as ReturnAnalyticsApiView
+except ImportError:
+    ReturnAnalyticsApiView = None
+
+try:
+    from api.views.documents import ReturnCaseDocumentUploadApiView
+except ImportError:
+    ReturnCaseDocumentUploadApiView = None
 
 app_name = "api"
 
@@ -39,11 +48,6 @@ urlpatterns = [
         name="api-return-document",
     ),
     path("returns/<str:case_id>/risk/", ReturnCaseRiskAPIView.as_view(), name="api-return-risk"),
-    path(
-        "analytics/returns/",
-        ReturnAnalyticsAPIView.as_view(),
-        name="api-return-analytics",
-    ),
 ]
 
 
@@ -51,6 +55,24 @@ def build_optional_urlpatterns():
     """Return optional compatibility routes for API views that may exist later."""
 
     patterns = []
+
+    if ReturnCaseDocumentUploadApiView is not None:
+        patterns.append(
+            path(
+                "returns/<str:case_id>/documents/",
+                ReturnCaseDocumentUploadApiView.as_view(),
+                name="api-return-document",
+            )
+        )
+
+    if ReturnAnalyticsApiView is not None:
+        patterns.append(
+            path(
+                "analytics/returns/",
+                ReturnAnalyticsApiView.as_view(),
+                name="api-return-analytics",
+            )
+        )
 
     try:
         audit_export_view = import_module(

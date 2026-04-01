@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from django.urls import path
 
+from api.views.documents import ReturnCaseDocumentUploadApiView
 from api.views.return_documents import ReturnDocumentsLiveView
 from returns.api.views import (
     OpsQueueListAPIView,
@@ -62,6 +63,15 @@ def build_optional_urlpatterns():
     """Return optional placeholder routes for views that may exist later."""
 
     patterns = []
+
+    if ReturnCaseDocumentUploadApiView is not None:
+        patterns.append(
+            path(
+                "<str:case_id>/documents/",
+                ReturnCaseDocumentUploadApiView.as_view(),
+                name="return-case-document-api",
+            )
+        )
 
     if ReturnAnalyticsApiView is not None:
         patterns.append(
