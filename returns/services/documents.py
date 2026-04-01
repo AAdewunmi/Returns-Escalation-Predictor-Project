@@ -71,12 +71,16 @@ def _resolve_visibility(upload_input: DocumentUploadInput) -> tuple[bool, bool]:
     default_merchant_visible = upload_input.kind == EvidenceDocument.DocumentKind.RESPONSE
 
     return (
-        upload_input.visible_to_customer
-        if upload_input.visible_to_customer is not None
-        else default_customer_visible,
-        upload_input.visible_to_merchant
-        if upload_input.visible_to_merchant is not None
-        else default_merchant_visible,
+        (
+            upload_input.visible_to_customer
+            if upload_input.visible_to_customer is not None
+            else default_customer_visible
+        ),
+        (
+            upload_input.visible_to_merchant
+            if upload_input.visible_to_merchant is not None
+            else default_merchant_visible
+        ),
     )
 
 
