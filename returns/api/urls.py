@@ -5,6 +5,7 @@ from __future__ import annotations
 
 from django.urls import path
 
+from api.views.return_documents import ReturnDocumentsLiveView
 from returns.api.views import (
     OpsQueueListAPIView,
     ReturnCaseCreateAPIView,
@@ -15,7 +16,7 @@ from returns.api.views import (
 )
 
 try:
-    from returns.api.views.analytics import ReturnAnalyticsApiView
+    from analytics.api.views import ReturnAnalyticsAPIView as ReturnAnalyticsApiView
 except ImportError:
     ReturnAnalyticsApiView = None
 
@@ -23,11 +24,6 @@ try:
     from returns.api.views.audit_export import ReturnCaseAuditExportApiView
 except ImportError:
     ReturnCaseAuditExportApiView = None
-
-try:
-    from returns.api.views.documents import ReturnCaseDocumentUploadApiView
-except ImportError:
-    ReturnCaseDocumentUploadApiView = None
 
 app_name = "returns-api"
 
@@ -53,6 +49,11 @@ urlpatterns = [
         ReturnCaseNoteAPIView.as_view(),
         name="return-case-note-api",
     ),
+    path(
+        "<int:return_id>/documents/",
+        ReturnDocumentsLiveView.as_view(),
+        name="return-case-document-api",
+    ),
     path("<str:case_id>/risk/", ReturnCaseRiskAPIView.as_view(), name="case-risk"),
 ]
 
@@ -61,15 +62,6 @@ def build_optional_urlpatterns():
     """Return optional placeholder routes for views that may exist later."""
 
     patterns = []
-
-    if ReturnCaseDocumentUploadApiView is not None:
-        patterns.append(
-            path(
-                "<str:case_id>/documents/",
-                ReturnCaseDocumentUploadApiView.as_view(),
-                name="return-case-document-api",
-            )
-        )
 
     if ReturnAnalyticsApiView is not None:
         patterns.append(
