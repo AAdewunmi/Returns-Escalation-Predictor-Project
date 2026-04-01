@@ -1,43 +1,37 @@
-# path: api/serializers/documents.py
-"""
-Serializers for evidence document endpoints.
-"""
+"""Serializers for evidence document endpoints."""
 
 from __future__ import annotations
 
 from rest_framework import serializers
 
-from apps.returns.models import EvidenceDocument, EvidenceDocumentKind
+from returns.models import EvidenceDocument
 
 
 class DocumentUploadSerializer(serializers.Serializer):
-    """
-    Validate upload payloads for case documents.
-    """
+    """Validate upload payloads for case documents."""
 
-    document_kind = serializers.ChoiceField(choices=EvidenceDocumentKind.choices)
+    kind = serializers.ChoiceField(choices=EvidenceDocument.DocumentKind.choices)
     file = serializers.FileField()
-    note = serializers.CharField(required=False, allow_blank=True, max_length=2000)
+    notes = serializers.CharField(required=False, allow_blank=True, max_length=255)
+    visible_to_customer = serializers.BooleanField(required=False)
+    visible_to_merchant = serializers.BooleanField(required=False)
 
 
 class DocumentSerializer(serializers.ModelSerializer):
-    """
-    Serialise stored evidence metadata.
-    """
-
-    uploaded_by_role = serializers.CharField(read_only=True)
+    """Serialise stored evidence metadata."""
 
     class Meta:
         model = EvidenceDocument
         fields = [
             "id",
-            "document_kind",
+            "kind",
+            "file_path",
             "original_filename",
             "content_type",
-            "size_bytes",
+            "byte_size",
             "checksum_sha256",
-            "note",
-            "uploaded_by_role",
+            "notes",
+            "actor_role",
             "visible_to_customer",
             "visible_to_merchant",
             "created_at",
