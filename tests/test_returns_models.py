@@ -9,6 +9,7 @@ from pathlib import Path
 
 import pytest
 from django.contrib.auth import get_user_model
+from django.core.exceptions import ValidationError
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 
@@ -220,6 +221,61 @@ def test_evidence_document_save_without_file_preserves_existing_metadata() -> No
     assert document.content_type == "application/pdf"
     assert document.byte_size == 123
     assert document.checksum_sha256 == "abc123"
+
+
+@pytest.mark.django_db
+def test_evidence_document_save_rejects_unsupported_content_type() -> None:
+    """Saving should reject file types outside the allowed evidence contract."""
+    upload = SimpleUploadedFile(
+        "malware.exe",
+        b"not-allowed",
+        content_type="application/octet-stream",
+    )
+    return_case = ReturnCaseFactory()
+    document = EvidenceDocument(
+        return_case=return_case,
+        uploaded_by=return_case.customer.user,
+        actor_role=EvidenceDocument.ActorRole.CUSTOMER,
+        kind=EvidenceDocument.DocumentKind.EVIDENCE,
+        file=upload,
+        file_path="",
+        original_filename="",
+        content_type="",
+        byte_size=0,
+        checksum_sha256="",
+        notes="",
+    )
+
+    with pytest.raises(ValidationError, match="Unsupported document type"):
+        document.save()
+
+
+@pytest.mark.django_db
+def test_evidence_document_save_rejects_oversized_files() -> None:
+    """Saving should reject files larger than the upload limit."""
+    upload = SimpleUploadedFile(
+        "huge.pdf",
+        b"x",
+        content_type="application/pdf",
+    )
+    upload.size = (10 * 1024 * 1024) + 1
+    return_case = ReturnCaseFactory()
+    document = EvidenceDocument(
+        return_case=return_case,
+        uploaded_by=return_case.customer.user,
+        actor_role=EvidenceDocument.ActorRole.CUSTOMER,
+        kind=EvidenceDocument.DocumentKind.EVIDENCE,
+        file=upload,
+        file_path="",
+        original_filename="",
+        content_type="",
+        byte_size=0,
+        checksum_sha256="",
+        notes="",
+    )
+
+    with pytest.raises(ValidationError, match="10 MB upload limit"):
+        document.save()
 
 
 def test_calculate_file_checksum_handles_files_without_tell_or_seek() -> None:

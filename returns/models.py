@@ -8,12 +8,14 @@ import uuid
 from pathlib import Path
 
 from django.conf import settings
+from django.core.exceptions import ValidationError
 from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
 
 from accounts.models import CustomerProfile, MerchantProfile
 from common.models import TimeStampedModel
+from returns.validators import validate_document_content_type, validate_document_size
 
 
 def build_document_upload_path(instance: EvidenceDocument, filename: str) -> str:
@@ -173,6 +175,27 @@ class EvidenceDocument(TimeStampedModel):
 
         ordering = ["-created_at", "id"]
 
+    def clean(self) -> None:
+        """Validate uploaded evidence files before persistence."""
+
+        errors: dict[str, list[str]] = {}
+
+        if self.file:
+            uploaded_file = getattr(self.file, "file", self.file)
+
+            try:
+                validate_document_content_type(uploaded_file)
+            except ValidationError as exc:
+                errors.setdefault("file", []).extend(exc.messages)
+
+            try:
+                validate_document_size(uploaded_file)
+            except ValidationError as exc:
+                errors.setdefault("file", []).extend(exc.messages)
+
+        if errors:
+            raise ValidationError(errors)
+
     def save(self, *args, **kwargs):
         """Persist uploaded file metadata into stable model fields."""
 
@@ -180,6 +203,8 @@ class EvidenceDocument(TimeStampedModel):
 
         if self.file:
             uploaded_file = getattr(self.file, "file", self.file)
+            if not self.file_path:
+                self.file_path = self.file.name
             if not self.original_filename:
                 self.original_filename = os.path.basename(self.file.name)
             if not self.content_type:
@@ -193,6 +218,7 @@ class EvidenceDocument(TimeStampedModel):
             if not self.checksum_sha256:
                 self.checksum_sha256 = _calculate_file_checksum(self.file)
 
+        self.full_clean()
         super().save(*args, **kwargs)
 
         if has_file and self.file_path != self.file.name:
