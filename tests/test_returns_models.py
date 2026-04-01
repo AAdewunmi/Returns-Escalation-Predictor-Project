@@ -13,8 +13,74 @@ from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import override_settings
 
 from accounts.models import CustomerProfile, MerchantProfile
-from returns.models import EvidenceDocument, ReturnCase, build_document_upload_path
+from returns.models import (
+    EvidenceDocument,
+    ReturnCase,
+    _calculate_file_checksum,
+    build_document_upload_path,
+)
 from tests.factories import EvidenceDocumentFactory, ReturnCaseFactory
+
+
+class FileWithoutTellOrSeek:
+    """Minimal file-like object for checksum branch coverage."""
+
+    closed = True
+
+    def __init__(self, payload: bytes) -> None:
+        self.payload = payload
+        self.open_called = False
+        self.close_called = False
+
+    def open(self, mode: str) -> None:
+        self.open_called = True
+
+    def close(self) -> None:
+        self.close_called = True
+
+    def chunks(self):
+        yield self.payload
+
+
+class FileWithFailingTellAndSeek:
+    """File-like object that raises during tell and seek calls."""
+
+    closed = False
+
+    def __init__(self, payload: bytes) -> None:
+        self.payload = payload
+        self.seek_calls = 0
+
+    def tell(self) -> int:
+        raise OSError("tell failed")
+
+    def seek(self, offset: int) -> None:
+        self.seek_calls += 1
+        raise ValueError("seek failed")
+
+    def chunks(self):
+        yield self.payload
+
+
+class FileWithFailingRestoreSeek:
+    """File-like object that fails when restoring its original position."""
+
+    closed = False
+
+    def __init__(self, payload: bytes) -> None:
+        self.payload = payload
+        self.seek_calls = 0
+
+    def tell(self) -> int:
+        return 7
+
+    def seek(self, offset: int) -> None:
+        self.seek_calls += 1
+        if self.seek_calls > 1:
+            raise ValueError("restore failed")
+
+    def chunks(self):
+        yield self.payload
 
 
 @pytest.mark.django_db
@@ -154,3 +220,34 @@ def test_evidence_document_save_without_file_preserves_existing_metadata() -> No
     assert document.content_type == "application/pdf"
     assert document.byte_size == 123
     assert document.checksum_sha256 == "abc123"
+
+
+def test_calculate_file_checksum_handles_files_without_tell_or_seek() -> None:
+    """Checksum helper should support simple file-like objects."""
+    file_obj = FileWithoutTellOrSeek(b"branch-coverage")
+
+    checksum = _calculate_file_checksum(file_obj)
+
+    assert checksum == hashlib.sha256(b"branch-coverage").hexdigest()
+    assert file_obj.open_called is True
+    assert file_obj.close_called is True
+
+
+def test_calculate_file_checksum_tolerates_tell_and_initial_seek_failures() -> None:
+    """Checksum helper should continue when tell or initial seek raises."""
+    file_obj = FileWithFailingTellAndSeek(b"branch-coverage")
+
+    checksum = _calculate_file_checksum(file_obj)
+
+    assert checksum == hashlib.sha256(b"branch-coverage").hexdigest()
+    assert file_obj.seek_calls == 1
+
+
+def test_calculate_file_checksum_tolerates_restore_seek_failures() -> None:
+    """Checksum helper should still return a checksum if restore seek fails."""
+    file_obj = FileWithFailingRestoreSeek(b"branch-coverage")
+
+    checksum = _calculate_file_checksum(file_obj)
+
+    assert checksum == hashlib.sha256(b"branch-coverage").hexdigest()
+    assert file_obj.seek_calls == 2
