@@ -15,10 +15,7 @@ from typing import Any
 from ml.features import (
     FEATURE_CONTRACT_PATH,
     FEATURE_CONTRACT_VERSION,
-    _encode_item_category,
-    _encode_return_reason,
-    _message_length_bucket,
-    _order_value_band,
+    build_feature_vector,
 )
 from ml.reason_codes import REASON_CODE_SCHEMA_VERSION
 
@@ -33,18 +30,16 @@ def _get_feature_contract_hash() -> str:
 
 
 def _extract_features_from_payload(payload: dict[str, Any]) -> dict[str, int]:
-    """Map a synthetic payload into the committed feature contract shape."""
+    """Map a synthetic payload through the shared feature extraction path."""
 
-    return {
-        "item_category_code": _encode_item_category(payload["item_category"]),
-        "delivery_to_return_days": int(payload["delivery_to_return_days"]),
-        "return_reason_code": _encode_return_reason(payload["return_reason"]),
-        "customer_message_length_bucket": _message_length_bucket(
-            "x" * int(payload["customer_message_length"])
-        ),
-        "prior_returns_count": int(payload["prior_returns_count"]),
-        "order_value_band": _order_value_band(payload["order_value_band_value"]),
-    }
+    return build_feature_vector(
+        item_category=payload["item_category"],
+        delivery_to_return_days=int(payload["delivery_to_return_days"]),
+        return_reason=payload["return_reason"],
+        customer_message="x" * int(payload["customer_message_length"]),
+        prior_returns_count=int(payload["prior_returns_count"]),
+        order_value=payload["order_value_band_value"],
+    )
 
 
 @dataclass(frozen=True)
