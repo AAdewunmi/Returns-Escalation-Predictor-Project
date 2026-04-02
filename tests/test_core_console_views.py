@@ -128,6 +128,7 @@ def test_customer_console_view_context_includes_recent_cases_for_profile() -> No
 
     assert context["page_title"] == "Customer Console"
     assert list(context["recent_cases"]) == [owned_case]
+    assert context["customer_timeline_items"][0]["title"] == "See your own cases"
 
 
 @pytest.mark.django_db
@@ -142,6 +143,7 @@ def test_customer_console_view_context_handles_missing_profile() -> None:
 
     assert context["page_title"] == "Customer Console"
     assert list(context["recent_cases"]) == []
+    assert len(context["customer_timeline_items"]) == 3
 
 
 @pytest.mark.django_db
@@ -162,6 +164,7 @@ def test_merchant_console_view_context_includes_recent_cases_for_profile() -> No
 
     assert context["page_title"] == "Merchant Console"
     assert list(context["recent_cases"]) == [owned_case]
+    assert context["merchant_timeline_items"][0]["title"] == "Review linked cases"
 
 
 @pytest.mark.django_db
@@ -176,3 +179,4 @@ def test_merchant_console_view_context_handles_missing_profile() -> None:
 
     assert context["page_title"] == "Merchant Console"
     assert list(context["recent_cases"]) == []
+    assert len(context["merchant_timeline_items"]) == 3

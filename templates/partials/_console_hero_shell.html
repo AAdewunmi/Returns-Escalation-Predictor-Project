@@ -1,0 +1,32 @@
+<!-- path: templates/partials/_console_hero_shell.html -->
+<section class="rh-card rh-hero mb-4">
+  <div class="rh-hero-grid">
+    <div class="rh-hero-copy">
+      <div class="rh-kicker">{{ kicker }}</div>
+      <h1>{{ heading }}</h1>
+      <p class="rh-hero-lead">{{ lead }}</p>
+      <div class="rh-trust-row" aria-label="{{ trust_aria_label }}">
+        {% for item in trust_items %}
+          <span class="rh-trust-item">{{ item }}</span>
+        {% endfor %}
+      </div>
+    </div>
+    <aside class="rh-hero-visual" aria-label="{{ visual_aria_label }}">
+      <div class="rh-visual-window">
+        <div class="rh-visual-topbar">
+          <span class="rh-visual-dot"></span>
+          <span class="rh-visual-dot"></span>
+          <span class="rh-visual-dot"></span>
+          <div class="rh-visual-window-title">{{ visual_window_title }}</div>
+        </div>
+        <div class="rh-visual-body">
+          <div class="rh-visual-column">
+            <div class="rh-visual-label">{{ visual_list_label }}</div>
+            {% include "partials/_console_recent_case_cards.html" with recent_cases=recent_cases message_limit=110 case_meta_items=visual_case_meta_items empty_title=visual_empty_title empty_status=visual_empty_status empty_body=visual_empty_body wrap_in_rows=False %}
+          </div>
+          {% include "partials/_console_visual_timeline.html" with label=timeline_label items=timeline_items %}
+        </div>
+      </div>
+    </aside>
+  </div>
+</section>

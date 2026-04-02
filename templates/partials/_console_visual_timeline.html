@@ -1,0 +1,12 @@
+<!-- path: templates/partials/_console_visual_timeline.html -->
+<div class="rh-visual-column">
+  <div class="rh-visual-label">{{ label }}</div>
+  <ol class="rh-timeline rh-timeline--visual">
+    {% for item in items %}
+      <li>
+        <strong>{{ item.title }}</strong>
+        <span>{{ item.body }}</span>
+      </li>
+    {% endfor %}
+  </ol>
+</div>

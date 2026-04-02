@@ -2,11 +2,21 @@
 """Public UI routes for ReturnHub."""
 from django.urls import path
 
-from ui.views import BootstrapLandingView, ReturnCaseDetailView, SurfaceEntryView
+from ui.views import (
+    BootstrapLandingView,
+    ReturnCaseDetailView,
+    ReturnCaseDocumentUploadView,
+    SurfaceEntryView,
+)
 
 urlpatterns = [
     path("", BootstrapLandingView.as_view(), name="landing"),
     path("cases/<int:case_id>/", ReturnCaseDetailView.as_view(), name="case-detail"),
+    path(
+        "cases/<int:case_id>/documents/upload/",
+        ReturnCaseDocumentUploadView.as_view(),
+        name="case-document-upload",
+    ),
     path("login/admin/", SurfaceEntryView.as_view(), {"surface": "admin"}, name="admin-login"),
     path("login/ops/", SurfaceEntryView.as_view(), {"surface": "ops"}, name="ops-login"),
     path(

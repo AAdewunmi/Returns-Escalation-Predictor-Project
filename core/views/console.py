@@ -10,6 +10,53 @@ from common.pagination import paginate_queryset
 from returns.models import ReturnCase
 from returns.services.queue import build_queue_queryset, get_queue_summary, parse_queue_filters
 
+CUSTOMER_TIMELINE_ITEMS = (
+    {
+        "title": "See your own cases",
+        "body": (
+            "Keep customer-linked returns visible in one place while later "
+            "sprints add deeper case actions."
+        ),
+    },
+    {
+        "title": "Track progress clearly",
+        "body": (
+            "Status, messages, and recent activity stay inside the same " "branded console shell."
+        ),
+    },
+    {
+        "title": "Prepare for evidence flows",
+        "body": (
+            "This layout leaves room for uploads, document review, and richer "
+            "case detail without changing the frame."
+        ),
+    },
+)
+
+MERCHANT_TIMELINE_ITEMS = (
+    {
+        "title": "Review linked cases",
+        "body": (
+            "Keep merchant-linked returns grouped together in the same "
+            "operational frame used across ReturnHub."
+        ),
+    },
+    {
+        "title": "Stay in shared workflow context",
+        "body": (
+            "Case summaries remain visible while later sprints add merchant "
+            "responses and supporting documents."
+        ),
+    },
+    {
+        "title": "Grow into response handling",
+        "body": (
+            "The shared layout is ready for merchant-side actions without "
+            "duplicating the surrounding shell."
+        ),
+    },
+)
+
 
 class RoleRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
     """Require the current user to belong to one of the configured groups."""
@@ -75,6 +122,18 @@ class CustomerConsoleView(RoleRequiredMixin, TemplateView):
             ).order_by("-created_at")
         context["page_title"] = "Customer Console"
         context["recent_cases"] = queryset[:5]
+        context["customer_timeline_items"] = CUSTOMER_TIMELINE_ITEMS
+        context["customer_trust_items"] = (
+            "Own-case visibility",
+            "Shared case history",
+            "Role-aware access",
+        )
+        context["customer_visual_case_meta_items"] = ("item_category", "delivery_date")
+        context["customer_recent_case_meta_items"] = (
+            "item_category",
+            "return_reason",
+            "delivery_date",
+        )
         return context
 
 
@@ -94,4 +153,16 @@ class MerchantConsoleView(RoleRequiredMixin, TemplateView):
             ).order_by("-created_at")
         context["page_title"] = "Merchant Console"
         context["recent_cases"] = queryset[:5]
+        context["merchant_timeline_items"] = MERCHANT_TIMELINE_ITEMS
+        context["merchant_trust_items"] = (
+            "Merchant-linked cases",
+            "Shared workflow context",
+            "Future response handling",
+        )
+        context["merchant_visual_case_meta_items"] = ("item_category", "order_value")
+        context["merchant_recent_case_meta_items"] = (
+            "item_category",
+            "return_reason",
+            "order_value",
+        )
         return context
