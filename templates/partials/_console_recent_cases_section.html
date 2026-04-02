@@ -1,0 +1,16 @@
+<!-- path: templates/partials/_console_recent_cases_section.html -->
+<section class="rh-band rh-band--value rh-band--wide">
+  <div class="rh-section-heading">
+    <div class="rh-kicker">{{ kicker }}</div>
+    <h2>{{ heading }}</h2>
+  </div>
+  <div class="rh-visual-panel">
+    {% if recent_cases %}
+      <div class="row g-3">
+        {% include "partials/_console_recent_case_cards.html" with recent_cases=recent_cases message_limit=140 case_meta_items=case_meta_items wrap_in_rows=True %}
+      </div>
+    {% else %}
+      {% include "partials/_empty_state.html" with title=empty_title body=empty_body %}
+    {% endif %}
+  </div>
+</section>

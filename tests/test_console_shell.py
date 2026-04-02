@@ -59,8 +59,10 @@ def test_customer_console_shows_customer_shell(client) -> None:
     client.force_login(customer_user)
     response = client.get("/console/customer/")
 
+    body = response.content.decode()
     assert response.status_code == 200
-    assert "Customer Console" in response.content.decode()
+    assert "Customer Console" in body
+    assert "See your own cases" in body
 
 
 @pytest.mark.django_db
@@ -74,5 +76,7 @@ def test_merchant_console_renders_for_merchant_user(client) -> None:
     client.force_login(merchant_user)
     response = client.get("/console/merchant/")
 
+    body = response.content.decode()
     assert response.status_code == 200
-    assert "Merchant Console" in response.content.decode()
+    assert "Merchant Console" in body
+    assert "Review linked cases" in body
