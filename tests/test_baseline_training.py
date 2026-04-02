@@ -7,6 +7,7 @@ import hashlib
 import json
 import sys
 import types
+from collections import OrderedDict
 
 import pytest
 
@@ -48,6 +49,58 @@ def test_get_feature_contract_hash_matches_committed_contract_file() -> None:
     expected_hash = hashlib.sha256(FEATURE_CONTRACT_PATH.read_bytes()).hexdigest()
 
     assert _get_feature_contract_hash() == expected_hash
+
+
+def test_training_feature_extraction_uses_shared_feature_builder(monkeypatch) -> None:
+    """Training feature rows should be built through the shared contract-checked path."""
+
+    captured_kwargs = {}
+    expected_features = OrderedDict(
+        [
+            ("item_category_code", 2),
+            ("delivery_to_return_days", 5),
+            ("return_reason_code", 1),
+            ("return_reason_is_damaged", 1),
+            ("customer_message_length_bucket", 3),
+            ("prior_returns_count", 1),
+            ("order_value_band", 4),
+            ("order_value_band_high", 1),
+            ("evidence_count", 0),
+            ("hours_to_first_customer_evidence", 0.0),
+            ("merchant_document_count", 0),
+        ]
+    )
+
+    def fake_build_feature_vector(**kwargs):
+        captured_kwargs.update(kwargs)
+        return expected_features
+
+    monkeypatch.setattr(baseline_module, "build_feature_vector", fake_build_feature_vector)
+
+    payload = {
+        "item_category": "electronics",
+        "delivery_to_return_days": 5,
+        "return_reason": "damaged",
+        "customer_message_length": 200,
+        "prior_returns_count": 1,
+        "order_value_band_value": 500,
+        "evidence_count": 0,
+        "hours_to_first_customer_evidence": 0.0,
+        "merchant_document_count": 0,
+    }
+
+    assert baseline_module._extract_features_from_payload(payload) == expected_features
+    assert captured_kwargs == {
+        "item_category": "electronics",
+        "delivery_to_return_days": 5,
+        "return_reason": "damaged",
+        "customer_message": "x" * 200,
+        "prior_returns_count": 1,
+        "order_value": 500,
+        "evidence_count": 0,
+        "hours_to_first_customer_evidence": 0.0,
+        "merchant_document_count": 0,
+    }
 
 
 def test_train_and_save_baseline_model_runs_with_stubbed_sklearn(tmp_path, monkeypatch) -> None:
