@@ -60,9 +60,14 @@ def test_training_feature_extraction_uses_shared_feature_builder(monkeypatch) ->
             ("item_category_code", 2),
             ("delivery_to_return_days", 5),
             ("return_reason_code", 1),
+            ("return_reason_is_damaged", 1),
             ("customer_message_length_bucket", 3),
             ("prior_returns_count", 1),
             ("order_value_band", 4),
+            ("order_value_band_high", 1),
+            ("evidence_count", 0),
+            ("hours_to_first_customer_evidence", 0.0),
+            ("merchant_document_count", 0),
         ]
     )
 
@@ -79,6 +84,9 @@ def test_training_feature_extraction_uses_shared_feature_builder(monkeypatch) ->
         "customer_message_length": 200,
         "prior_returns_count": 1,
         "order_value_band_value": 500,
+        "evidence_count": 0,
+        "hours_to_first_customer_evidence": 0.0,
+        "merchant_document_count": 0,
     }
 
     assert baseline_module._extract_features_from_payload(payload) == expected_features
@@ -89,6 +97,9 @@ def test_training_feature_extraction_uses_shared_feature_builder(monkeypatch) ->
         "customer_message": "x" * 200,
         "prior_returns_count": 1,
         "order_value": 500,
+        "evidence_count": 0,
+        "hours_to_first_customer_evidence": 0.0,
+        "merchant_document_count": 0,
     }
 
 
