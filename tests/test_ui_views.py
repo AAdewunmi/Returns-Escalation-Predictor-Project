@@ -4,6 +4,7 @@ from django.http import Http404
 from django.test import RequestFactory
 from django.urls import reverse
 
+from tests.factories import ReturnCaseFactory
 from ui.views import BootstrapLandingView, SurfaceEntryView
 
 
@@ -41,3 +42,17 @@ def test_surface_entry_view_raises_404_for_unknown_surface() -> None:
         return
 
     raise AssertionError("Expected SurfaceEntryView to raise Http404 for an unknown surface.")
+
+
+def test_case_detail_route_renders_project_aligned_case_workspace(client, db) -> None:
+    """The case detail route should render the detail template with live case content."""
+
+    return_case = ReturnCaseFactory(order_reference="ORD-DETAIL-001")
+
+    response = client.get(reverse("case-detail", kwargs={"case_id": return_case.pk}))
+
+    assert response.status_code == 200
+    assert b"ORD-DETAIL-001" in response.content
+    assert b"Return Case Workspace" in response.content
+    assert b"Documents" in response.content
+    assert b"Timeline" in response.content

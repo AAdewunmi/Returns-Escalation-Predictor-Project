@@ -1,7 +1,11 @@
 # path: ui/views.py
 """Views for the public-facing UI shell."""
+
 from django.http import Http404
+from django.shortcuts import get_object_or_404
 from django.views.generic import TemplateView
+
+from returns.models import ReturnCase
 
 SURFACE_CONTENT = {
     "admin": {
@@ -67,3 +71,34 @@ class SurfaceEntryView(TemplateView):
 
 class BootstrapLandingView(LandingView):
     """Backward-compatible minimal bootstrap view kept during the sprint transition."""
+
+
+class ReturnCaseDetailView(TemplateView):
+    """Render a project-aligned return case detail workspace."""
+
+    template_name = "cases/detail.html"
+
+    def get_context_data(self, **kwargs) -> dict:
+        """Return case detail context for the workspace template."""
+
+        context = super().get_context_data(**kwargs)
+        return_case = get_object_or_404(
+            ReturnCase.objects.select_related(
+                "customer__user",
+                "merchant__user",
+            ),
+            pk=kwargs["case_id"],
+        )
+
+        context.update(
+            {
+                "return_case": return_case,
+                "documents": return_case.documents.order_by("-created_at", "-id"),
+                "events": return_case.events.order_by("-created_at", "-id"),
+                "latest_risk": getattr(return_case, "risk_score", None),
+                "upload_form": None,
+                "actor_role": "",
+                "page_title": f"Case {return_case.order_reference}",
+            }
+        )
+        return context
