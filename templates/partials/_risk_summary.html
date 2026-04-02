@@ -1,0 +1,19 @@
+<!-- path: templates/partials/_risk_summary.html -->
+<section class="risk-panel" aria-label="Escalation risk summary">
+  {% if latest_risk %}
+  <div class="risk-panel__label">Escalation risk</div>
+  <div class="risk-panel__score">{{ latest_risk.score }}</div>
+  <div class="risk-panel__badge status-pill status-pill--warning">{{ latest_risk.label|title }}</div>
+  {% if latest_risk.reason_codes %}
+  <ul class="risk-panel__reasons list-unstyled mb-0 mt-2">
+    {% for code in latest_risk.reason_codes %}
+    <li>{{ code|cut:"_"|title }}</li>
+    {% endfor %}
+  </ul>
+  {% endif %}
+  {% else %}
+  <div class="risk-panel__label">Escalation risk</div>
+  <div class="risk-panel__empty">No score yet</div>
+  <p class="risk-panel__text mb-0">A score appears after scoring has been triggered for the case.</p>
+  {% endif %}
+</section>
