@@ -27,7 +27,5 @@ class Command(BaseCommand):
             rows=options["rows"],
         )
         self.stdout.write(
-            self.style.SUCCESS(
-                f"Trained and registered {payload['active_model']['version']}"
-            )
+            self.style.SUCCESS(f"Trained and registered {payload['active_model']['version']}")
         )
