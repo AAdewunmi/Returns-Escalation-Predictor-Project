@@ -1,0 +1,39 @@
+<!-- path: templates/partials/_document_table.html -->
+{% if documents %}
+<div class="table-responsive">
+  <table class="table table-hover rh-table align-middle mb-0">
+    <thead>
+      <tr>
+        <th scope="col">Filename</th>
+        <th scope="col">Kind</th>
+        <th scope="col">Type</th>
+        <th scope="col">Size</th>
+        <th scope="col">Added</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for document in documents %}
+      <tr>
+        <td>
+          <div class="fw-semibold">{{ document.original_filename }}</div>
+          {% if document.note %}
+          <div class="table-subtext">{{ document.note }}</div>
+          {% endif %}
+        </td>
+        <td><span class="status-pill status-pill--neutral">{{ document.get_document_kind_display }}</span></td>
+        <td>{{ document.content_type }}</td>
+        <td>{{ document.size_bytes|filesizeformat }}</td>
+        <td>{{ document.created_at|date:"j M Y, H:i" }}</td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% else %}
+<div class="empty-panel">
+  <h3 class="empty-panel__title">No documents yet</h3>
+  <p class="empty-panel__text mb-0">
+    Evidence uploaded by customers, merchants, or ops will appear here in created order.
+  </p>
+</div>
+{% endif %}
