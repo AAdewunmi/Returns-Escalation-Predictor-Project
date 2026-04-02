@@ -3,7 +3,7 @@
 
 from __future__ import annotations
 
-from typing import Callable
+from collections.abc import Callable
 
 REASON_CODE_SCHEMA_VERSION = "return-risk-reasons-sprint3-v1"
 

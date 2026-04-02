@@ -90,9 +90,7 @@ def _order_value_band_high(value) -> int:
 def _hours_to_first_customer_evidence(case) -> float:
     """Measure the elapsed hours until the first customer evidence upload."""
     first_document = (
-        case.documents.filter(actor_role="customer")
-        .order_by("created_at", "id")
-        .first()
+        case.documents.filter(actor_role="customer").order_by("created_at", "id").first()
     )
     if first_document is None:
         return 0.0

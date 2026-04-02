@@ -77,8 +77,8 @@ def generate_synthetic_training_rows(
         delivery_to_return_days = generator.randint(0, 30)
         customer_message_length = generator.randint(30, 1200)
         evidence_count = generator.randint(0, 3)
-        hours_to_first_customer_evidence = 0.0 if evidence_count == 0 else float(
-            generator.randint(1, 72)
+        hours_to_first_customer_evidence = (
+            0.0 if evidence_count == 0 else float(generator.randint(1, 72))
         )
         merchant_document_count = generator.randint(0, 2)
 
