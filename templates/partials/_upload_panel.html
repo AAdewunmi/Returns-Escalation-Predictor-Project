@@ -1,0 +1,24 @@
+<!-- path: templates/partials/_upload_panel.html -->
+<section class="rh-card" aria-label="Document upload panel">
+  <div class="rh-kicker">Uploads</div>
+  <h2 class="h4">Document actions</h2>
+  {% if upload_form %}
+    {% include "partials/_form_errors.html" with form=upload_form %}
+    <p class="text-muted mb-0">
+      Server-rendered uploads are available for this case.
+    </p>
+  {% else %}
+    <p class="text-muted mb-3">
+      This workspace is currently read-only. Document upload flows remain available through the
+      API-backed workflow while the server-rendered form is not yet wired into this page.
+    </p>
+    <div class="rh-visual-meta">
+      <span>Case {{ return_case.order_reference }}</span>
+      {% if actor_role %}
+      <span>Actor role: {{ actor_role|title }}</span>
+      {% else %}
+      <span>Actor role unavailable</span>
+      {% endif %}
+    </div>
+  {% endif %}
+</section>

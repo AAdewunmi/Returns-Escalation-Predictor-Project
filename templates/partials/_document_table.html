@@ -16,13 +16,17 @@
       <tr>
         <td>
           <div class="fw-semibold">{{ document.original_filename }}</div>
-          {% if document.note %}
-          <div class="table-subtext">{{ document.note }}</div>
+          {% if document.notes %}
+          <div class="text-muted small">{{ document.notes }}</div>
           {% endif %}
         </td>
-        <td><span class="status-pill status-pill--neutral">{{ document.get_document_kind_display }}</span></td>
+        <td>
+          <span class="rh-status-pill rh-status-pill--neutral">
+            {{ document.get_kind_display }}
+          </span>
+        </td>
         <td>{{ document.content_type }}</td>
-        <td>{{ document.size_bytes|filesizeformat }}</td>
+        <td>{{ document.byte_size|filesizeformat }}</td>
         <td>{{ document.created_at|date:"j M Y, H:i" }}</td>
       </tr>
       {% endfor %}
@@ -30,9 +34,9 @@
   </table>
 </div>
 {% else %}
-<div class="empty-panel">
-  <h3 class="empty-panel__title">No documents yet</h3>
-  <p class="empty-panel__text mb-0">
+<div class="rh-visual-panel">
+  <h3 class="h5">No documents yet</h3>
+  <p class="mb-0 text-muted">
     Evidence uploaded by customers, merchants, or ops will appear here in created order.
   </p>
 </div>

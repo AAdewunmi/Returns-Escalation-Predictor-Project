@@ -1,19 +1,28 @@
 <!-- path: templates/partials/_risk_summary.html -->
-<section class="risk-panel" aria-label="Escalation risk summary">
+<section class="rh-card" aria-label="Escalation risk summary">
   {% if latest_risk %}
-  <div class="risk-panel__label">Escalation risk</div>
-  <div class="risk-panel__score">{{ latest_risk.score }}</div>
-  <div class="risk-panel__badge status-pill status-pill--warning">{{ latest_risk.label|title }}</div>
+  <div class="rh-kicker">Escalation Risk</div>
+  <div class="display-6 fw-bold mb-2">{{ latest_risk.score }}</div>
+  <div class="rh-status-pill rh-status-pill--warning mb-3">{{ latest_risk.label|title }}</div>
   {% if latest_risk.reason_codes %}
-  <ul class="risk-panel__reasons list-unstyled mb-0 mt-2">
+  <ul class="list-unstyled mb-0">
     {% for code in latest_risk.reason_codes %}
-    <li>{{ code|cut:"_"|title }}</li>
+      {% if code.code %}
+      <li class="mb-2">
+        <strong>{{ code.code|cut:"_"|title }}</strong>
+        {% if code.detail %}
+        <div class="text-muted small">{{ code.detail }}</div>
+        {% endif %}
+      </li>
+      {% else %}
+      <li class="mb-2">{{ code|cut:"_"|title }}</li>
+      {% endif %}
     {% endfor %}
   </ul>
   {% endif %}
   {% else %}
-  <div class="risk-panel__label">Escalation risk</div>
-  <div class="risk-panel__empty">No score yet</div>
-  <p class="risk-panel__text mb-0">A score appears after scoring has been triggered for the case.</p>
+  <div class="rh-kicker">Escalation Risk</div>
+  <div class="h4 mb-2">No score yet</div>
+  <p class="mb-0 text-muted">A score appears after scoring has been triggered for the case.</p>
   {% endif %}
 </section>

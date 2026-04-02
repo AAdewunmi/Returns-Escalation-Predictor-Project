@@ -5,7 +5,13 @@
   <ul class="mb-0 ps-3">
     {% for field, errors in form.errors.items %}
       {% for error in errors %}
-      <li>{{ field|title }}: {{ error }}</li>
+      <li>
+        {% if field == "__all__" %}
+          {{ error }}
+        {% else %}
+          {{ field|title }}: {{ error }}
+        {% endif %}
+      </li>
       {% endfor %}
     {% endfor %}
   </ul>

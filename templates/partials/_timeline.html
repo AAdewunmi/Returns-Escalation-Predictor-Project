@@ -1,25 +1,22 @@
 <!-- path: templates/partials/_timeline.html -->
 {% if events %}
-<ol class="timeline list-unstyled mb-0">
+<ol class="rh-timeline list-unstyled mb-0">
   {% for event in events %}
-  <li class="timeline__item">
-    <div class="timeline__marker" aria-hidden="true"></div>
-    <div class="timeline__content">
-      <div class="timeline__meta">
-        <span class="fw-semibold">{{ event.get_event_type_display }}</span>
-        <span class="text-muted">{{ event.created_at|date:"j M Y, H:i" }}</span>
-      </div>
+  <li>
+    <strong>{{ event.event_type|title }}</strong>
+    <span class="d-block text-muted small mb-2">{{ event.created_at|date:"j M Y, H:i" }}</span>
+    <div class="rh-visual-panel rh-visual-panel--case">
       {% if event.payload %}
-      <pre class="timeline__payload mb-0">{{ event.payload|pprint }}</pre>
+      <pre class="mb-0 small">{{ event.payload|pprint }}</pre>
       {% endif %}
     </div>
   </li>
   {% endfor %}
 </ol>
 {% else %}
-<div class="empty-panel">
-  <h3 class="empty-panel__title">No timeline events yet</h3>
-  <p class="empty-panel__text mb-0">
+<div class="rh-visual-panel">
+  <h3 class="h5">No timeline events yet</h3>
+  <p class="mb-0 text-muted">
     Case creation, uploads, status changes, and risk scoring will appear here.
   </p>
 </div>
