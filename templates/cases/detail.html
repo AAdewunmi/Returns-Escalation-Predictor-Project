@@ -1,0 +1,62 @@
+<!-- path: templates/cases/detail.html -->
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ return_case.reference }} | ReturnHub{% endblock %}
+
+{% block content %}
+<section class="page-shell">
+  <div class="page-header d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-start">
+    <div>
+      <nav aria-label="Breadcrumb" class="breadcrumb-nav">
+        <ol class="breadcrumb mb-2">
+          <li class="breadcrumb-item"><a href="/">Home</a></li>
+          <li class="breadcrumb-item active" aria-current="page">{{ return_case.reference }}</li>
+        </ol>
+      </nav>
+      <p class="eyebrow mb-2">Return case workspace</p>
+      <h1 class="page-title mb-2">{{ return_case.reference }}</h1>
+      <p class="page-subtitle mb-0">
+        Evidence, timeline, and risk context for the current return case.
+      </p>
+    </div>
+    {% include "partials/_risk_summary.html" with latest_risk=latest_risk %}
+  </div>
+
+  <div class="row g-4 mt-1">
+    <div class="col-12 col-xl-8">
+      <section class="surface-card mb-4">
+        <div class="surface-card__header">
+          <div>
+            <h2 class="surface-card__title">Documents</h2>
+            <p class="surface-card__text mb-0">
+              Customer evidence, merchant responses, and internal ops attachments.
+            </p>
+          </div>
+        </div>
+        <div class="surface-card__body">
+          {% include "partials/_document_table.html" with documents=documents %}
+        </div>
+      </section>
+
+      <section class="surface-card">
+        <div class="surface-card__header">
+          <div>
+            <h2 class="surface-card__title">Timeline</h2>
+            <p class="surface-card__text mb-0">
+              Append-only case history for operational review.
+            </p>
+          </div>
+        </div>
+        <div class="surface-card__body">
+          {% include "partials/_timeline.html" with events=events %}
+        </div>
+      </section>
+    </div>
+
+    <div class="col-12 col-xl-4">
+      {% include "partials/_upload_panel.html" with upload_form=upload_form return_case=return_case actor_role=actor_role %}
+    </div>
+  </div>
+</section>
+{% endblock %}
