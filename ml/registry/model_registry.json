@@ -1,9 +1,9 @@
 {
   "active_model": {
-    "contract_version": "return-risk-sprint2-v1",
+    "version": "baseline-logreg-v1-seed-7-rows-500",
     "model_type": "logistic_regression",
+    "contract_version": "return-risk-sprint2-v1",
     "reason_code_schema_version": "return-risk-reasons-sprint2-v1",
-    "status": "active",
-    "version": "baseline-logreg-v1-seed-7-rows-500"
+    "status": "active"
   }
 }
