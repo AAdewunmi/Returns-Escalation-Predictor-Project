@@ -4,6 +4,6 @@
     "model_type": "logistic_regression",
     "reason_code_schema_version": "return-risk-reasons-sprint3-v1",
     "status": "active",
-    "version": "baseline-logreg-v1-seed-7-rows-500"
+    "version": "retrain_baseline-logreg-v1-seed-7-rows-500"
   }
 }

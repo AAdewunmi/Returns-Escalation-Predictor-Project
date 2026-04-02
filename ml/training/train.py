@@ -18,6 +18,29 @@ from ml.training.baseline import (
 BASE_DIR = Path(__file__).resolve().parents[2]
 ARTEFACTS_DIR = BASE_DIR / "ml_artifacts"
 REGISTRY_PATH = BASE_DIR / "ml" / "registry" / "model_registry.json"
+RETRAIN_VERSION_PREFIX = "retrain_"
+
+
+def _rename_training_outputs(model_version: str) -> tuple[str, dict[str, object]]:
+    """Rename artefacts from the baseline trainer to the retrain-prefixed version."""
+
+    retrain_version = f"{RETRAIN_VERSION_PREFIX}{model_version}"
+    original_model_path = ARTEFACTS_DIR / f"{model_version}.pkl"
+    original_metadata_path = ARTEFACTS_DIR / f"{model_version}.json"
+    retrain_model_path = ARTEFACTS_DIR / f"{retrain_version}.pkl"
+    retrain_metadata_path = ARTEFACTS_DIR / f"{retrain_version}.json"
+
+    original_model_path.replace(retrain_model_path)
+
+    metadata = json.loads(original_metadata_path.read_text(encoding="utf-8"))
+    metadata["model_version"] = retrain_version
+    retrain_metadata_path.write_text(
+        json.dumps(metadata, indent=2, sort_keys=True),
+        encoding="utf-8",
+    )
+    original_metadata_path.unlink()
+
+    return retrain_version, metadata
 
 
 def train_and_persist(
@@ -32,11 +55,12 @@ def train_and_persist(
         seed=seed,
         size=rows,
     )
+    retrain_version, metadata = _rename_training_outputs(training_output.model_version)
 
     registry = register_active_model(
         registry_path=REGISTRY_PATH,
         entry=ActiveModelEntry(
-            version=training_output.model_version,
+            version=retrain_version,
             model_type="logistic_regression",
             contract_version=FEATURE_CONTRACT_VERSION,
             reason_code_schema_version=REASON_CODE_SCHEMA_VERSION,
@@ -44,8 +68,6 @@ def train_and_persist(
         ),
     )
 
-    metadata_path = ARTEFACTS_DIR / f"{training_output.model_version}.json"
-    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
     return {
         "active_model": registry["active_model"],
         "metadata": metadata,

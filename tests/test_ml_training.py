@@ -45,10 +45,12 @@ def test_training_wrapper_registers_active_model_and_persists_metadata(
     metadata_path = tmp_path / "ml_artifacts" / f"{version}.json"
 
     assert payload["active_model"]["model_type"] == "logistic_regression"
+    assert version == "retrain_baseline-logreg-v1-seed-17-rows-24"
     assert artifact_path.exists()
     assert metadata_path.exists()
 
     model = joblib.load(artifact_path)
     assert hasattr(model, "predict_proba")
+    assert payload["metadata"]["model_version"] == version
     assert payload["metadata"]["training_seed"] == 17
     assert payload["metadata"]["training_rows"] == 24
