@@ -1,0 +1,13 @@
+{
+  "feature_contract_hash": "432cdd33229a569b6ec77b8fd718244474c1036e8b3f7378a1e961b02e15df66",
+  "feature_contract_version": "return-risk-sprint2-v1",
+  "metrics": {
+    "accuracy": 0.824,
+    "roc_auc": 0.9148
+  },
+  "model_version": "retrain_baseline-logreg-v1-seed-7-rows-500",
+  "reason_code_schema_version": "return-risk-reasons-sprint3-v1",
+  "trained_at": "2026-04-02T12:40:09.844470+00:00",
+  "training_rows": 500,
+  "training_seed": 7
+}
