@@ -7,4 +7,5 @@ factory_boy>=3.3,<4.0
 ruff>=0.9,<1.0
 black>=24.10,<25.0
 joblib>=1.4,<2.0
+pandas>=2.2,<3.0
 scikit-learn>=1.5,<2.0
