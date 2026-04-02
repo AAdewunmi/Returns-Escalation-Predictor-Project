@@ -4,9 +4,14 @@
     "item_category_code",
     "delivery_to_return_days",
     "return_reason_code",
+    "return_reason_is_damaged",
     "customer_message_length_bucket",
     "prior_returns_count",
-    "order_value_band"
+    "order_value_band",
+    "order_value_band_high",
+    "evidence_count",
+    "hours_to_first_customer_evidence",
+    "merchant_document_count"
   ],
-  "notes": "Sprint 2 placeholder feature contract for deterministic risk scoring."
+  "notes": "Evidence-aware feature contract for deterministic training and inference scoring."
 }
