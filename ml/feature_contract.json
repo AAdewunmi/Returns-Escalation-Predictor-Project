@@ -1,0 +1,25 @@
+{
+  "path": "ml/feature_contract.json",
+  "schema_version": "v2",
+  "feature_names": [
+    "item_category_is_electronics",
+    "item_category_is_apparel",
+    "item_category_is_home",
+    "return_reason_is_damaged",
+    "return_reason_is_not_as_described",
+    "return_reason_is_missing_parts",
+    "delivery_to_return_days",
+    "customer_message_length",
+    "prior_returns_count",
+    "order_value_band_low",
+    "order_value_band_mid",
+    "order_value_band_high",
+    "evidence_count",
+    "customer_evidence_count",
+    "merchant_document_count",
+    "evidence_total_size_kb",
+    "has_image_evidence",
+    "has_pdf_evidence",
+    "hours_to_first_customer_evidence"
+  ]
+}
