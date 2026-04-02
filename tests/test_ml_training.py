@@ -1,33 +1,54 @@
-# path: apps/returns/tests/test_ml_training.py
-"""
-Tests for deterministic evidence-aware training.
-"""
+# path: tests/test_ml_training.py
+"""Tests for project-aligned ML dataset and training wrappers."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
 import joblib
+import pytest
 
-from apps.returns.ml.train import train_and_persist
+from ml.training.train import train_and_persist
 
 
-def test_training_is_reproducible_with_same_seed(tmp_path: Path, monkeypatch):
-    """
-    Training with the same seed should produce the same probability for the same row.
-    """
+def test_dataset_wrapper_is_reproducible_with_same_seed() -> None:
+    """The pandas dataset wrapper should preserve seeded determinism."""
 
-    monkeypatch.setattr("apps.returns.ml.train.ARTEFACTS_DIR", tmp_path / "artefacts")
-    monkeypatch.setattr("apps.returns.ml.train.REGISTRY_PATH", tmp_path / "model_registry.json")
+    pytest.importorskip("pandas")
 
-    first_registry = train_and_persist(seed=17)
-    second_registry = train_and_persist(seed=17)
+    from ml.datasets.dataset import generate_synthetic_training_dataset
 
-    first_artefact = joblib.load(first_registry["models"][0]["artefact_path"])
-    second_artefact = joblib.load(second_registry["models"][0]["artefact_path"])
+    first = generate_synthetic_training_dataset(seed=17, rows=12)
+    second = generate_synthetic_training_dataset(seed=17, rows=12)
 
-    row = [[1, 0, 0, 1, 0, 0, 4, 120, 2, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]]
-    first_probability = float(first_artefact["pipeline"].predict_proba(row)[0][1])
-    second_probability = float(second_artefact["pipeline"].predict_proba(row)[0][1])
+    assert first.equals(second)
+    assert "target" in first.columns
+    assert "evidence_count" in first.columns
 
-    assert round(first_probability, 6) == round(second_probability, 6)
+
+def test_training_wrapper_registers_active_model_and_persists_metadata(
+    tmp_path: Path,
+    monkeypatch,
+) -> None:
+    """The compatibility wrapper should train, write artefacts, and register the result."""
+
+    monkeypatch.setattr("ml.training.train.ARTEFACTS_DIR", tmp_path / "ml_artifacts")
+    monkeypatch.setattr(
+        "ml.training.train.REGISTRY_PATH",
+        tmp_path / "ml" / "registry" / "model_registry.json",
+    )
+
+    payload = train_and_persist(seed=17, rows=24)
+
+    version = payload["active_model"]["version"]
+    artifact_path = tmp_path / "ml_artifacts" / f"{version}.pkl"
+    metadata_path = tmp_path / "ml_artifacts" / f"{version}.json"
+
+    assert payload["active_model"]["model_type"] == "logistic_regression"
+    assert artifact_path.exists()
+    assert metadata_path.exists()
+
+    model = joblib.load(artifact_path)
+    assert hasattr(model, "predict_proba")
+    assert payload["metadata"]["training_seed"] == 17
+    assert payload["metadata"]["training_rows"] == 24

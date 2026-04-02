@@ -1,78 +1,55 @@
-# path: apps/returns/ml/train.py
-"""
-Training entry point for the evidence-aware escalation model.
-"""
+# path: ml/training/train.py
+"""Compatibility training entry point aligned with the current ML stack."""
 
 from __future__ import annotations
 
-import hashlib
 import json
 from pathlib import Path
 
-import joblib
-from sklearn.linear_model import LogisticRegression
-from sklearn.pipeline import Pipeline
-from sklearn.preprocessing import StandardScaler
+from ml.features import FEATURE_CONTRACT_VERSION
+from ml.reason_codes import REASON_CODE_SCHEMA_VERSION
+from ml.services.model_registry import ActiveModelEntry, register_active_model
+from ml.training.baseline import (
+    DEFAULT_TRAINING_SEED,
+    DEFAULT_TRAINING_SIZE,
+    train_and_save_baseline_model,
+)
 
-from apps.returns.ml.dataset import generate_synthetic_training_dataset
-from apps.returns.ml.feature_extraction import load_feature_names
-
-BASE_DIR = Path(__file__).resolve().parent
-ARTEFACTS_DIR = BASE_DIR / "artefacts"
-REGISTRY_PATH = BASE_DIR / "model_registry.json"
-CONTRACT_PATH = BASE_DIR / "feature_contract.json"
+BASE_DIR = Path(__file__).resolve().parents[2]
+ARTEFACTS_DIR = BASE_DIR / "ml_artifacts"
+REGISTRY_PATH = BASE_DIR / "ml" / "registry" / "model_registry.json"
 
 
-def train_and_persist(seed: int = 17) -> dict[str, str]:
-    """
-    Train the evidence-aware baseline model and persist the artefact and registry.
-    """
+def train_and_persist(
+    *,
+    seed: int = DEFAULT_TRAINING_SEED,
+    rows: int = DEFAULT_TRAINING_SIZE,
+) -> dict[str, object]:
+    """Train the baseline model, persist artefacts, and register it as active."""
 
-    ARTEFACTS_DIR.mkdir(parents=True, exist_ok=True)
-
-    feature_names = load_feature_names()
-    dataset = generate_synthetic_training_dataset(seed=seed)
-    training_frame = dataset[feature_names]
-    target = dataset["target"]
-
-    pipeline = Pipeline(
-        steps=[
-            ("scaler", StandardScaler()),
-            ("classifier", LogisticRegression(random_state=seed, max_iter=500)),
-        ]
-    )
-    pipeline.fit(training_frame, target)
-
-    contract_hash = hashlib.sha256(CONTRACT_PATH.read_bytes()).hexdigest()
-    model_version = "sprint4-evidence-aware-v2"
-    artefact_path = ARTEFACTS_DIR / f"{model_version}.joblib"
-
-    joblib.dump(
-        {
-            "pipeline": pipeline,
-            "feature_names": feature_names,
-            "model_version": model_version,
-            "contract_version": "v2",
-            "contract_hash": contract_hash,
-        },
-        artefact_path,
+    training_output = train_and_save_baseline_model(
+        output_dir=ARTEFACTS_DIR,
+        seed=seed,
+        size=rows,
     )
 
-    registry = {
-        "active_model_version": model_version,
-        "models": [
-            {
-                "model_version": model_version,
-                "contract_version": "v2",
-                "contract_hash": contract_hash,
-                "artefact_path": str(artefact_path),
-                "trained_from": "synthetic_evidence_dataset_seed_17",
-            }
-        ],
+    registry = register_active_model(
+        registry_path=REGISTRY_PATH,
+        entry=ActiveModelEntry(
+            version=training_output.model_version,
+            model_type="logistic_regression",
+            contract_version=FEATURE_CONTRACT_VERSION,
+            reason_code_schema_version=REASON_CODE_SCHEMA_VERSION,
+            status="active",
+        ),
+    )
+
+    metadata_path = ARTEFACTS_DIR / f"{training_output.model_version}.json"
+    metadata = json.loads(metadata_path.read_text(encoding="utf-8"))
+    return {
+        "active_model": registry["active_model"],
+        "metadata": metadata,
     }
-    REGISTRY_PATH.write_text(json.dumps(registry, indent=2))
-
-    return registry
 
 
 if __name__ == "__main__":
