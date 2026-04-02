@@ -38,7 +38,9 @@
           <div class="rh-kicker">Documents</div>
           <h2>Customer evidence, merchant responses, and internal attachments.</h2>
         </div>
-        {% include "partials/_document_table.html" with documents=documents %}
+        <div id="case-document-table">
+          {% include "partials/_document_table.html" with documents=documents %}
+        </div>
       </section>
 
       <section class="rh-card">
@@ -51,7 +53,46 @@
     </div>
 
     <div class="col-12 col-xl-4">
-      {% include "partials/_upload_panel.html" with upload_form=upload_form return_case=return_case actor_role=actor_role %}
+      <div id="case-upload-panel">
+        {% include "partials/_upload_panel.html" with upload_form=upload_form upload_success_message=upload_success_message return_case=return_case actor_role=actor_role %}
+      </div>
     </div>
   </div>
+
+  <script>
+    (() => {
+      async function submitCaseUpload(form) {
+        const response = await fetch(form.action, {
+          method: "POST",
+          body: new FormData(form),
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+          credentials: "same-origin",
+        });
+
+        const payload = await response.json();
+        const uploadPanel = document.querySelector("#case-upload-panel");
+        const documentTable = document.querySelector("#case-document-table");
+
+        if (uploadPanel && payload.upload_panel_html) {
+          uploadPanel.innerHTML = payload.upload_panel_html;
+        }
+        if (documentTable && payload.document_table_html) {
+          documentTable.innerHTML = payload.document_table_html;
+        }
+      }
+
+      document.addEventListener("submit", (event) => {
+        const form = event.target;
+        if (!(form instanceof HTMLFormElement)) {
+          return;
+        }
+        if (form.id !== "case-upload-form") {
+          return;
+        }
+
+        event.preventDefault();
+        void submitCaseUpload(form);
+      });
+    })();
+  </script>
 {% endblock %}

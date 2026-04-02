@@ -2,15 +2,40 @@
 <section class="rh-card" aria-label="Document upload panel">
   <div class="rh-kicker">Uploads</div>
   <h2 class="h4">Document actions</h2>
+  {% if upload_success_message %}
+    <div class="alert alert-success" role="status">
+      {{ upload_success_message }}
+    </div>
+  {% endif %}
   {% if upload_form %}
-    {% include "partials/_form_errors.html" with form=upload_form %}
-    <p class="text-muted mb-0">
-      Server-rendered uploads are available for this case.
+    <p class="text-muted mb-3">
+      Upload feedback stays inside this panel while the document table refreshes in place.
     </p>
+    {% include "partials/_form_errors.html" with form=upload_form %}
+    <form
+      id="case-upload-form"
+      action="{% url 'case-document-upload' case_id=return_case.pk %}"
+      method="post"
+      enctype="multipart/form-data"
+    >
+      {% csrf_token %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ upload_form.kind.id_for_label }}">Document kind</label>
+        {{ upload_form.kind }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="{{ upload_form.file.id_for_label }}">File</label>
+        {{ upload_form.file }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="{{ upload_form.notes.id_for_label }}">Notes</label>
+        {{ upload_form.notes }}
+      </div>
+      <button type="submit" class="btn btn-dark">Upload document</button>
+    </form>
   {% else %}
     <p class="text-muted mb-3">
-      This workspace is currently read-only. Document upload flows remain available through the
-      API-backed workflow while the server-rendered form is not yet wired into this page.
+      Uploads are only available to the case customer, the linked merchant, ops, or admin users.
     </p>
     <div class="rh-visual-meta">
       <span>Case {{ return_case.order_reference }}</span>

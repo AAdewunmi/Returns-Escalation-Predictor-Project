@@ -1,11 +1,25 @@
 # path: ui/views.py
 """Views for the public-facing UI shell."""
 
-from django.http import Http404
+from __future__ import annotations
+
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.core.exceptions import PermissionDenied
+from django.http import Http404, JsonResponse
 from django.shortcuts import get_object_or_404
+from django.template.loader import render_to_string
+from django.views import View
 from django.views.generic import TemplateView
 
 from returns.models import ReturnCase
+from returns.services.cases import _actor_role
+from returns.services.documents import (
+    DocumentServiceError,
+    DocumentUploadInput,
+    list_documents_for_case,
+    upload_document_for_case,
+)
+from ui.forms import CaseDocumentUploadForm
 
 SURFACE_CONTENT = {
     "admin": {
@@ -78,27 +92,200 @@ class ReturnCaseDetailView(TemplateView):
 
     template_name = "cases/detail.html"
 
-    def get_context_data(self, **kwargs) -> dict:
-        """Return case detail context for the workspace template."""
+    def _get_return_case(self) -> ReturnCase:
+        """Fetch the current case with the required related entities."""
 
-        context = super().get_context_data(**kwargs)
-        return_case = get_object_or_404(
+        return get_object_or_404(
             ReturnCase.objects.select_related(
                 "customer__user",
                 "merchant__user",
             ),
-            pk=kwargs["case_id"],
+            pk=self.kwargs["case_id"],
         )
+
+    def _get_actor_role(self, return_case: ReturnCase) -> str:
+        """Return an upload-capable actor role for the current request, if any."""
+
+        user = self.request.user
+        if not user.is_authenticated:
+            return ""
+
+        actor_role = _actor_role(user)
+        if actor_role in {"admin", "ops"}:
+            return actor_role
+
+        if actor_role == "customer" and return_case.customer.user_id == user.id:
+            return actor_role
+
+        if actor_role == "merchant" and return_case.merchant.user_id == user.id:
+            return actor_role
+
+        return ""
+
+    def _get_documents(self, return_case: ReturnCase):
+        """Return case documents visible to the current request actor."""
+
+        user = self.request.user
+        if not user.is_authenticated:
+            return return_case.documents.order_by("-created_at", "-id")
+
+        try:
+            return list_documents_for_case(return_case=return_case, actor=user).order_by(
+                "-created_at",
+                "-id",
+            )
+        except PermissionDenied:
+            return return_case.documents.none()
+
+    def _get_upload_form(
+        self,
+        *,
+        actor_role: str,
+        data=None,
+        files=None,
+    ) -> CaseDocumentUploadForm | None:
+        """Return a bound or unbound upload form when the actor can upload."""
+
+        if not actor_role:
+            return None
+
+        return CaseDocumentUploadForm(data=data, files=files, actor_role=actor_role)
+
+    def get_context_data(self, **kwargs) -> dict:
+        """Return case detail context for the workspace template."""
+
+        context = super().get_context_data(**kwargs)
+        return_case = self._get_return_case()
+        actor_role = self._get_actor_role(return_case)
 
         context.update(
             {
                 "return_case": return_case,
-                "documents": return_case.documents.order_by("-created_at", "-id"),
+                "documents": self._get_documents(return_case),
                 "events": return_case.events.order_by("-created_at", "-id"),
                 "latest_risk": getattr(return_case, "risk_score", None),
-                "upload_form": None,
-                "actor_role": "",
+                "upload_form": self._get_upload_form(actor_role=actor_role),
+                "upload_success_message": "",
+                "actor_role": actor_role,
                 "page_title": f"Case {return_case.order_reference}",
             }
         )
         return context
+
+
+class ReturnCaseDocumentUploadView(LoginRequiredMixin, View):
+    """Handle server-rendered document uploads for the case detail workspace."""
+
+    def _get_return_case(self, case_id: int) -> ReturnCase:
+        """Fetch the case for upload handling."""
+
+        return get_object_or_404(
+            ReturnCase.objects.select_related(
+                "customer__user",
+                "merchant__user",
+            ),
+            pk=case_id,
+        )
+
+    def _get_actor_role(self, *, return_case: ReturnCase) -> str:
+        """Resolve the actor role allowed to upload against this case."""
+
+        actor_role = _actor_role(self.request.user)
+        if actor_role in {"admin", "ops"}:
+            return actor_role
+
+        if actor_role == "customer" and return_case.customer.user_id == self.request.user.id:
+            return actor_role
+
+        if actor_role == "merchant" and return_case.merchant.user_id == self.request.user.id:
+            return actor_role
+
+        return ""
+
+    def _render_response(
+        self,
+        *,
+        return_case: ReturnCase,
+        upload_form: CaseDocumentUploadForm | None,
+        actor_role: str,
+        success_message: str = "",
+        status_code: int = 200,
+    ) -> JsonResponse:
+        """Render updated HTML fragments for the upload panel and document table."""
+
+        try:
+            documents = list_documents_for_case(
+                return_case=return_case,
+                actor=self.request.user,
+            ).order_by("-created_at", "-id")
+        except PermissionDenied:
+            documents = return_case.documents.none()
+
+        payload = {
+            "upload_panel_html": render_to_string(
+                "partials/_upload_panel.html",
+                {
+                    "upload_form": upload_form,
+                    "upload_success_message": success_message,
+                    "return_case": return_case,
+                    "actor_role": actor_role,
+                },
+                request=self.request,
+            ),
+            "document_table_html": render_to_string(
+                "partials/_document_table.html",
+                {"documents": documents},
+                request=self.request,
+            ),
+        }
+        return JsonResponse(payload, status=status_code)
+
+    def post(self, request, case_id: int) -> JsonResponse:
+        """Upload a document and return refreshed partial HTML for the page."""
+
+        return_case = self._get_return_case(case_id)
+        actor_role = self._get_actor_role(return_case=return_case)
+
+        if not actor_role:
+            form = None
+            return self._render_response(
+                return_case=return_case,
+                upload_form=form,
+                actor_role="",
+                status_code=403,
+            )
+
+        form = CaseDocumentUploadForm(request.POST, request.FILES, actor_role=actor_role)
+        success_message = ""
+        status_code = 200
+
+        if form.is_valid():
+            try:
+                upload_document_for_case(
+                    return_case=return_case,
+                    actor=request.user,
+                    upload_input=DocumentUploadInput(
+                        kind=form.cleaned_data["kind"],
+                        uploaded_file=form.cleaned_data["file"],
+                        notes=form.cleaned_data["notes"],
+                    ),
+                )
+            except PermissionDenied as exc:
+                form.add_error(None, str(exc))
+                status_code = 403
+            except DocumentServiceError as exc:
+                form.add_error(None, str(exc))
+                status_code = 400
+            else:
+                success_message = "Document uploaded successfully."
+                form = CaseDocumentUploadForm(actor_role=actor_role)
+        else:
+            status_code = 400
+
+        return self._render_response(
+            return_case=return_case,
+            upload_form=form,
+            actor_role=actor_role,
+            success_message=success_message,
+            status_code=status_code,
+        )
