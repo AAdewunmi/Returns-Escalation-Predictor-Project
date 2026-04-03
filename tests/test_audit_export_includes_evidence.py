@@ -37,3 +37,17 @@ def test_audit_export_contains_document_and_risk_rows() -> None:
     assert "order_reference" in csv_output
     assert "0.73" in csv_output
     assert "missing_customer_evidence" in csv_output
+
+
+@pytest.mark.django_db
+def test_audit_export_handles_case_without_risk_or_documents() -> None:
+    """Audit export should still emit case rows when no risk, events, or documents exist."""
+
+    return_case = ReturnCaseFactory(order_reference="AUDIT-EMPTY-001")
+
+    csv_output = build_return_case_audit_csv(return_case)
+
+    assert "section,key,value" in csv_output
+    assert "case,order_reference,AUDIT-EMPTY-001" in csv_output
+    assert "risk,score" not in csv_output
+    assert "document,kind" not in csv_output
