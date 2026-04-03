@@ -9,6 +9,7 @@ from django.utils import timezone
 from rest_framework import serializers
 
 from accounts.models import MerchantProfile
+from api.serializers.documents import DocumentSerializer
 from returns.api.permissions import is_admin, is_ops
 from returns.models import CaseNote, ReturnCase, RiskScore
 from returns.services.cases import (
@@ -116,7 +117,9 @@ class ReturnCaseDetailSerializer(serializers.ModelSerializer):
 
     merchant_name = serializers.CharField(source="merchant.display_name", read_only=True)
     customer_email = serializers.EmailField(source="customer.user.email", read_only=True)
+    documents = serializers.SerializerMethodField()
     risk = serializers.SerializerMethodField()
+    latest_risk = serializers.SerializerMethodField()
 
     class Meta:
         model = ReturnCase
@@ -132,22 +135,44 @@ class ReturnCaseDetailSerializer(serializers.ModelSerializer):
             "customer_message",
             "order_value",
             "delivery_date",
+            "documents",
             "risk",
+            "latest_risk",
             "created_at",
             "updated_at",
         )
 
-    def get_risk(self, obj: ReturnCase):
-        """Expose risk only to ops and admin users."""
+    def get_documents(self, obj: ReturnCase) -> list[dict]:
+        """Expose related document metadata through the shared document serializer."""
+
+        documents = obj.documents.order_by("-created_at", "-id")
+        return DocumentSerializer(documents, many=True).data
+
+    def _get_visible_risk_score(self, obj: ReturnCase) -> RiskScore | None:
+        """Return the persisted risk score when the request actor may see it."""
+
         request = self.context.get("request")
         if request is None or not (is_ops(request.user) or is_admin(request.user)):
             return None
 
-        risk_score = RiskScore.objects.filter(case=obj).first()
+        risk_score = getattr(obj, "risk_score", None)
         if risk_score is None:
             return None
 
+        return risk_score
+
+    def get_risk(self, obj: ReturnCase) -> dict | None:
+        """Expose the canonical risk payload only to ops and admin users."""
+
+        risk_score = self._get_visible_risk_score(obj)
+        if risk_score is None:
+            return None
         return RiskScoreSerializer(risk_score).data
+
+    def get_latest_risk(self, obj: ReturnCase) -> dict | None:
+        """Expose a read-only latest-risk alias backed by the canonical risk serializer."""
+
+        return self.get_risk(obj)
 
     def create_note(self, *, actor, case: ReturnCase) -> CaseNote:
         """Delegate note creation for compatibility with existing callers."""

@@ -1,7 +1,7 @@
 <!-- path: docs/ml/model-registry.md -->
-# ReturnHub model registry
+# ReturnHub Model Registry
 
-Sprint 2 introduces a minimal model registry so the scoring contract exists before a trained artefact is added in Sprint 3.
+ReturnHub uses a committed model registry so scoring can resolve the active model version and validate contract metadata consistently.
 
 ## Registry file
 
@@ -15,17 +15,17 @@ The active entry includes:
 - `reason_code_schema_version`
 - `status`
 
-## Active placeholder entry
+## Active model entry
 
-Sprint 2 uses `return-risk-placeholder-v1` with `model_type = deterministic_baseline`.
+The current active entry is artifact-backed and points at a logistic-regression baseline, for example `retrain_baseline-logreg-v1-seed-7-rows-500` with `model_type = logistic_regression`.
 
-This entry does not represent the final trained model. It exists so the application can:
+This entry exists so the application can:
 
 - persist a stable `RiskScore`
 - attach a model version to predictions
 - enforce feature contract continuity
 - expose structured reason codes to ops users
-- prepare the repo for a real training and inference pipeline in Sprint 3
+- preserve one explicit model pointer for inference and retraining workflows
 
 ## Contract boundaries
 
@@ -33,6 +33,8 @@ The registry entry must remain compatible with:
 
 - `ml/contracts/return_case_features.json`
 - `ml/reason_codes.py`
-- `returns/services/risk_scoring.py`
+- `ml/services/model_registry.py`
+- `ml/services/scoring.py`
+- `returns/services/risk.py`
 
-Replacing the placeholder scorer in Sprint 3 should not require changes to the API field names or `RiskScore` persistence shape.
+Updating the active model version should not require changes to the API field names or `RiskScore` persistence shape.

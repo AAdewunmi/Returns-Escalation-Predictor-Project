@@ -46,8 +46,8 @@ def test_case_detail_renders_documents_and_risk_summary(client) -> None:
 
 
 @pytest.mark.django_db
-def test_unrelated_customer_does_not_get_upload_form(client) -> None:
-    """An unrelated customer should not receive the inline upload form."""
+def test_unrelated_customer_gets_403_on_case_detail(client) -> None:
+    """An unrelated customer should not be able to access the case detail page."""
 
     return_case = ReturnCaseFactory(order_reference="CASE-EVID-002")
     other_user = UserFactory()
@@ -56,8 +56,21 @@ def test_unrelated_customer_does_not_get_upload_form(client) -> None:
     client.force_login(other_user)
     response = client.get(reverse("case-detail", kwargs={"case_id": return_case.pk}))
 
-    assert response.status_code == 200
-    assert 'id="case-upload-form"' not in response.content.decode()
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_unrelated_merchant_gets_403_on_case_detail(client) -> None:
+    """An unrelated merchant should not be able to access the case detail page."""
+
+    return_case = ReturnCaseFactory(order_reference="CASE-EVID-005")
+    other_user = UserFactory()
+    add_group(other_user, "merchant")
+
+    client.force_login(other_user)
+    response = client.get(reverse("case-detail", kwargs={"case_id": return_case.pk}))
+
+    assert response.status_code == 403
 
 
 @pytest.mark.django_db

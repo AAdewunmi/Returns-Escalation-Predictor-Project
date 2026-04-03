@@ -117,8 +117,14 @@ class ReturnCaseDetailView(TemplateView):
         if actor_role == "customer" and return_case.customer.user_id == user.id:
             return actor_role
 
+        if actor_role == "customer":
+            raise PermissionDenied("You do not have access to this case.")
+
         if actor_role == "merchant" and return_case.merchant.user_id == user.id:
             return actor_role
+
+        if actor_role == "merchant":
+            raise PermissionDenied("You do not have access to this case.")
 
         return ""
 

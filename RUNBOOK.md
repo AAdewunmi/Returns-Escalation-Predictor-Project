@@ -11,7 +11,9 @@ This runbook verifies the following outcomes:
 - deterministic demo seed data
 - public UI routes
 - authenticated console routes
+- case detail workspace rendering and inline document uploads
 - returns API create, detail, status, notes, and risk behavior
+- returns document and audit-export behavior
 - risk visibility controls for ops, admins, customers, and merchants
 - API and ML documentation alignment checks
 - lint, formatting, test, and coverage checks
@@ -121,6 +123,8 @@ Expected result:
 Seed complete. Stable return case count: 32
 ```
 
+On a clean database the count is `32`. In long-lived local environments that already contain extra runbook-generated cases, the seed command remains idempotent for its fixture rows but the printed total count may be higher.
+
 Run the seed command a second time to confirm idempotency.
 
 ```bash
@@ -146,6 +150,8 @@ Expected result:
 ```text
 32
 ```
+
+If previous runbooks created extra cases in the same local database, this count may be greater than `32`. Use the clean reset procedure when you need the exact baseline fixture count.
 
 Check that the expected role groups exist.
 
@@ -262,6 +268,8 @@ Expected result:
 ```text
 Showing 31-32 of 32
 ```
+
+On a long-lived database with extra runbook cases, the upper bound and total may be higher while the pagination fallback behavior remains the same.
 
 Check invalid-page fallback.
 
@@ -427,7 +435,7 @@ Expected result shape:
 ```text
 status_code = 200
 {
-  "model_version": "return-risk-placeholder-v1",
+  "model_version": "retrain_baseline-logreg-v1-seed-7-rows-500",
   "score": "<decimal-score>",
   "label": "<low|medium|high>",
   "reason_codes": [
@@ -441,7 +449,7 @@ status_code = 200
 }
 ```
 
-The exact `score`, `label`, `reason_codes`, and `scored_at` depend on the implemented placeholder scoring and current timestamp, but the response shape should match this contract.
+The exact `model_version`, `score`, `label`, `reason_codes`, and `scored_at` depend on the current active model registry and scoring output, but the response shape should match this contract.
 
 ### As the owning customer, call `/api/returns/{id}/` and confirm `risk` is `null`
 
@@ -699,11 +707,13 @@ checks = {
     "api_doc_has_returns_create": "POST /api/returns/" in api_doc,
     "api_doc_has_returns_detail": "GET /api/returns/{id}/" in api_doc,
     "api_doc_has_returns_risk": "GET /api/returns/{id}/risk/" in api_doc,
+    "api_doc_has_returns_documents": "POST /api/returns/{id}/documents/" in api_doc,
+    "api_doc_has_audit_export": "GET /api/returns/{id}/audit-export/" in api_doc,
     "api_doc_omits_stale_analytics_endpoint": "GET /api/analytics/returns/?from=&to=" not in api_doc,
     "ml_doc_has_registry_path": "ml/registry/model_registry.json" in ml_doc,
-    "ml_doc_has_placeholder_version": "return-risk-placeholder-v1" in ml_doc,
-    "registry_version_matches": registry["active_model"]["version"] == "return-risk-placeholder-v1",
-    "registry_model_type_matches": registry["active_model"]["model_type"] == "deterministic_baseline",
+    "ml_doc_has_logistic_model_type": "logistic_regression" in ml_doc,
+    "registry_version_matches": registry["active_model"]["version"].startswith("retrain_baseline-logreg-v1"),
+    "registry_model_type_matches": registry["active_model"]["model_type"] == "logistic_regression",
     "registry_contract_matches": registry["active_model"]["contract_version"] == "return-risk-sprint2-v1",
 }
 
@@ -718,9 +728,11 @@ Expected result:
 api_doc_has_returns_create = True
 api_doc_has_returns_detail = True
 api_doc_has_returns_risk = True
+api_doc_has_returns_documents = True
+api_doc_has_audit_export = True
 api_doc_omits_stale_analytics_endpoint = True
 ml_doc_has_registry_path = True
-ml_doc_has_placeholder_version = True
+ml_doc_has_logistic_model_type = True
 registry_version_matches = True
 registry_model_type_matches = True
 registry_contract_matches = True
@@ -803,6 +815,7 @@ The local environment should be considered verified when all items below are tru
 - migrations apply successfully
 - demo data seeds successfully
 - repeated seeding keeps the case count at `32`
+- case detail workspaces render and linked users can upload documents inline
 - public UI routes load successfully
 - authenticated console routes render successfully for seeded users
 - pagination fallback checks return expected results
@@ -865,6 +878,8 @@ Expected result:
 ```text
 Seed complete. Stable return case count: 32
 ```
+
+If extra verification cases exist, the printed count may be higher. The important check is that rerunning the seed command does not create duplicate fixture rows.
 
 ## Troubleshooting
 
