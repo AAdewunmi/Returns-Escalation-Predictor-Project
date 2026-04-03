@@ -29,7 +29,7 @@ Keep the success message local to the upload panel and refresh the document tabl
 
 ### Forbidden state
 
-If the actor does not own the case or lacks an upload-capable role, the GET case workspace should render without the upload form and show an “Actor role unavailable” fallback in the panel. Unauthorized upload POST requests should return `403` with refreshed panel HTML, not a generic server error.
+If a customer or merchant does not own the case, the GET case workspace should return `403`. If the authenticated actor lacks an upload-capable role but is otherwise allowed to view the page, render the workspace without the upload form and show an “Actor role unavailable” fallback in the panel. Unauthorized upload POST requests should return `403` with refreshed panel HTML, not a generic server error.
 
 ### No-risk state
 
