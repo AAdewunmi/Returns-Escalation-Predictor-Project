@@ -13,7 +13,9 @@ Typography should use a restrained scale with clear heading, section, body, and 
 
 ## Component direction
 
-Navigation should remain slim and readable. Status pills should be compact and semantically coloured. Empty states should provide context plus one sensible next step. Flash messages should appear near the top of the content region and should not shift layout aggressively.
+Navigation should remain slim and readable. Status pills should be compact and semantically coloured. Empty states should provide context plus one sensible next step. Flash messages should appear near the top of the content region and should not shift layout aggressively. Case-local upload success and validation states may also render inside the upload panel when only one section of the page is refreshed.
+
+Shared partials should carry repeated markup for console hero shells, recent-case cards, visual timelines, document tables, risk summaries, upload panels, and form errors so role-specific templates do not duplicate structure.
 
 ## Responsive rules
 

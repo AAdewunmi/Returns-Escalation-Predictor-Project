@@ -15,7 +15,7 @@ The landing page should open with product framing, one concise supporting senten
 
 ## Reusable shell expectations
 
-Every future authenticated surface should inherit a consistent shell with a top navigation area, alert region, constrained content width, and predictable spacing. Dense tables, status pills, empty states, and pagination should be reusable components rather than one-off template fragments.
+Every future authenticated surface should inherit a consistent shell with a top navigation area, alert region, constrained content width, and predictable spacing. Dense tables, status pills, empty states, pagination, document tables, upload panels, timeline panels, and hero shells should be reusable components rather than one-off template fragments.
 
 ## Accessibility expectations
 

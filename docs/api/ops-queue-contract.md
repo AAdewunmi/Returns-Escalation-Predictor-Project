@@ -1,4 +1,4 @@
-path: docs/api/ops-queue-contract.md
+<!-- path: docs/api/ops-queue-contract.md -->
 # Ops Queue Contract
 
 ## Purpose
@@ -48,7 +48,7 @@ Search is applied before pagination and can match:
 - `order_reference`
 - customer name
 - customer email
-- merchant fields exposed by the eventual queue implementation
+- merchant display name
 
 ## Pagination contract
 

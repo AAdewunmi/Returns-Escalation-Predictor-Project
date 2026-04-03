@@ -10,7 +10,7 @@
 ![Docker](https://img.shields.io/badge/docker-compose-2496ed)
 ![License](https://img.shields.io/badge/license-MIT-lightgrey)
 
-ReturnHub is a Django application for online retailer returns and customer support. It is designed as an API-first workflow product with server-rendered UI surfaces for ops teams, customers, merchants, and administrators. The system centralises return cases, evidence, notes, audit events, analytics, and placeholder escalation-risk scoring behind shared domain and service-layer contracts.
+ReturnHub is a Django application for online retailer returns and customer support. It is designed as an API-first workflow product with server-rendered UI surfaces for ops teams, customers, merchants, and administrators. The system centralises return cases, evidence, notes, audit events, analytics, and persisted escalation-risk scoring behind shared domain and service-layer contracts.
 
 ## Current status
 
@@ -23,15 +23,17 @@ The repository currently includes:
 - deterministic demo seed data
 - public landing page and role entry routes
 - authenticated console dashboards for admin, ops, customer, and merchant roles
+- project-aligned case detail workspace with documents, timeline, risk summary, and inline uploads
 - returns workflow API endpoints for create, detail, status, notes, and risk
+- document upload/list APIs and audit-export support
 - returns analytics API endpoint
-- ML registry, feature contract, deterministic placeholder scoring, and persisted `RiskScore` output
+- ML registry, feature contract, seeded baseline training, artifact-backed scoring, and persisted `RiskScore` output
 - branded 403, 404, and 500 pages
 - CI workflow for lint, format, tests, and coverage
 
 ## Product stance
 
-ReturnHub is API-first for core workflow, with Django Templates, Bootstrap 5.3, and HTMX used for product surfaces built on the same domain model and service boundaries.
+ReturnHub is API-first for core workflow, with Django Templates, Bootstrap 5.3, and small progressive JavaScript used for product surfaces built on the same domain model and service boundaries.
 
 The UI is not treated as decoration. Public and authenticated surfaces exist to make workflow state, role boundaries, and operational context visible in the same product shell while the API and service layer remain the canonical source of behavior.
 
@@ -101,7 +103,11 @@ Authenticated console routes:
 - `/console/customer/`
 - `/console/merchant/`
 
-The landing page is branded and responsive, with clear role entry points and a shared app shell. The authenticated console routes render role-aware dashboard shells inside the same visual system.
+Case workspace route:
+
+- `/cases/{id}/`
+
+The landing page is branded and responsive, with clear role entry points and a shared app shell. The authenticated console routes render role-aware dashboard shells inside the same visual system, and the case workspace provides document review, timeline history, risk context, and inline uploads.
 
 ### Returns API and risk output
 
@@ -111,7 +117,10 @@ The returns workflow API currently includes:
 - `GET /api/returns/{id}/`
 - `PATCH /api/returns/{id}/status/`
 - `POST /api/returns/{id}/notes/`
+- `GET /api/returns/{id}/documents/`
+- `POST /api/returns/{id}/documents/`
 - `GET /api/returns/{id}/risk/`
+- `GET /api/returns/{id}/audit-export/`
 
 Risk output is persisted to `RiskScore` records and exposed only to ops and admin users. Customer-facing case detail keeps `risk` hidden as `null`.
 
@@ -121,7 +130,8 @@ The project also includes:
 
 - `GET /api/analytics/returns/` for bounded returns analytics
 - a committed ML registry at `ml/registry/model_registry.json`
-- deterministic placeholder scoring and reason-code generation
+- seeded baseline model training, retraining, and dataset export commands
+- artifact-backed scoring with deterministic fallback and structured reason-code generation
 - persisted `risk_scored` audit events linked to return cases
 
 ### Shared pagination contract
@@ -142,6 +152,7 @@ ReturnHub adopts one pagination contract early so list pages do not drift. The s
 ```text
 .
 ├── accounts/
+├── api/
 ├── analytics/
 │   ├── api/
 │   └── services/
@@ -207,6 +218,7 @@ Useful local surfaces:
 - landing page: `/`
 - public role entry pages: `/login/admin/`, `/login/ops/`, `/login/customer/`, `/login/merchant/`
 - authenticated console pages: `/console/admin/`, `/console/ops/`, `/console/customer/`, `/console/merchant/`
+- case detail workspace: `/cases/{id}/`
 
 ## Local development commands
 
@@ -246,6 +258,24 @@ Re-seed deterministic demo data:
 docker compose exec -T web python manage.py seed_demo_data
 ```
 
+Train and register the baseline escalation model:
+
+```bash
+docker compose exec -T web python manage.py train_escalation_model
+```
+
+Retrain the baseline model with the evidence-aware dataset path:
+
+```bash
+docker compose exec -T web python manage.py retrain_baseline_model
+```
+
+Generate the evidence-aware training dataset CSV:
+
+```bash
+docker compose exec -T web python manage.py generate_training_dataset
+```
+
 Run tests with coverage:
 
 ```bash
@@ -259,6 +289,8 @@ After setup, confirm the following:
 - the landing page loads at `/`
 - all four public surface entry pages load successfully
 - authenticated console pages render for seeded users
+- a case detail workspace renders at `/cases/{id}/`
+- linked actors can upload a document and see local panel feedback with the document table refreshed in place
 - the seed command completes successfully
 - `ReturnCase.objects.count()` returns `32`
 - the returns API create and detail paths work
@@ -275,6 +307,8 @@ Seed command:
 ```text
 Seed complete. Stable return case count: 32
 ```
+
+On long-lived local databases that already contain extra runbook-generated cases, the seed command remains idempotent for its fixture rows but the printed total count may be higher than `32`. Use `docker compose down -v` before reseeding if you need the clean baseline count.
 
 Pytest summary:
 
@@ -307,10 +341,20 @@ The repository includes reusable frontend building blocks such as:
 - `templates/console/ops_dashboard.html`
 - `templates/console/customer_dashboard.html`
 - `templates/console/merchant_dashboard.html`
+- `templates/cases/detail.html`
 - `templates/partials/_app_nav.html`
+- `templates/partials/_console_hero_shell.html`
+- `templates/partials/_console_recent_case_cards.html`
+- `templates/partials/_console_recent_cases_section.html`
+- `templates/partials/_console_visual_timeline.html`
+- `templates/partials/_document_table.html`
 - `templates/partials/_flash_messages.html`
 - `templates/partials/_empty_state.html`
+- `templates/partials/_form_errors.html`
+- `templates/partials/_risk_summary.html`
 - `templates/partials/_status_badge.html`
+- `templates/partials/_timeline.html`
+- `templates/partials/_upload_panel.html`
 - `templates/partials/_pagination.html`
 - `templates/errors/403.html`
 - `templates/errors/404.html`
@@ -386,7 +430,9 @@ When using `rest_framework.test.APIClient` in `manage.py shell`, pass `HTTP_HOST
 - `README.md` gives the project overview and setup path.
 - `RUNBOOK.md` provides the current clone-to-verified workflow.
 - `docs/api/returns-workflow.md` documents the returns workflow API.
+- `docs/ml/baseline-escalation-risk.md` documents the seeded baseline training flow.
 - `docs/ml/model-registry.md` documents the ML registry contract.
+- `docs/ui/evidence-states.md` documents case-detail evidence UI states.
 - `docs/ui/product-ui-brief.md` defines the frontend purpose and layout direction.
 - `docs/ui/design-system.md` defines the visual system foundation.
 

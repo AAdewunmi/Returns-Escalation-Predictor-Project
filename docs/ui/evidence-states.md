@@ -1,6 +1,4 @@
-
-```markdown
-# path: docs/ui/evidence-states.md
+<!-- path: docs/ui/evidence-states.md -->
 # Evidence UI states
 
 Sprint 4 introduces evidence as a reusable product surface. The UI should feel calm, operational, and trustworthy rather than like a generic file-upload widget.
@@ -27,11 +25,11 @@ Keep validation feedback local to the upload panel. Errors should use semantic a
 
 ### Success state
 
-Use the shared flash-message mechanism after successful upload. The page should return to the case detail view so the new document appears in normal context.
+Keep the success message local to the upload panel and refresh the document table in place. The current case detail page submits the upload form with `fetch(...)` and swaps only the upload panel and document table fragments from the JSON response.
 
 ### Forbidden state
 
-If the actor does not own the case or lacks the correct role, return the shared `403` page rather than a blank or generic server error.
+If the actor does not own the case or lacks an upload-capable role, the GET case workspace should render without the upload form and show an “Actor role unavailable” fallback in the panel. Unauthorized upload POST requests should return `403` with refreshed panel HTML, not a generic server error.
 
 ### No-risk state
 
