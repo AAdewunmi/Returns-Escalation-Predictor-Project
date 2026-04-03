@@ -60,6 +60,20 @@ def test_unrelated_customer_gets_403_on_case_detail(client) -> None:
 
 
 @pytest.mark.django_db
+def test_unrelated_merchant_gets_403_on_case_detail(client) -> None:
+    """An unrelated merchant should not be able to access the case detail page."""
+
+    return_case = ReturnCaseFactory(order_reference="CASE-EVID-005")
+    other_user = UserFactory()
+    add_group(other_user, "merchant")
+
+    client.force_login(other_user)
+    response = client.get(reverse("case-detail", kwargs={"case_id": return_case.pk}))
+
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
 def test_upload_panel_returns_validation_errors_for_missing_file(client) -> None:
     """Invalid inline uploads should return local upload-panel errors."""
 
