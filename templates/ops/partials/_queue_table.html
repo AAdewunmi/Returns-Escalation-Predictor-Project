@@ -1,47 +1,71 @@
 <!-- path: templates/ops/partials/_queue_table.html -->
-<div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-2 mb-3">
-  <p class="text-muted mb-0">{{ count_line }}</p>
-</div>
-
-{% if page_obj.object_list %}
-  <div class="table-responsive">
-    <table class="table table-hover align-middle mb-0">
-      <thead>
-        <tr>
-          <th scope="col">Reference</th>
-          <th scope="col">Customer</th>
-          <th scope="col">Merchant</th>
-          <th scope="col">Status</th>
-          <th scope="col">Priority</th>
-          <th scope="col">SLA due</th>
-          <th scope="col">Risk</th>
-          <th scope="col">Created</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for case in page_obj.object_list %}
-          <tr>
-            <td class="fw-semibold">{{ case.reference }}</td>
-            <td>{{ case.customer.user.get_full_name|default:case.customer.user.email }}</td>
-            <td>{{ case.merchant.name }}</td>
-            <td><span class="badge text-bg-light border">{{ case.get_status_display }}</span></td>
-            <td><span class="badge text-bg-light border">{{ case.get_priority_display }}</span></td>
-            <td>{{ case.sla_due_at|date:"d M Y H:i" }}</td>
-            <td>
-              {% if case.latest_risk %}
-                <span class="badge text-bg-warning">{{ case.latest_risk.label }} {{ case.latest_risk.score }}</span>
-              {% else %}
-                <span class="text-muted">Pending</span>
-              {% endif %}
-            </td>
-            <td>{{ case.created_at|date:"d M Y H:i" }}</td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+<div class="rh-queue-shell">
+  <div class="rh-queue-shell__header">
+    <div>
+      <h3>Return cases</h3>
+      <p>{{ pagination.count_line }}</p>
+    </div>
   </div>
 
-  {% include "partials/_pagination.html" with page_obj=page_obj page_numbers=page_numbers query_string=query_string %}
-{% else %}
-  {% include "partials/_empty_state.html" with title="No cases match these filters" body="Try clearing one or more filters, or wait for new return cases to arrive." %}
-{% endif %}
+  {% if pagination.page_obj.object_list %}
+    <div class="table-responsive rh-queue-table-wrap">
+      <table class="table rh-queue-table align-middle mb-0">
+        <thead>
+          <tr>
+            <th scope="col">Case</th>
+            <th scope="col">Customer</th>
+            <th scope="col">Merchant</th>
+            <th scope="col">Status</th>
+            <th scope="col">Priority</th>
+            <th scope="col">SLA due</th>
+            <th scope="col">Risk</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for return_case in pagination.page_obj.object_list %}
+            <tr>
+              <td>
+                <div class="rh-queue-table__primary">{{ return_case.order_reference }}</div>
+                <div class="rh-queue-table__meta">
+                  <span>{{ return_case.item_category|title }}</span>
+                  <span>{{ return_case.return_reason|title }}</span>
+                </div>
+              </td>
+              <td>
+                <div class="rh-queue-table__primary">{{ return_case.customer.display_name }}</div>
+                <div class="rh-queue-table__subtle">{{ return_case.customer.user.email }}</div>
+              </td>
+              <td>
+                <div class="rh-queue-table__primary">{{ return_case.merchant.display_name|default:"Unknown merchant" }}</div>
+                <div class="rh-queue-table__subtle">{{ return_case.merchant.support_email|default:return_case.merchant.user.email }}</div>
+              </td>
+              <td>{% include "partials/_status_badge.html" with status=return_case.status %}</td>
+              <td>
+                <span class="rh-priority-pill rh-priority-pill--{{ return_case.priority }}">
+                  {{ return_case.get_priority_display }}
+                </span>
+              </td>
+              <td>
+                {% if return_case.sla_due_at %}
+                  <div class="rh-queue-table__primary">{{ return_case.sla_due_at|date:"d M Y" }}</div>
+                  <div class="rh-queue-table__subtle">{{ return_case.sla_due_at|date:"H:i" }}</div>
+                {% else %}
+                  <span class="rh-queue-table__subtle">Not set</span>
+                {% endif %}
+              </td>
+              <td>
+                {% include "partials/_risk_badge.html" with risk_label=return_case.current_risk_label risk_score=return_case.current_risk_score %}
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rh-queue-shell__pagination">
+      {% include "partials/_pagination.html" %}
+    </div>
+  {% else %}
+    {% include "partials/_empty_state.html" with title="No cases match these filters" body="Try broadening the current search, status, priority, or risk filters to bring cases back into view." %}
+  {% endif %}
+</div>
