@@ -8,6 +8,7 @@ from decimal import Decimal
 import pytest
 
 from returns.models import ReturnCase, RiskScore
+from returns.services import ops_queue
 from returns.services.queue import (
     QueueFilters,
     build_filter_querystring,
@@ -17,6 +18,18 @@ from returns.services.queue import (
     parse_queue_filters,
 )
 from tests.factories import ReturnCaseFactory
+
+
+def test_ops_queue_module_re_exports_canonical_queue_contract() -> None:
+    """Compatibility wrapper should expose the canonical queue helpers unchanged."""
+
+    assert ops_queue.QUEUE_PAGE_SIZE == 15
+    assert ops_queue.QueueFilters is QueueFilters
+    assert ops_queue.parse_queue_filters is parse_queue_filters
+    assert ops_queue.normalise_page is normalise_page
+    assert ops_queue.build_filter_querystring is build_filter_querystring
+    assert ops_queue.build_queue_queryset is build_queue_queryset
+    assert ops_queue.get_queue_summary is get_queue_summary
 
 
 def test_normalise_page_defaults_invalid_values_to_first_page() -> None:
