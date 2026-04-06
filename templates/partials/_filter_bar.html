@@ -1,5 +1,10 @@
 <!-- path: templates/partials/_filter_bar.html -->
-<form method="get" class="rh-filter-bar rh-band rh-band--workflow mb-4" novalidate>
+<form
+  method="get"
+  class="rh-filter-bar rh-band rh-band--workflow mb-4"
+  {% if queue_hx_url %}hx-get="{{ queue_hx_url }}" hx-target="{{ queue_hx_target|default:'#ops-queue-table' }}" hx-push-url="true"{% endif %}
+  novalidate
+>
   <div class="rh-filter-bar__header">
     <div class="rh-kicker">Queue filters</div>
     <p>Refine the live queue by case reference, workflow status, priority, and triage risk.</p>
@@ -53,7 +58,7 @@
 
     <div class="col-12 col-lg-2 d-flex gap-2 rh-filter-bar__actions">
       <button type="submit" class="btn btn-primary rh-btn-primary flex-grow-1">Apply</button>
-      <a href="{% url 'console:ops-dashboard' %}" class="btn btn-outline-secondary rh-btn-secondary">Reset</a>
+      <a href="{{ queue_reset_url|default:request.path }}" class="btn btn-outline-secondary rh-btn-secondary">Reset</a>
     </div>
   </div>
 </form>

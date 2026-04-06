@@ -3,10 +3,10 @@
 
 from django.urls import path
 
-from console.views import OpsConsoleView
+from console.views import OpsQueueView
 
 app_name = "ops"
 
 urlpatterns = [
-    path("", OpsConsoleView.as_view(), name="queue"),
+    path("", OpsQueueView.as_view(), name="queue"),
 ]

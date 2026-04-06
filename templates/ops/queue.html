@@ -30,6 +30,8 @@
       <div class="rh-queue-shell__count">{{ pagination.count_line }}</div>
     </div>
 
-    {% include "ops/partials/_queue_table.html" %}
+    <div id="ops-queue-table">
+      {% include "ops/partials/_queue_table.html" %}
+    </div>
   </section>
 {% endblock %}
