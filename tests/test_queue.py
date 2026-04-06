@@ -12,6 +12,7 @@ from returns.services import ops_queue
 from returns.services.queue import (
     QueueFilters,
     build_filter_querystring,
+    build_page_window,
     build_queue_queryset,
     get_queue_summary,
     normalise_page,
@@ -28,6 +29,7 @@ def test_ops_queue_module_re_exports_canonical_queue_contract() -> None:
     assert ops_queue.parse_queue_filters is parse_queue_filters
     assert ops_queue.normalise_page is normalise_page
     assert ops_queue.build_filter_querystring is build_filter_querystring
+    assert ops_queue.build_page_window is build_page_window
     assert ops_queue.build_queue_queryset is build_queue_queryset
     assert ops_queue.get_queue_summary is get_queue_summary
 
@@ -83,6 +85,16 @@ def test_build_filter_querystring_preserves_non_empty_non_page_values() -> None:
     )
 
     assert querystring == "status=submitted&risk_label=high&search=merchant"
+
+
+def test_build_page_window_returns_bounded_page_numbers() -> None:
+    """Pagination windows should stay within the available page range."""
+
+    assert build_page_window(1, 0) == []
+    assert build_page_window(1, 5) == [1, 2, 3]
+    assert build_page_window(3, 5) == [1, 2, 3, 4, 5]
+    assert build_page_window(5, 5) == [3, 4, 5]
+    assert build_page_window(4, 10, radius=1) == [3, 4, 5]
 
 
 @pytest.mark.django_db

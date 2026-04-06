@@ -90,6 +90,17 @@ def build_filter_querystring(
     return urlencode(preserved_items)
 
 
+def build_page_window(current_page: int, total_pages: int, *, radius: int = 2) -> list[int]:
+    """Return a bounded page-number window around the current page."""
+
+    if total_pages <= 0:
+        return []
+
+    start = max(1, current_page - radius)
+    end = min(total_pages, current_page + radius)
+    return list(range(start, end + 1))
+
+
 def build_queue_queryset(filters: QueueFilters) -> QuerySet[ReturnCase]:
     """
     Build the canonical ops queue queryset.
