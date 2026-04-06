@@ -1,0 +1,37 @@
+<!-- path: templates/ops/queue.html -->
+{% extends "base.html" %}
+
+{% block title %}Ops Queue | ReturnHub{% endblock %}
+{% block page_title %}<span class="rh-page-title">Ops Queue</span>{% endblock %}
+
+{% block content %}
+  <section class="rh-band rh-band--workflow mb-4">
+    <div class="rh-section-heading">
+      <div class="rh-kicker">Operations queue</div>
+      <h2>Review return cases in the shared ReturnHub shell.</h2>
+      <p>
+        Filters, summary counts, pagination, and the current risk signal stay aligned with the
+        live queue contract already used across the product.
+      </p>
+    </div>
+  </section>
+
+  {% include "ops/partials/_queue_summary_cards.html" %}
+
+  {% include "ops/partials/_queue_filter_bar.html" %}
+
+  <section class="rh-band rh-band--workflow rh-band--wide">
+    <div class="rh-section-heading rh-queue-shell__heading">
+      <div>
+        <div class="rh-kicker">Queue workspace</div>
+        <h2>Work the current queue in stable operational order.</h2>
+        <p>Case status, priority, SLA timing, and risk remain visible in one restrained workflow surface.</p>
+      </div>
+      <div class="rh-queue-shell__count">{{ pagination.count_line }}</div>
+    </div>
+
+    <div id="ops-queue-table">
+      {% include "ops/partials/_queue_table.html" %}
+    </div>
+  </section>
+{% endblock %}

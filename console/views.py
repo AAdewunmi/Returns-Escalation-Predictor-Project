@@ -87,10 +87,9 @@ class AdminConsoleView(RoleRequiredMixin, TemplateView):
         return context
 
 
-class OpsConsoleView(RoleRequiredMixin, TemplateView):
-    """Ops console shell for the server-rendered return queue."""
+class BaseOpsQueueView(RoleRequiredMixin, TemplateView):
+    """Shared ops queue context for the server-rendered console shell."""
 
-    template_name = "console/ops_dashboard.html"
     allowed_groups = ("Ops", "Admin")
 
     def get_context_data(self, **kwargs):
@@ -99,10 +98,44 @@ class OpsConsoleView(RoleRequiredMixin, TemplateView):
         queue_filters = parse_queue_filters(self.request.GET)
         queryset = build_queue_queryset(queue_filters)
         pagination = paginate_queryset(queryset, self.request.GET.get("page"))
-        context["page_title"] = "Ops Console"
-        context["queue_filters"] = queue_filters
-        context["queue_summary"] = get_queue_summary(queryset)
-        context["pagination"] = pagination
+        context.update(
+            {
+                "page_title": "Ops Console",
+                "queue_filters": queue_filters,
+                "queue_summary": get_queue_summary(queryset),
+                "pagination": pagination,
+                "queue_reset_url": self.request.path,
+            }
+        )
+        return context
+
+
+class OpsConsoleView(BaseOpsQueueView):
+    """Ops console shell for the server-rendered return queue."""
+
+    template_name = "console/ops_dashboard.html"
+
+
+class OpsQueueView(OpsConsoleView):
+    """Standalone ops queue page with HTMX table partial support."""
+
+    template_name = "ops/queue.html"
+    partial_template_name = "ops/partials/_queue_table.html"
+
+    def get_template_names(self):
+        """Render the table partial for HTMX requests."""
+
+        if self.request.headers.get("HX-Request") == "true":
+            return [self.partial_template_name]
+        return [self.template_name]
+
+    def get_context_data(self, **kwargs):
+        """Adjust the page title and HTMX settings for the standalone queue route."""
+
+        context = super().get_context_data(**kwargs)
+        context["page_title"] = "Ops Queue"
+        context["queue_hx_url"] = self.request.path
+        context["queue_hx_target"] = "#ops-queue-table"
         return context
 
 

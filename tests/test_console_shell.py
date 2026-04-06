@@ -36,6 +36,42 @@ def test_ops_console_renders_for_ops_user(client) -> None:
 
 
 @pytest.mark.django_db
+def test_ops_route_renders_standalone_queue_page_for_ops_user(client) -> None:
+    """Ops users should see the standalone /ops/ queue page."""
+
+    ops_user = UserFactory(email="ops-route@example.com")
+    add_group(ops_user, "Ops")
+    ReturnCaseFactory.create_batch(2, status="submitted")
+
+    client.force_login(ops_user)
+    response = client.get("/ops/")
+
+    body = response.content.decode()
+    assert response.status_code == 200
+    assert "Ops Queue" in body
+    assert "Operations queue" in body
+    assert 'id="ops-queue-table"' in body
+
+
+@pytest.mark.django_db
+def test_ops_route_returns_queue_table_partial_for_htmx_request(client) -> None:
+    """HTMX requests to /ops/ should return only the queue table partial."""
+
+    ops_user = UserFactory(email="ops-htmx@example.com")
+    add_group(ops_user, "Ops")
+    ReturnCaseFactory(order_reference="OPS-HTMX-1", status="submitted")
+
+    client.force_login(ops_user)
+    response = client.get("/ops/", HTTP_HX_REQUEST="true")
+
+    body = response.content.decode()
+    assert response.status_code == 200
+    assert "Return cases" in body
+    assert "OPS-HTMX-1" in body
+    assert "Operations queue" not in body
+
+
+@pytest.mark.django_db
 def test_customer_gets_403_on_ops_console(client) -> None:
     """Customers must not access the ops console."""
     customer_user = UserFactory(email="console-customer@example.com")
