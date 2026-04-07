@@ -1,0 +1,16 @@
+<!-- path: templates/ops/partials/_case_header.html -->
+<section class="rh-band rh-band--workflow mb-4">
+  <div class="rh-section-heading">
+    <div class="rh-kicker">Operations case review</div>
+    <h2>{{ return_case.order_reference }}</h2>
+    <p>
+      Customer, merchant, and workflow context remain visible inside the same shared queue shell.
+    </p>
+  </div>
+  <div class="rh-trust-row" aria-label="Ops case header signals">
+    <span class="rh-trust-item">{{ return_case.status|title }}</span>
+    <span class="rh-trust-item">{{ return_case.get_priority_display }}</span>
+    <span class="rh-trust-item">{{ return_case.item_category|title }}</span>
+    <span class="rh-trust-item">{{ return_case.return_reason|title }}</span>
+  </div>
+</section>

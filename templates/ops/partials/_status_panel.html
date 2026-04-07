@@ -1,0 +1,33 @@
+<!-- path: templates/ops/partials/_status_panel.html -->
+<section class="rh-card mb-4" aria-label="Workflow state">
+  <div class="rh-section-heading mb-3">
+    <div class="rh-kicker">Workflow state</div>
+    <h2>Read-only operational status for the current case.</h2>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover rh-table align-middle mb-0">
+      <tbody>
+        <tr>
+          <th scope="row">Status</th>
+          <td>{% include "partials/_status_badge.html" with status=return_case.status %}</td>
+        </tr>
+        <tr>
+          <th scope="row">Priority</th>
+          <td>
+            <span class="rh-priority-pill rh-priority-pill--{{ return_case.priority }}">
+              {{ return_case.get_priority_display }}
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">Customer</th>
+          <td>{{ return_case.customer.display_name }} <span class="text-muted">{{ return_case.customer.user.email }}</span></td>
+        </tr>
+        <tr>
+          <th scope="row">Merchant</th>
+          <td>{{ return_case.merchant.display_name|default:"Unknown merchant" }} <span class="text-muted">{{ return_case.merchant.support_email|default:return_case.merchant.user.email }}</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</section>

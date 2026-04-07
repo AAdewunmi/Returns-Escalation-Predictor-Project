@@ -1,0 +1,8 @@
+<!-- path: templates/ops/partials/_evidence_list.html -->
+<section class="rh-card mb-4" aria-label="Case documents">
+  <div class="rh-section-heading mb-3">
+    <div class="rh-kicker">Documents</div>
+    <h2>Evidence, responses, and internal attachments for this case.</h2>
+  </div>
+  {% include "partials/_document_table.html" with documents=documents %}
+</section>

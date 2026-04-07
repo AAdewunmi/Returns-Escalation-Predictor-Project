@@ -5,112 +5,32 @@
 {% block page_title %}<span class="rh-page-title">Ops Case Detail</span>{% endblock %}
 
 {% block content %}
-  <section class="rh-band rh-band--workflow mb-4">
-    <div class="rh-section-heading">
-      <div class="rh-kicker">Operations case review</div>
-      <h2>Work one return case inside the same shared queue shell.</h2>
-      <p>
-        Documents, timeline history, and the current escalation signal stay visible without
-        leaving the production ops workspace.
-      </p>
-    </div>
-    <div class="rh-hero-actions">
+  <section class="rh-band rh-band--workflow rh-band--wide py-4">
+    <nav aria-label="Breadcrumb" class="mb-4">
+      <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item"><a href="{{ ops_queue_url }}">Ops queue</a></li>
+        <li class="breadcrumb-item active" aria-current="page">{{ return_case.order_reference }}</li>
+      </ol>
+    </nav>
+
+    <div class="rh-hero-actions mb-4">
       <a class="btn btn-outline-secondary rh-btn-secondary" href="{{ ops_queue_url }}">Back to ops queue</a>
     </div>
-    <div class="rh-trust-row" aria-label="Ops case detail signals">
-      <span class="rh-trust-item">{{ return_case.status|title }}</span>
-      <span class="rh-trust-item">{{ return_case.get_priority_display }}</span>
-      <span class="rh-trust-item">{{ return_case.item_category|title }}</span>
-      <span class="rh-trust-item">{{ return_case.return_reason|title }}</span>
-    </div>
-  </section>
 
-  <section class="rh-band rh-band--workflow rh-band--wide mb-4">
-    <div class="rh-section-heading rh-queue-shell__heading">
-      <div>
-        <div class="rh-kicker">Case workspace</div>
-        <h2>{{ return_case.order_reference }}</h2>
-        <p>Customer, merchant, risk, and evidence context in one restrained review surface.</p>
-      </div>
-      <div class="rh-queue-shell__count">
-        {% if return_case.sla_due_at %}
-          SLA {{ return_case.sla_due_at|date:"d M Y H:i" }}
-        {% else %}
-          SLA not set
-        {% endif %}
-      </div>
-    </div>
+    {% include "ops/partials/_case_header.html" %}
 
     <div class="row g-4">
       <div class="col-12 col-xl-8">
-        <section class="rh-card mb-4">
-          <div class="rh-section-heading mb-3">
-            <div class="rh-kicker">Case summary</div>
-            <h2>Operational context for the current return case.</h2>
-          </div>
-          <div class="table-responsive">
-            <table class="table table-hover rh-table align-middle mb-0">
-              <tbody>
-                <tr>
-                  <th scope="row">Customer</th>
-                  <td>{{ return_case.customer.display_name }}</td>
-                  <td class="text-muted">{{ return_case.customer.user.email }}</td>
-                </tr>
-                <tr>
-                  <th scope="row">Merchant</th>
-                  <td>{{ return_case.merchant.display_name|default:"Unknown merchant" }}</td>
-                  <td class="text-muted">{{ return_case.merchant.support_email|default:return_case.merchant.user.email }}</td>
-                </tr>
-                <tr>
-                  <th scope="row">Status</th>
-                  <td>{% include "partials/_status_badge.html" with status=return_case.status %}</td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <th scope="row">Priority</th>
-                  <td>
-                    <span class="rh-priority-pill rh-priority-pill--{{ return_case.priority }}">
-                      {{ return_case.get_priority_display }}
-                    </span>
-                  </td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <th scope="row">Order Value</th>
-                  <td>{{ return_case.order_value }}</td>
-                  <td class="text-muted">Delivered {{ return_case.delivery_date }}</td>
-                </tr>
-                <tr>
-                  <th scope="row">Customer Message</th>
-                  <td colspan="2">{{ return_case.customer_message|default:"No customer message provided." }}</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </section>
-
-        <section class="rh-card mb-4">
-          <div class="rh-section-heading mb-3">
-            <div class="rh-kicker">Documents</div>
-            <h2>Evidence, responses, and internal attachments.</h2>
-          </div>
-          <div id="case-document-table">
-            {% include "partials/_document_table.html" with documents=documents %}
-          </div>
-        </section>
-
-        <section class="rh-card">
-          <div class="rh-section-heading mb-3">
-            <div class="rh-kicker">Timeline</div>
-            <h2>Append-only case history for operational review.</h2>
-          </div>
-          {% include "partials/_timeline.html" with events=events %}
-        </section>
+        {% include "ops/partials/_status_panel.html" %}
+        <div id="case-document-table">
+          {% include "ops/partials/_evidence_list.html" %}
+        </div>
+        {% include "ops/partials/_timeline.html" %}
       </div>
 
       <div class="col-12 col-xl-4">
         <div class="mb-4">
-          {% include "partials/_risk_summary.html" with latest_risk=latest_risk %}
+          {% include "ops/partials/_risk_panel.html" %}
         </div>
         <div id="case-upload-panel">
           {% include "partials/_upload_panel.html" with upload_form=upload_form upload_success_message=upload_success_message return_case=return_case actor_role=actor_role %}
@@ -146,7 +66,7 @@
         if (!(form instanceof HTMLFormElement)) {
           return;
         }
-        if (form.id !== "case-document-upload-form") {
+        if (form.id !== "case-upload-form") {
           return;
         }
 

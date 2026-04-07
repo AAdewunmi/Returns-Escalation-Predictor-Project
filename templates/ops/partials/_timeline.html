@@ -1,0 +1,8 @@
+<!-- path: templates/ops/partials/_timeline.html -->
+<section class="rh-card" aria-label="Audit timeline">
+  <div class="rh-section-heading mb-3">
+    <div class="rh-kicker">Timeline</div>
+    <h2>Append-only workflow history for the current case.</h2>
+  </div>
+  {% include "partials/_timeline.html" with events=events %}
+</section>
