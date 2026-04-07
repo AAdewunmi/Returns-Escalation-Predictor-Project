@@ -1,0 +1,32 @@
+<!-- path: templates/ops/partials/_risk_panel.html -->
+<section class="card border-0 shadow-sm">
+  <div class="card-body">
+    <h2 class="h5 mb-1">Escalation risk</h2>
+    <p class="text-muted mb-3">
+      This is a secondary triage signal based on the current persisted model output.
+    </p>
+
+    {% if latest_risk %}
+      <div class="border rounded-3 p-3 mb-3">
+        <p class="text-muted small mb-1">Label</p>
+        <p class="fw-semibold mb-2">{{ latest_risk.label }}</p>
+
+        <p class="text-muted small mb-1">Score</p>
+        <p class="fw-semibold mb-0">{{ latest_risk.score }}</p>
+      </div>
+
+      <div>
+        <p class="text-muted small mb-2">Reason codes</p>
+        <div class="d-flex flex-wrap gap-2">
+          {% for reason_code in latest_risk.reason_codes %}
+            <span class="badge text-bg-light border">{{ reason_code }}</span>
+          {% empty %}
+            <span class="text-muted">No reason codes available</span>
+          {% endfor %}
+        </div>
+      </div>
+    {% else %}
+      {% include "partials/_empty_state.html" with title="No risk score yet" body="The model has not yet produced a persisted score for this case." %}
+    {% endif %}
+  </div>
+</section>
