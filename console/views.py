@@ -4,11 +4,14 @@
 from __future__ import annotations
 
 from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.urls import reverse
 from django.views.generic import TemplateView
 
 from common.pagination import paginate_queryset
 from returns.models import ReturnCase
+from returns.services.ops_case_detail import build_ops_case_detail_context
 from returns.services.queue import build_queue_queryset, get_queue_summary, parse_queue_filters
+from ui.forms import CaseDocumentUploadForm
 
 CUSTOMER_TIMELINE_ITEMS = (
     {
@@ -136,6 +139,33 @@ class OpsQueueView(OpsConsoleView):
         context["page_title"] = "Ops Queue"
         context["queue_hx_url"] = self.request.path
         context["queue_hx_target"] = "#ops-queue-table"
+        return context
+
+
+class OpsCaseDetailView(RoleRequiredMixin, TemplateView):
+    """Standalone ops case detail page aligned with the queue shell."""
+
+    template_name = "ops/case_detail.html"
+    allowed_groups = ("Ops", "Admin")
+
+    def get_context_data(self, **kwargs):
+        """Build the shared case detail context for the ops route."""
+
+        context = super().get_context_data(**kwargs)
+        detail_context = build_ops_case_detail_context(
+            case_id=self.kwargs["case_id"],
+            actor=self.request.user,
+        )
+        actor_role = detail_context["actor_role"]
+        context.update(
+            {
+                **detail_context,
+                "page_title": f"Ops Case {detail_context['return_case'].order_reference}",
+                "upload_form": CaseDocumentUploadForm(actor_role=actor_role) if actor_role else None,
+                "upload_success_message": "",
+                "ops_queue_url": reverse("ops:queue"),
+            }
+        )
         return context
 
 
