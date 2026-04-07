@@ -1,25 +1,33 @@
 <!-- path: templates/ops/partials/_status_panel.html -->
-<section class="card border-0 shadow-sm mb-4">
-  <div class="card-body">
-    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
-      <div>
-        <h2 class="h5 mb-1">Workflow state</h2>
-        <p class="text-muted mb-0">Read-only today. Interactive workflow controls arrive on Wednesday.</p>
-      </div>
-    </div>
-
-    <dl class="row mb-0">
-      <dt class="col-sm-3 text-muted">Status</dt>
-      <dd class="col-sm-9">{{ case.get_status_display }}</dd>
-
-      <dt class="col-sm-3 text-muted">Priority</dt>
-      <dd class="col-sm-9">{{ case.get_priority_display }}</dd>
-
-      <dt class="col-sm-3 text-muted">Customer</dt>
-      <dd class="col-sm-9">{{ case.customer.user.email }}</dd>
-
-      <dt class="col-sm-3 text-muted">Merchant</dt>
-      <dd class="col-sm-9">{{ case.merchant.name }}</dd>
-    </dl>
+<section class="rh-card mb-4" aria-label="Workflow state">
+  <div class="rh-section-heading mb-3">
+    <div class="rh-kicker">Workflow state</div>
+    <h2>Read-only operational status for the current case.</h2>
+  </div>
+  <div class="table-responsive">
+    <table class="table table-hover rh-table align-middle mb-0">
+      <tbody>
+        <tr>
+          <th scope="row">Status</th>
+          <td>{% include "partials/_status_badge.html" with status=return_case.status %}</td>
+        </tr>
+        <tr>
+          <th scope="row">Priority</th>
+          <td>
+            <span class="rh-priority-pill rh-priority-pill--{{ return_case.priority }}">
+              {{ return_case.get_priority_display }}
+            </span>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">Customer</th>
+          <td>{{ return_case.customer.display_name }} <span class="text-muted">{{ return_case.customer.user.email }}</span></td>
+        </tr>
+        <tr>
+          <th scope="row">Merchant</th>
+          <td>{{ return_case.merchant.display_name|default:"Unknown merchant" }} <span class="text-muted">{{ return_case.merchant.support_email|default:return_case.merchant.user.email }}</span></td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 </section>

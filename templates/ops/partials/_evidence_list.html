@@ -1,33 +1,8 @@
 <!-- path: templates/ops/partials/_evidence_list.html -->
-<section class="card border-0 shadow-sm mb-4">
-  <div class="card-body">
-    <div class="d-flex justify-content-between align-items-start gap-3 mb-3">
-      <div>
-        <h2 class="h5 mb-1">Evidence</h2>
-        <p class="text-muted mb-0">Files already attached to this return case.</p>
-      </div>
-    </div>
-
-    {% if documents %}
-      <div class="list-group list-group-flush">
-        {% for document in documents %}
-          <article class="list-group-item px-0">
-            <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
-              <div>
-                <p class="fw-semibold mb-1">{{ document.original_filename }}</p>
-                <p class="text-muted mb-0">
-                  {{ document.get_document_kind_display }} · Uploaded {{ document.created_at|date:"d M Y H:i" }}
-                </p>
-              </div>
-              <div class="text-md-end">
-                <a href="{{ document.file.url }}" class="btn btn-outline-secondary btn-sm">Open file</a>
-              </div>
-            </div>
-          </article>
-        {% endfor %}
-      </div>
-    {% else %}
-      {% include "partials/_empty_state.html" with title="No evidence yet" body="This case does not have any uploaded evidence at the moment." %}
-    {% endif %}
+<section class="rh-card mb-4" aria-label="Case documents">
+  <div class="rh-section-heading mb-3">
+    <div class="rh-kicker">Documents</div>
+    <h2>Evidence, responses, and internal attachments for this case.</h2>
   </div>
+  {% include "partials/_document_table.html" with documents=documents %}
 </section>
