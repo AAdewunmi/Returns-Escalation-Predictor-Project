@@ -23,6 +23,13 @@ def test_ops_namespace_routes_to_real_queue_page() -> None:
     assert resolve("/ops/").view_name == "ops:queue"
 
 
+def test_ops_namespace_routes_to_real_case_detail_page() -> None:
+    """The /ops/<id>/ alias should resolve to the shared ops case detail view."""
+
+    assert reverse("ops:case-detail", kwargs={"case_id": 42}) == "/ops/42/"
+    assert resolve("/ops/42/").view_name == "ops:case-detail"
+
+
 def test_config_urls_appends_media_patterns_when_debug(monkeypatch) -> None:
     """Root URLs should append media-serving patterns in debug mode."""
 

@@ -7,9 +7,12 @@ import pytest
 from django.contrib.auth.models import Group
 
 from tests.factories import (
+    CaseEventFactory,
     CustomerProfileFactory,
+    EvidenceDocumentFactory,
     MerchantProfileFactory,
     ReturnCaseFactory,
+    RiskScoreFactory,
     UserFactory,
 )
 
@@ -72,6 +75,29 @@ def test_ops_route_returns_queue_table_partial_for_htmx_request(client) -> None:
 
 
 @pytest.mark.django_db
+def test_ops_case_detail_route_renders_standalone_ops_workspace(client) -> None:
+    """Ops users should be able to open a case detail page from the standalone ops route."""
+
+    ops_user = UserFactory(email="ops-case-detail@example.com")
+    add_group(ops_user, "Ops")
+    return_case = ReturnCaseFactory(order_reference="OPS-DETAIL-1")
+    EvidenceDocumentFactory(return_case=return_case)
+    CaseEventFactory(return_case=return_case, event_type="document_uploaded", actor=ops_user)
+    RiskScoreFactory(case=return_case, label="high")
+
+    client.force_login(ops_user)
+    response = client.get(f"/ops/{return_case.pk}/")
+
+    body = response.content.decode()
+    assert response.status_code == 200
+    assert "Ops Case Detail" in body
+    assert "OPS-DETAIL-1" in body
+    assert "Back to ops queue" in body
+    assert 'id="case-upload-form"' in body
+    assert "Document actions" in body
+
+
+@pytest.mark.django_db
 def test_customer_gets_403_on_ops_console(client) -> None:
     """Customers must not access the ops console."""
     customer_user = UserFactory(email="console-customer@example.com")
@@ -80,6 +106,20 @@ def test_customer_gets_403_on_ops_console(client) -> None:
 
     client.force_login(customer_user)
     response = client.get("/console/ops/")
+
+    assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_customer_gets_403_on_ops_case_detail_route(client) -> None:
+    """Customers must not access the standalone ops case detail route."""
+
+    customer_user = UserFactory(email="ops-detail-customer@example.com")
+    add_group(customer_user, "Customer")
+    return_case = ReturnCaseFactory()
+
+    client.force_login(customer_user)
+    response = client.get(f"/ops/{return_case.pk}/")
 
     assert response.status_code == 403
 
