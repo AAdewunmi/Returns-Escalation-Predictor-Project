@@ -1,46 +1,89 @@
-# path: returns/services/ops_case_detail.py
-"""Detail-page context builders for the ops surface."""
+"""Detail-page context builders for the case workspace."""
 
 from __future__ import annotations
 
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.core.exceptions import PermissionDenied
 from typing import Any
 
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 
-from apps.returns.models import CaseEvent, EvidenceDocument, ReturnCase, RiskScore
+from returns.models import CaseEvent, EvidenceDocument, ReturnCase
+from returns.services.cases import _actor_role
+from returns.services.documents import list_documents_for_case
 
 
-def build_ops_case_detail_context(case_id: str) -> dict[str, Any]:
-    """Load a case and its related operational data for the ops detail page."""
-    case = get_object_or_404(
+def get_case_detail_case(*, case_id: int) -> ReturnCase:
+    """Fetch a case with the related entities needed by the workspace."""
+
+    return get_object_or_404(
         ReturnCase.objects.select_related(
-            "customer",
             "customer__user",
-            "merchant",
+            "merchant__user",
+            "risk_score",
         ).prefetch_related(
             Prefetch(
-                "evidence_documents",
-                queryset=EvidenceDocument.objects.order_by("-created_at"),
+                "documents",
+                queryset=EvidenceDocument.objects.order_by("-created_at", "-id"),
             ),
             Prefetch(
                 "events",
-                queryset=CaseEvent.objects.select_related("actor").order_by("-created_at"),
-            ),
-            Prefetch(
-                "risk_scores",
-                queryset=RiskScore.objects.order_by("-created_at"),
-                to_attr="prefetched_risk_scores",
+                queryset=CaseEvent.objects.select_related("actor").order_by("-created_at", "-id"),
             ),
         ),
         pk=case_id,
     )
 
-    latest_risk = case.prefetched_risk_scores[0] if case.prefetched_risk_scores else None
+
+def get_case_detail_actor_role(*, actor: AbstractBaseUser, return_case: ReturnCase) -> str:
+    """Resolve the request actor role for the case workspace."""
+
+    actor_role = _actor_role(actor)
+    if actor_role in {"admin", "ops"}:
+        return actor_role
+
+    if actor_role == "customer" and return_case.customer.user_id == actor.id:
+        return actor_role
+
+    if actor_role == "customer":
+        raise PermissionDenied("You do not have access to this case.")
+
+    if actor_role == "merchant" and return_case.merchant.user_id == actor.id:
+        return actor_role
+
+    if actor_role == "merchant":
+        raise PermissionDenied("You do not have access to this case.")
+
+    return ""
+
+
+def build_ops_case_detail_context(
+    *,
+    case_id: int,
+    actor: AbstractBaseUser | None = None,
+) -> dict[str, Any]:
+    """Build the shared case workspace context for UI views."""
+
+    return_case = get_case_detail_case(case_id=case_id)
+    actor_role = ""
+    documents = return_case.documents.order_by("-created_at", "-id")
+
+    if actor is not None and actor.is_authenticated:
+        actor_role = get_case_detail_actor_role(actor=actor, return_case=return_case)
+        try:
+            documents = list_documents_for_case(return_case=return_case, actor=actor).order_by(
+                "-created_at",
+                "-id",
+            )
+        except PermissionDenied:
+            documents = return_case.documents.none()
 
     return {
-        "case": case,
-        "latest_risk": latest_risk,
-        "documents": list(case.evidence_documents.all()),
-        "events": list(case.events.all()),
+        "return_case": return_case,
+        "documents": documents,
+        "events": return_case.events.order_by("-created_at", "-id"),
+        "latest_risk": getattr(return_case, "risk_score", None),
+        "actor_role": actor_role,
+        "page_title": f"Case {return_case.order_reference}",
     }
