@@ -6,18 +6,21 @@ from __future__ import annotations
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.core.exceptions import PermissionDenied
 from django.http import Http404, JsonResponse
-from django.shortcuts import get_object_or_404
 from django.template.loader import render_to_string
 from django.views import View
 from django.views.generic import TemplateView
 
 from returns.models import ReturnCase
-from returns.services.cases import _actor_role
 from returns.services.documents import (
     DocumentServiceError,
     DocumentUploadInput,
     list_documents_for_case,
     upload_document_for_case,
+)
+from returns.services.ops_case_detail import (
+    build_ops_case_detail_context,
+    get_case_detail_actor_role,
+    get_case_detail_case,
 )
 from ui.forms import CaseDocumentUploadForm
 
@@ -92,57 +95,6 @@ class ReturnCaseDetailView(TemplateView):
 
     template_name = "cases/detail.html"
 
-    def _get_return_case(self) -> ReturnCase:
-        """Fetch the current case with the required related entities."""
-
-        return get_object_or_404(
-            ReturnCase.objects.select_related(
-                "customer__user",
-                "merchant__user",
-            ),
-            pk=self.kwargs["case_id"],
-        )
-
-    def _get_actor_role(self, return_case: ReturnCase) -> str:
-        """Return an upload-capable actor role for the current request, if any."""
-
-        user = self.request.user
-        if not user.is_authenticated:
-            return ""
-
-        actor_role = _actor_role(user)
-        if actor_role in {"admin", "ops"}:
-            return actor_role
-
-        if actor_role == "customer" and return_case.customer.user_id == user.id:
-            return actor_role
-
-        if actor_role == "customer":
-            raise PermissionDenied("You do not have access to this case.")
-
-        if actor_role == "merchant" and return_case.merchant.user_id == user.id:
-            return actor_role
-
-        if actor_role == "merchant":
-            raise PermissionDenied("You do not have access to this case.")
-
-        return ""
-
-    def _get_documents(self, return_case: ReturnCase):
-        """Return case documents visible to the current request actor."""
-
-        user = self.request.user
-        if not user.is_authenticated:
-            return return_case.documents.order_by("-created_at", "-id")
-
-        try:
-            return list_documents_for_case(return_case=return_case, actor=user).order_by(
-                "-created_at",
-                "-id",
-            )
-        except PermissionDenied:
-            return return_case.documents.none()
-
     def _get_upload_form(
         self,
         *,
@@ -161,19 +113,16 @@ class ReturnCaseDetailView(TemplateView):
         """Return case detail context for the workspace template."""
 
         context = super().get_context_data(**kwargs)
-        return_case = self._get_return_case()
-        actor_role = self._get_actor_role(return_case)
+        detail_context = build_ops_case_detail_context(
+            case_id=self.kwargs["case_id"],
+            actor=self.request.user,
+        )
 
         context.update(
             {
-                "return_case": return_case,
-                "documents": self._get_documents(return_case),
-                "events": return_case.events.order_by("-created_at", "-id"),
-                "latest_risk": getattr(return_case, "risk_score", None),
-                "upload_form": self._get_upload_form(actor_role=actor_role),
+                **detail_context,
+                "upload_form": self._get_upload_form(actor_role=detail_context["actor_role"]),
                 "upload_success_message": "",
-                "actor_role": actor_role,
-                "page_title": f"Case {return_case.order_reference}",
             }
         )
         return context
@@ -185,28 +134,15 @@ class ReturnCaseDocumentUploadView(LoginRequiredMixin, View):
     def _get_return_case(self, case_id: int) -> ReturnCase:
         """Fetch the case for upload handling."""
 
-        return get_object_or_404(
-            ReturnCase.objects.select_related(
-                "customer__user",
-                "merchant__user",
-            ),
-            pk=case_id,
-        )
+        return get_case_detail_case(case_id=case_id)
 
     def _get_actor_role(self, *, return_case: ReturnCase) -> str:
         """Resolve the actor role allowed to upload against this case."""
 
-        actor_role = _actor_role(self.request.user)
-        if actor_role in {"admin", "ops"}:
-            return actor_role
-
-        if actor_role == "customer" and return_case.customer.user_id == self.request.user.id:
-            return actor_role
-
-        if actor_role == "merchant" and return_case.merchant.user_id == self.request.user.id:
-            return actor_role
-
-        return ""
+        try:
+            return get_case_detail_actor_role(actor=self.request.user, return_case=return_case)
+        except PermissionDenied:
+            return ""
 
     def _render_response(
         self,

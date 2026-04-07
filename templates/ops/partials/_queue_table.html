@@ -25,7 +25,11 @@
           {% for return_case in pagination.page_obj.object_list %}
             <tr>
               <td>
-                <div class="rh-queue-table__primary">{{ return_case.order_reference }}</div>
+                <div class="rh-queue-table__primary">
+                  <a href="{% url 'ops:case-detail' case_id=return_case.pk %}">
+                    {{ return_case.order_reference }}
+                  </a>
+                </div>
                 <div class="rh-queue-table__meta">
                   <span>{{ return_case.item_category|title }}</span>
                   <span>{{ return_case.return_reason|title }}</span>

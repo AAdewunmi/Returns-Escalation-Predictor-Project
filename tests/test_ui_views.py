@@ -207,13 +207,13 @@ def test_case_detail_view_returns_no_documents_when_listing_is_forbidden(db, mon
     view = ReturnCaseDetailView()
     view.setup(request, case_id=return_case.pk)
     monkeypatch.setattr(
-        "ui.views.list_documents_for_case",
+        "returns.services.ops_case_detail.list_documents_for_case",
         lambda **kwargs: (_ for _ in ()).throw(PermissionDenied("forbidden")),
     )
 
-    documents = view._get_documents(return_case)
+    context = view.get_context_data(case_id=return_case.pk)
 
-    assert list(documents) == []
+    assert list(context["documents"]) == []
 
 
 def test_case_document_upload_returns_403_for_unlinked_user(client, db) -> None:
