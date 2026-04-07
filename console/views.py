@@ -161,7 +161,9 @@ class OpsCaseDetailView(RoleRequiredMixin, TemplateView):
             {
                 **detail_context,
                 "page_title": f"Ops Case {detail_context['return_case'].order_reference}",
-                "upload_form": CaseDocumentUploadForm(actor_role=actor_role) if actor_role else None,
+                "upload_form": (
+                    CaseDocumentUploadForm(actor_role=actor_role) if actor_role else None
+                ),
                 "upload_success_message": "",
                 "ops_queue_url": reverse("ops:queue"),
             }

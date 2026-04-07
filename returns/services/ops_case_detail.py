@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from django.contrib.auth.base_user import AbstractBaseUser
-from django.core.exceptions import PermissionDenied
 from typing import Any
 
+from django.contrib.auth.base_user import AbstractBaseUser
+from django.core.exceptions import PermissionDenied
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 
