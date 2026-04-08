@@ -10,69 +10,7 @@
   {% endif %}
 
   <div class="d-grid gap-4">
-    <form method="post" action="{% url 'ops:case-detail' case_id=return_case.pk %}" data-inline-fragments="true">
-      {% csrf_token %}
-      <input type="hidden" name="ops_action" value="case-update">
-      <div class="mb-2">
-        <h3 class="h6 mb-1">Update workflow state</h3>
-        <p class="text-muted small mb-0">
-          Move the case through an allowed transition and optionally adjust its priority.
-        </p>
-      </div>
-      {% include "partials/_form_errors.html" with form=case_update_form error_heading="There is a problem with this status update" %}
-      <div class="mb-3">
-        <label class="form-label" for="{{ case_update_form.status.id_for_label }}">Next status</label>
-        {{ case_update_form.status }}
-      </div>
-      <div class="mb-3">
-        <label class="form-label" for="{{ case_update_form.priority.id_for_label }}">Priority</label>
-        {{ case_update_form.priority }}
-      </div>
-      <button type="submit" class="btn btn-dark" {% if case_update_form.status.field.disabled %}disabled{% endif %}>
-        Apply status update
-      </button>
-    </form>
-
-    <form method="post" action="{% url 'ops:case-detail' case_id=return_case.pk %}" data-inline-fragments="true">
-      {% csrf_token %}
-      <input type="hidden" name="ops_action" value="request-info">
-      <div class="mb-2">
-        <h3 class="h6 mb-1">Request more information</h3>
-        <p class="text-muted small mb-0">
-          Move the case into a waiting state and capture the follow-up context in the audit trail.
-        </p>
-      </div>
-      {% include "partials/_form_errors.html" with form=request_info_form error_heading="There is a problem with this follow-up request" %}
-      <div class="mb-3">
-        <label class="form-label" for="{{ request_info_form.recipient.id_for_label }}">Waiting on</label>
-        {{ request_info_form.recipient }}
-      </div>
-      <div class="mb-3">
-        <label class="form-label" for="{{ request_info_form.message.id_for_label }}">Message</label>
-        {{ request_info_form.message }}
-      </div>
-      <button type="submit" class="btn btn-outline-dark">
-        Request information
-      </button>
-    </form>
-
-    <form method="post" action="{% url 'ops:case-detail' case_id=return_case.pk %}" data-inline-fragments="true">
-      {% csrf_token %}
-      <input type="hidden" name="ops_action" value="add-note">
-      <div class="mb-2">
-        <h3 class="h6 mb-1">Add internal note</h3>
-        <p class="text-muted small mb-0">
-          Store internal ops context without changing the current workflow state.
-        </p>
-      </div>
-      {% include "partials/_form_errors.html" with form=note_form error_heading="There is a problem with this note" %}
-      <div class="mb-3">
-        <label class="form-label" for="{{ note_form.body.id_for_label }}">Note</label>
-        {{ note_form.body }}
-      </div>
-      <button type="submit" class="btn btn-outline-secondary">
-        Save internal note
-      </button>
-    </form>
+    {% include "ops/partials/_request_info_panel.html" %}
+    {% include "ops/partials/_notes_panel.html" %}
   </div>
 </section>

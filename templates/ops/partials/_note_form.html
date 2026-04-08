@@ -1,0 +1,18 @@
+<!-- path: templates/ops/partials/_note_form.html -->
+<form
+  method="post"
+  action="{% url 'ops:case-detail' case_id=return_case.pk %}"
+  data-inline-fragments="true"
+  class="mb-4"
+>
+  {% csrf_token %}
+  <input type="hidden" name="ops_action" value="add-note">
+  {% include "partials/_form_errors.html" with form=note_form error_heading="There is a problem with this note" %}
+  <div class="mb-3">
+    <label class="form-label" for="{{ note_form.body.id_for_label }}">Note</label>
+    {{ note_form.body }}
+  </div>
+  <button type="submit" class="btn btn-outline-secondary">
+    Save internal note
+  </button>
+</form>

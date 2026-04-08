@@ -54,6 +54,7 @@ def test_ops_case_detail_renders_documents_timeline_and_risk(client) -> None:
     assert "Apply status update" in content
     assert "Request information" in content
     assert "Save internal note" in content
+    assert "Internal notes" in content
 
 
 @pytest.mark.django_db
@@ -101,6 +102,7 @@ def test_ops_case_detail_shows_current_empty_states_when_case_is_sparse(client) 
     assert "No documents yet" in content
     assert "No timeline events yet" in content
     assert "No score yet" in content
+    assert "No notes yet" in content
 
 
 @pytest.mark.django_db
@@ -176,6 +178,7 @@ def test_ops_case_detail_request_info_post_moves_case_to_waiting_state(client, m
     assert "Requested additional information from customer" in note.body
     assert "Case moved to waiting on customer." in payload["action_panel_html"]
     assert "Waiting for customer" in payload["status_panel_html"]
+    assert "Latest request" in payload["action_panel_html"]
 
 
 @pytest.mark.django_db
@@ -203,6 +206,10 @@ def test_ops_case_detail_add_note_post_refreshes_timeline(client) -> None:
     assert "Internal note added." in payload["action_panel_html"]
     assert "note_added" in payload["timeline_html"].lower()
     assert "replacement stock is available" in payload["timeline_html"].lower()
+    assert (
+        "Merchant called back and confirmed replacement stock is available."
+        in payload["action_panel_html"]
+    )
 
 
 @pytest.mark.django_db

@@ -217,6 +217,17 @@ class OpsCaseDetailView(RoleRequiredMixin, TemplateView):
             case_id=self.kwargs["case_id"],
             actor=self.request.user,
         )
+        latest_request_event = next(
+            (
+                event
+                for event in detail_context["events"]
+                if event.event_type == "status_updated"
+                and str(event.payload.get("note", "")).startswith(
+                    "Requested additional information from "
+                )
+            ),
+            None,
+        )
         actor_role = detail_context["actor_role"]
         return {
             **detail_context,
@@ -225,6 +236,7 @@ class OpsCaseDetailView(RoleRequiredMixin, TemplateView):
             "upload_success_message": "",
             "ops_queue_url": reverse("ops:queue"),
             "ops_action_success_message": "",
+            "latest_request_event": latest_request_event,
         }
 
     def get_context_data(self, **kwargs):

@@ -9,7 +9,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 
-from returns.models import CaseEvent, EvidenceDocument, ReturnCase
+from returns.models import CaseEvent, CaseNote, EvidenceDocument, ReturnCase
 from returns.services.cases import _actor_role
 from returns.services.documents import list_documents_for_case
 
@@ -26,6 +26,10 @@ def get_case_detail_case(*, case_id: int) -> ReturnCase:
             Prefetch(
                 "documents",
                 queryset=EvidenceDocument.objects.order_by("-created_at", "-id"),
+            ),
+            Prefetch(
+                "notes",
+                queryset=CaseNote.objects.select_related("author").order_by("-created_at", "-id"),
             ),
             Prefetch(
                 "events",
@@ -82,6 +86,7 @@ def build_ops_case_detail_context(
     return {
         "return_case": return_case,
         "documents": documents,
+        "notes": return_case.notes.order_by("-created_at", "-id"),
         "events": return_case.events.order_by("-created_at", "-id"),
         "latest_risk": getattr(return_case, "risk_score", None),
         "actor_role": actor_role,
