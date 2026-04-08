@@ -1,7 +1,7 @@
 <!-- path: templates/partials/_form_errors.html -->
 {% if form.errors %}
 <div class="alert alert-danger" role="alert">
-  <h3 class="h6 mb-2">There is a problem with this upload</h3>
+  <h3 class="h6 mb-2">{{ error_heading|default:"There is a problem with this upload" }}</h3>
   <ul class="mb-0 ps-3">
     {% for field, errors in form.errors.items %}
       {% for error in errors %}
