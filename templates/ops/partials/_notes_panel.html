@@ -1,0 +1,12 @@
+<!-- path: templates/ops/partials/_notes_panel.html -->
+<section class="rh-visual-panel rh-visual-panel--case" aria-label="Internal notes panel">
+  <div class="mb-3">
+    <h3 class="h6 mb-1">Internal notes</h3>
+    <p class="text-muted small mb-0">
+      Ops-only working notes for decisions, handoffs, and follow-up context.
+    </p>
+  </div>
+
+  {% include "ops/partials/_note_form.html" %}
+  {% include "ops/partials/_note_list.html" %}
+</section>

@@ -1,0 +1,73 @@
+<!-- path: templates/ops/partials/_request_info_panel.html -->
+<section class="rh-visual-panel rh-visual-panel--case" aria-label="Workflow update actions">
+  <div class="mb-3">
+    <h3 class="h6 mb-1">Update workflow state</h3>
+    <p class="text-muted small mb-0">
+      Move the case through an allowed transition, adjust priority, or request more information.
+    </p>
+  </div>
+
+  <form
+    method="post"
+    action="{% url 'ops:case-detail' case_id=return_case.pk %}"
+    data-inline-fragments="true"
+    class="mb-4"
+  >
+    {% csrf_token %}
+    <input type="hidden" name="ops_action" value="case-update">
+    {% include "partials/_form_errors.html" with form=case_update_form error_heading="There is a problem with this status update" %}
+    <div class="mb-3">
+      <label class="form-label" for="{{ case_update_form.status.id_for_label }}">Next status</label>
+      {{ case_update_form.status }}
+    </div>
+    <div class="mb-3">
+      <label class="form-label" for="{{ case_update_form.priority.id_for_label }}">Priority</label>
+      {{ case_update_form.priority }}
+    </div>
+    <button
+      type="submit"
+      class="btn btn-dark"
+      {% if case_update_form.status.field.disabled %}disabled{% endif %}
+    >
+      Apply status update
+    </button>
+  </form>
+
+  <div class="border-top pt-4">
+    <div class="mb-3">
+      <h3 class="h6 mb-1">Request more information</h3>
+      <p class="text-muted small mb-0">
+        Move the case into a waiting state and record follow-up context in the workflow history.
+      </p>
+    </div>
+
+    {% if latest_request_event %}
+      <div class="rh-visual-panel mb-3">
+        <h4 class="h6 mb-1">Latest request</h4>
+        <p class="mb-1">{{ latest_request_event.payload.note|default:"Follow-up request recorded." }}</p>
+        <p class="text-muted small mb-0">{{ latest_request_event.created_at|date:"j M Y, H:i" }}</p>
+      </div>
+    {% endif %}
+
+    <form
+      method="post"
+      action="{% url 'ops:case-detail' case_id=return_case.pk %}"
+      data-inline-fragments="true"
+    >
+      {% csrf_token %}
+      <input type="hidden" name="ops_action" value="request-info">
+      {% include "partials/_form_errors.html" with form=request_info_form error_heading="There is a problem with this follow-up request" %}
+      <div class="mb-3">
+        <label class="form-label" for="{{ request_info_form.recipient.id_for_label }}">Waiting on</label>
+        {{ request_info_form.recipient }}
+      </div>
+      <div class="mb-3">
+        <label class="form-label" for="{{ request_info_form.message.id_for_label }}">Message</label>
+        {{ request_info_form.message }}
+      </div>
+      <button type="submit" class="btn btn-outline-dark">
+        Request information
+      </button>
+    </form>
+  </div>
+</section>
