@@ -52,6 +52,13 @@ class ReturnCaseWorkflowError(ValueError):
     """Raised when a workflow action violates a business rule."""
 
 
+def get_allowed_status_transitions(*, current_status: str) -> tuple[str, ...]:
+    """Return the allowed target statuses for the supplied current status."""
+
+    normalized_status = (current_status or "").strip().lower()
+    return tuple(_ALLOWED_STATUS_TRANSITIONS.get(normalized_status, set()))
+
+
 @dataclass(frozen=True)
 class ReturnCaseCreateInput:
     """Structured input for creating a return case."""
@@ -211,6 +218,7 @@ def update_return_case_status(
             "new_status": case.status,
             "previous_priority": previous_priority,
             "new_priority": case.priority,
+            "note": note_body,
         },
     )
     score_case_and_persist(case, triggered_by="status_updated")
@@ -237,6 +245,6 @@ def add_case_note(
         case=case,
         actor=actor,
         event_type="note_added",
-        metadata={"note_id": str(note.pk)},
+        metadata={"note_id": str(note.pk), "body": note.body},
     )
     return note

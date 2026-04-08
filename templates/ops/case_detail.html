@@ -17,20 +17,29 @@
       <a class="btn btn-outline-secondary rh-btn-secondary" href="{{ ops_queue_url }}">Back to ops queue</a>
     </div>
 
-    {% include "ops/partials/_case_header.html" %}
+    <div id="case-header">
+      {% include "ops/partials/_case_header.html" %}
+    </div>
 
     <div class="row g-4">
       <div class="col-12 col-xl-8">
-        {% include "ops/partials/_status_panel.html" %}
+        <div id="case-status-panel">
+          {% include "ops/partials/_status_panel.html" %}
+        </div>
         <div id="case-document-table">
           {% include "ops/partials/_evidence_list.html" %}
         </div>
-        {% include "ops/partials/_timeline.html" %}
+        <div id="case-timeline">
+          {% include "ops/partials/_timeline.html" %}
+        </div>
       </div>
 
       <div class="col-12 col-xl-4">
-        <div class="mb-4">
+        <div class="mb-4" id="case-risk-panel">
           {% include "ops/partials/_risk_panel.html" %}
+        </div>
+        <div class="mb-4" id="case-action-panel">
+          {% include "ops/partials/_action_panel.html" %}
         </div>
         <div id="case-upload-panel">
           {% include "partials/_upload_panel.html" with upload_form=upload_form upload_success_message=upload_success_message return_case=return_case actor_role=actor_role %}
@@ -61,12 +70,43 @@
         }
       }
 
+      async function submitOpsAction(form) {
+        const response = await fetch(form.action, {
+          method: "POST",
+          body: new FormData(form),
+          headers: { "X-Requested-With": "XMLHttpRequest" },
+          credentials: "same-origin",
+        });
+
+        const payload = await response.json();
+        const fragmentTargets = [
+          ["#case-header", "case_header_html"],
+          ["#case-status-panel", "status_panel_html"],
+          ["#case-timeline", "timeline_html"],
+          ["#case-risk-panel", "risk_panel_html"],
+          ["#case-action-panel", "action_panel_html"],
+        ];
+
+        fragmentTargets.forEach(([selector, key]) => {
+          const element = document.querySelector(selector);
+          if (element && payload[key]) {
+            element.innerHTML = payload[key];
+          }
+        });
+      }
+
       document.addEventListener("submit", (event) => {
         const form = event.target;
         if (!(form instanceof HTMLFormElement)) {
           return;
         }
         if (form.id !== "case-upload-form") {
+          if (form.dataset.inlineFragments !== "true") {
+            return;
+          }
+
+          event.preventDefault();
+          void submitOpsAction(form);
           return;
         }
 
