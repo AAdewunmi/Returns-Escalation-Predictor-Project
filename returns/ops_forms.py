@@ -89,8 +89,7 @@ class OpsRequestInfoForm(forms.Form):
             else ReturnCase.Status.WAITING_MERCHANT
         )
         note = (
-            f"Requested additional information from {recipient}: "
-            f"{self.cleaned_data['message']}"
+            f"Requested additional information from {recipient}: " f"{self.cleaned_data['message']}"
         )
         return StatusUpdateInput(status=status, note=note)
 

@@ -258,9 +258,10 @@ class OpsCaseDetailView(RoleRequiredMixin, TemplateView):
             if action == "case-update":
                 form = forms["case_update_form"]
                 if form.is_valid():
+                    fresh_case = ReturnCase.objects.get(pk=return_case.pk)
                     update_return_case_status(
                         actor=request.user,
-                        case=return_case,
+                        case=fresh_case,
                         input_data=form.to_status_update_input(),
                     )
                     success_message = "Case status updated."
@@ -274,9 +275,7 @@ class OpsCaseDetailView(RoleRequiredMixin, TemplateView):
                         case=return_case,
                         input_data=form.to_status_update_input(),
                     )
-                    success_message = (
-                        f"Case moved to waiting on {form.cleaned_data['recipient']}."
-                    )
+                    success_message = f"Case moved to waiting on {form.cleaned_data['recipient']}."
                 else:
                     status_code = 400
             elif action == "add-note":
@@ -304,9 +303,7 @@ class OpsCaseDetailView(RoleRequiredMixin, TemplateView):
 
         context = self._get_base_context()
         if success_message:
-            context.update(
-                self._get_action_forms(return_case=context["return_case"])
-            )
+            context.update(self._get_action_forms(return_case=context["return_case"]))
         else:
             context.update(forms)
         context["ops_action_success_message"] = success_message
