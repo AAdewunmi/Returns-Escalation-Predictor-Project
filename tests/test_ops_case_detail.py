@@ -6,7 +6,7 @@ import pytest
 from django.contrib.auth.models import Group
 from django.urls import reverse
 
-from returns.models import CaseNote, ReturnCase
+from returns.models import CaseEvent, CaseNote, ReturnCase
 from returns.services.cases import ReturnCaseWorkflowError
 from tests.factories import (
     CaseEventFactory,
@@ -171,11 +171,13 @@ def test_ops_case_detail_request_info_post_moves_case_to_waiting_state(client, m
 
     return_case.refresh_from_db()
     note = CaseNote.objects.get(return_case=return_case)
+    event = CaseEvent.objects.get(return_case=return_case, event_type="status_updated")
     payload = response.json()
 
     assert response.status_code == 200
     assert return_case.status == ReturnCase.Status.WAITING_CUSTOMER
     assert "Requested additional information from customer" in note.body
+    assert "Requested additional information from customer" in event.payload["note"]
     assert "Case moved to waiting on customer." in payload["action_panel_html"]
     assert "Waiting for customer" in payload["status_panel_html"]
     assert "Latest request" in payload["action_panel_html"]
@@ -203,6 +205,7 @@ def test_ops_case_detail_add_note_post_refreshes_timeline(client) -> None:
 
     assert response.status_code == 200
     assert CaseNote.objects.filter(return_case=return_case).count() == 1
+    assert CaseEvent.objects.filter(return_case=return_case, event_type="note_added").count() == 1
     assert "Internal note added." in payload["action_panel_html"]
     assert "note_added" in payload["timeline_html"].lower()
     assert "replacement stock is available" in payload["timeline_html"].lower()
@@ -310,6 +313,27 @@ def test_ops_case_detail_invalid_action_returns_local_error(client) -> None:
 
     assert response.status_code == 400
     assert "Choose a valid ops action." in payload["action_panel_html"]
+
+
+@pytest.mark.django_db
+def test_ops_case_detail_post_blocks_authenticated_wrong_role(client) -> None:
+    """Authenticated non-ops users should receive a 403 response on inline action posts."""
+
+    customer_user = UserFactory(email="ops-post-customer@example.com")
+    add_group(customer_user, "Customer")
+    return_case = ReturnCaseFactory(order_reference="OPS-POST-FORBIDDEN")
+
+    client.force_login(customer_user)
+    response = client.post(
+        reverse("ops:case-detail", kwargs={"case_id": return_case.pk}),
+        data={
+            "ops_action": "add-note",
+            "body": "Unauthorized note attempt.",
+        },
+        HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+    )
+
+    assert response.status_code == 403
 
 
 @pytest.mark.django_db
