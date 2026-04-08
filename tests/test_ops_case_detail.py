@@ -7,6 +7,7 @@ from django.contrib.auth.models import Group
 from django.urls import reverse
 
 from returns.models import CaseNote, ReturnCase
+from returns.services.cases import ReturnCaseWorkflowError
 from tests.factories import (
     CaseEventFactory,
     EvidenceDocumentFactory,
@@ -202,3 +203,164 @@ def test_ops_case_detail_add_note_post_refreshes_timeline(client) -> None:
     assert "Internal note added." in payload["action_panel_html"]
     assert "note_added" in payload["timeline_html"].lower()
     assert "replacement stock is available" in payload["timeline_html"].lower()
+
+
+@pytest.mark.django_db
+def test_ops_case_detail_status_update_invalid_submission_returns_local_form_errors(client) -> None:
+    """Invalid status updates should stay inside the action panel."""
+
+    ops_user = UserFactory(email="ops-status-invalid@example.com")
+    add_group(ops_user, "Ops")
+    return_case = ReturnCaseFactory(
+        order_reference="OPS-STATUS-INVALID",
+        status=ReturnCase.Status.SUBMITTED,
+    )
+
+    client.force_login(ops_user)
+    response = client.post(
+        reverse("ops:case-detail", kwargs={"case_id": return_case.pk}),
+        data={
+            "ops_action": "case-update",
+            "status": ReturnCase.Status.SUBMITTED,
+            "priority": ReturnCase.Priority.HIGH,
+        },
+        HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+    )
+
+    payload = response.json()
+
+    assert response.status_code == 400
+    assert "problem with this status update" in payload["action_panel_html"].lower()
+
+
+@pytest.mark.django_db
+def test_ops_case_detail_request_info_invalid_submission_returns_local_form_errors(client) -> None:
+    """Invalid follow-up requests should stay inside the action panel."""
+
+    ops_user = UserFactory(email="ops-request-invalid@example.com")
+    add_group(ops_user, "Ops")
+    return_case = ReturnCaseFactory(
+        order_reference="OPS-REQ-INVALID", status=ReturnCase.Status.IN_REVIEW
+    )
+
+    client.force_login(ops_user)
+    response = client.post(
+        reverse("ops:case-detail", kwargs={"case_id": return_case.pk}),
+        data={
+            "ops_action": "request-info",
+            "recipient": "customer",
+            "message": "",
+        },
+        HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+    )
+
+    payload = response.json()
+
+    assert response.status_code == 400
+    assert "problem with this follow-up request" in payload["action_panel_html"].lower()
+
+
+@pytest.mark.django_db
+def test_ops_case_detail_add_note_invalid_submission_returns_local_form_errors(client) -> None:
+    """Invalid note submissions should stay inside the action panel."""
+
+    ops_user = UserFactory(email="ops-note-invalid@example.com")
+    add_group(ops_user, "Ops")
+    return_case = ReturnCaseFactory(order_reference="OPS-NOTE-INVALID")
+
+    client.force_login(ops_user)
+    response = client.post(
+        reverse("ops:case-detail", kwargs={"case_id": return_case.pk}),
+        data={
+            "ops_action": "add-note",
+            "body": "",
+        },
+        HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+    )
+
+    payload = response.json()
+
+    assert response.status_code == 400
+    assert "problem with this note" in payload["action_panel_html"].lower()
+
+
+@pytest.mark.django_db
+def test_ops_case_detail_invalid_action_returns_local_error(client) -> None:
+    """Unknown ops actions should return a local action-panel error."""
+
+    ops_user = UserFactory(email="ops-action-invalid@example.com")
+    add_group(ops_user, "Ops")
+    return_case = ReturnCaseFactory(order_reference="OPS-ACTION-INVALID")
+
+    client.force_login(ops_user)
+    response = client.post(
+        reverse("ops:case-detail", kwargs={"case_id": return_case.pk}),
+        data={"ops_action": "not-a-real-action"},
+        HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+    )
+
+    payload = response.json()
+
+    assert response.status_code == 400
+    assert "Choose a valid ops action." in payload["action_panel_html"]
+
+
+@pytest.mark.django_db
+def test_ops_case_detail_request_info_workflow_errors_render_back_into_action_panel(
+    client,
+    monkeypatch,
+) -> None:
+    """Workflow service errors should be shown inside the same action panel."""
+
+    ops_user = UserFactory(email="ops-request-error@example.com")
+    add_group(ops_user, "Ops")
+    return_case = ReturnCaseFactory(
+        order_reference="OPS-REQ-ERROR", status=ReturnCase.Status.APPROVED
+    )
+
+    monkeypatch.setattr(
+        "console.views.update_return_case_status",
+        lambda **kwargs: (_ for _ in ()).throw(
+            ReturnCaseWorkflowError("Workflow rejected this update.")
+        ),
+    )
+
+    client.force_login(ops_user)
+    response = client.post(
+        reverse("ops:case-detail", kwargs={"case_id": return_case.pk}),
+        data={
+            "ops_action": "request-info",
+            "recipient": "customer",
+            "message": "Please upload a clearer photo of the damaged item.",
+        },
+        HTTP_X_REQUESTED_WITH="XMLHttpRequest",
+    )
+
+    payload = response.json()
+
+    assert response.status_code == 400
+    assert "Workflow rejected this update." in payload["action_panel_html"]
+
+
+@pytest.mark.django_db
+def test_ops_case_detail_non_ajax_post_renders_updated_page(client, monkeypatch) -> None:
+    """Non-AJAX submissions should render the full page with success state."""
+
+    ops_user = UserFactory(email="ops-note-html@example.com")
+    add_group(ops_user, "Ops")
+    return_case = ReturnCaseFactory(order_reference="OPS-NOTE-HTML")
+
+    client.force_login(ops_user)
+    response = client.post(
+        reverse("ops:case-detail", kwargs={"case_id": return_case.pk}),
+        data={
+            "ops_action": "add-note",
+            "body": "Ops reviewed the case and is waiting on warehouse confirmation.",
+        },
+    )
+
+    content = response.content.decode()
+
+    assert response.status_code == 200
+    assert "Internal note added." in content
+    assert "Ops reviewed the case and is waiting on warehouse confirmation." in content

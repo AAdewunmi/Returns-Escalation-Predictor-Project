@@ -291,6 +291,8 @@ class OpsCaseDetailView(RoleRequiredMixin, TemplateView):
                     status_code = 400
             else:
                 status_code = 400
+                forms["note_form"] = OpsNoteForm(data={"body": ""})
+                forms["note_form"].is_valid()
                 forms["note_form"].add_error(None, "Choose a valid ops action.")
         except ReturnCaseWorkflowError as exc:
             status_code = 400
