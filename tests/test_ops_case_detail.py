@@ -57,6 +57,20 @@ def test_ops_case_detail_renders_documents_timeline_and_risk(client) -> None:
     assert "Request information" in content
     assert "Save internal note" in content
     assert "Internal notes" in content
+    assert 'id="case-status-panel"' in content
+    assert 'data-loading-label="Updating workflow state"' in content
+    assert 'id="case-notes-panel"' in content
+    assert 'data-loading-label="Updating internal notes"' in content
+    assert 'id="case-document-table"' in content
+    assert 'data-loading-label="Updating case documents"' in content
+    assert 'id="case-timeline"' in content
+    assert 'data-loading-label="Updating audit timeline"' in content
+    assert 'id="case-risk-panel"' in content
+    assert 'data-loading-label="Updating risk summary"' in content
+    assert 'id="case-action-panel"' in content
+    assert 'data-loading-label="Updating case actions"' in content
+    assert 'id="case-upload-panel"' in content
+    assert 'data-loading-label="Updating upload panel"' in content
     assert (
         content.index("Workflow state")
         < content.index("Internal notes")
