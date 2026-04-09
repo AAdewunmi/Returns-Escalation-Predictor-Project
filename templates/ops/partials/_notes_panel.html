@@ -7,6 +7,12 @@
     </p>
   </div>
 
+  {% if note_success_message %}
+    <div class="alert alert-success" role="status">
+      {{ note_success_message }}
+    </div>
+  {% endif %}
+
   {% include "ops/partials/_note_form.html" %}
   {% include "ops/partials/_note_list.html" %}
 </section>

@@ -192,6 +192,11 @@ class OpsCaseDetailView(RoleRequiredMixin, TemplateView):
                 context,
                 request=self.request,
             ),
+            "notes_panel_html": render_to_string(
+                "ops/partials/_notes_panel.html",
+                context,
+                request=self.request,
+            ),
             "timeline_html": render_to_string(
                 "ops/partials/_timeline.html",
                 context,
@@ -236,6 +241,7 @@ class OpsCaseDetailView(RoleRequiredMixin, TemplateView):
             "upload_success_message": "",
             "ops_queue_url": reverse("ops:queue"),
             "ops_action_success_message": "",
+            "note_success_message": "",
             "latest_request_event": latest_request_event,
         }
 
@@ -264,6 +270,7 @@ class OpsCaseDetailView(RoleRequiredMixin, TemplateView):
         )
 
         success_message = ""
+        note_success_message = ""
         status_code = 200
 
         try:
@@ -298,7 +305,7 @@ class OpsCaseDetailView(RoleRequiredMixin, TemplateView):
                         case=return_case,
                         body=form.cleaned_data["body"],
                     )
-                    success_message = "Internal note added."
+                    note_success_message = "Internal note added."
                 else:
                     status_code = 400
             else:
@@ -321,6 +328,7 @@ class OpsCaseDetailView(RoleRequiredMixin, TemplateView):
         else:
             context.update(forms)
         context["ops_action_success_message"] = success_message
+        context["note_success_message"] = note_success_message
 
         if request.headers.get("X-Requested-With") == "XMLHttpRequest":
             return self._render_action_response(context=context, status_code=status_code)

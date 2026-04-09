@@ -51,11 +51,17 @@ def test_ops_case_detail_renders_documents_timeline_and_risk(client) -> None:
     assert "Escalation risk" in content
     assert "Timeline" in content
     assert "Quick navigation" in content
+    assert "Jump between workflow, notes, documents, timeline, and case actions." in content
     assert "Operational workflow controls" in content
     assert "Apply status update" in content
     assert "Request information" in content
     assert "Save internal note" in content
     assert "Internal notes" in content
+    assert (
+        content.index("Workflow state")
+        < content.index("Internal notes")
+        < content.index("Documents")
+    )
 
 
 @pytest.mark.django_db
@@ -171,6 +177,7 @@ def test_ops_case_detail_status_update_post_refreshes_inline_fragments(client, m
     assert "Case status updated." in payload["action_panel_html"]
     assert "In review" in payload["status_panel_html"]
     assert "High" in payload["status_panel_html"]
+    assert "Internal notes" in payload["notes_panel_html"]
 
 
 @pytest.mark.django_db
@@ -211,6 +218,7 @@ def test_ops_case_detail_request_info_post_moves_case_to_waiting_state(client, m
     assert "Case moved to waiting on customer." in payload["action_panel_html"]
     assert "Waiting for customer" in payload["status_panel_html"]
     assert "Latest request" in payload["action_panel_html"]
+    assert "Internal notes" in payload["notes_panel_html"]
 
 
 @pytest.mark.django_db
@@ -236,12 +244,12 @@ def test_ops_case_detail_add_note_post_refreshes_timeline(client) -> None:
     assert response.status_code == 200
     assert CaseNote.objects.filter(return_case=return_case).count() == 1
     assert CaseEvent.objects.filter(return_case=return_case, event_type="note_added").count() == 1
-    assert "Internal note added." in payload["action_panel_html"]
+    assert "Internal note added." in payload["notes_panel_html"]
     assert "note_added" in payload["timeline_html"].lower()
     assert "replacement stock is available" in payload["timeline_html"].lower()
     assert (
         "Merchant called back and confirmed replacement stock is available."
-        in payload["action_panel_html"]
+        in payload["notes_panel_html"]
     )
 
 
@@ -302,7 +310,7 @@ def test_ops_case_detail_request_info_invalid_submission_returns_local_form_erro
 
 @pytest.mark.django_db
 def test_ops_case_detail_add_note_invalid_submission_returns_local_form_errors(client) -> None:
-    """Invalid note submissions should stay inside the action panel."""
+    """Invalid note submissions should stay inside the notes panel."""
 
     ops_user = UserFactory(email="ops-note-invalid@example.com")
     add_group(ops_user, "Ops")
@@ -321,12 +329,12 @@ def test_ops_case_detail_add_note_invalid_submission_returns_local_form_errors(c
     payload = response.json()
 
     assert response.status_code == 400
-    assert "problem with this note" in payload["action_panel_html"].lower()
+    assert "problem with this note" in payload["notes_panel_html"].lower()
 
 
 @pytest.mark.django_db
 def test_ops_case_detail_invalid_action_returns_local_error(client) -> None:
-    """Unknown ops actions should return a local action-panel error."""
+    """Unknown ops actions should return a local notes-panel error."""
 
     ops_user = UserFactory(email="ops-action-invalid@example.com")
     add_group(ops_user, "Ops")
@@ -342,7 +350,7 @@ def test_ops_case_detail_invalid_action_returns_local_error(client) -> None:
     payload = response.json()
 
     assert response.status_code == 400
-    assert "Choose a valid ops action." in payload["action_panel_html"]
+    assert "Choose a valid ops action." in payload["notes_panel_html"]
 
 
 @pytest.mark.django_db

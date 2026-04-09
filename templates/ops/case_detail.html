@@ -28,6 +28,9 @@
         <div id="case-status-panel">
           {% include "ops/partials/_status_panel.html" %}
         </div>
+        <div class="mb-4" id="case-notes-panel">
+          {% include "ops/partials/_notes_panel.html" %}
+        </div>
         <div id="case-document-table">
           {% include "ops/partials/_evidence_list.html" %}
         </div>
@@ -84,6 +87,7 @@
         const fragmentTargets = [
           ["#case-header", "case_header_html"],
           ["#case-status-panel", "status_panel_html"],
+          ["#case-notes-panel", "notes_panel_html"],
           ["#case-timeline", "timeline_html"],
           ["#case-risk-panel", "risk_panel_html"],
           ["#case-action-panel", "action_panel_html"],
