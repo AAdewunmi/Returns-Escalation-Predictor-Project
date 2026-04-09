@@ -52,7 +52,8 @@ def test_ops_route_renders_standalone_queue_page_for_ops_user(client) -> None:
     body = response.content.decode()
     assert response.status_code == 200
     assert "Ops Queue" in body
-    assert "Operations queue" in body
+    assert "Ops workspace" in body
+    assert "Returns queue" in body
     assert 'id="ops-queue-table"' in body
 
 
@@ -71,7 +72,7 @@ def test_ops_route_returns_queue_table_partial_for_htmx_request(client) -> None:
     assert response.status_code == 200
     assert "Return cases" in body
     assert "OPS-HTMX-1" in body
-    assert "Operations queue" not in body
+    assert "Ops workspace" not in body
 
 
 @pytest.mark.django_db

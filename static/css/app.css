@@ -493,6 +493,56 @@ button:focus-visible {
   margin-bottom: calc(var(--rh-space-4) + 0.4rem);
 }
 
+.rh-fragment-panel {
+  position: relative;
+}
+
+.rh-fragment-panel__content {
+  transition: opacity 180ms ease, filter 180ms ease;
+}
+
+.rh-fragment-panel__status {
+  position: absolute;
+  top: 0.85rem;
+  right: 1rem;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  padding: 0.4rem 0.7rem;
+  border-radius: 999px;
+  background: rgba(255, 252, 247, 0.96);
+  border: 1px solid rgba(27, 35, 28, 0.1);
+  box-shadow: var(--rh-shadow-sm);
+  color: var(--rh-color-text-muted);
+  font-size: var(--rh-font-size-xs);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.rh-fragment-panel__status::before {
+  content: "";
+  width: 0.65rem;
+  height: 0.65rem;
+  border-radius: 50%;
+  border: 2px solid rgba(31, 90, 67, 0.22);
+  border-top-color: var(--rh-color-accent-strong);
+  animation: rh-fragment-spin 0.9s linear infinite;
+}
+
+.rh-fragment-panel.is-loading .rh-fragment-panel__content {
+  opacity: 0.42;
+  filter: saturate(0.72);
+  pointer-events: none;
+}
+
+@keyframes rh-fragment-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .rh-section-heading h2 {
   font-family: var(--rh-font-family-display);
   font-size: clamp(1.8rem, 2.6vw, 2.5rem);
