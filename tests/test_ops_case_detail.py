@@ -9,7 +9,6 @@ from django.urls import reverse
 from returns.models import CaseEvent, CaseNote, ReturnCase
 from returns.services.cases import ReturnCaseWorkflowError
 from tests.factories import (
-    CaseNoteFactory,
     CaseEventFactory,
     EvidenceDocumentFactory,
     ReturnCaseFactory,
@@ -114,8 +113,18 @@ def test_ops_case_detail_shows_notes_in_reverse_chronological_order(client) -> N
     ops_user = UserFactory(email="ops-notes-order@example.com")
     add_group(ops_user, "Ops")
     return_case = ReturnCaseFactory(order_reference="OPS-NOTES-ORDER")
-    first_note = CaseNoteFactory(return_case=return_case, body="Older note")
-    second_note = CaseNoteFactory(return_case=return_case, body="Newer note")
+    first_note = CaseNote.objects.create(
+        return_case=return_case,
+        author=ops_user,
+        body="Older note",
+        is_internal=True,
+    )
+    second_note = CaseNote.objects.create(
+        return_case=return_case,
+        author=ops_user,
+        body="Newer note",
+        is_internal=True,
+    )
 
     client.force_login(ops_user)
     response = client.get(reverse("ops:case-detail", kwargs={"case_id": return_case.pk}))
