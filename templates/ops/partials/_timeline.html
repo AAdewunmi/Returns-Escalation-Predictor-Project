@@ -2,7 +2,34 @@
 <section class="rh-card" aria-label="Audit timeline">
   <div class="rh-section-heading mb-3">
     <div class="rh-kicker">Timeline</div>
-    <h2>Append-only workflow history for the current case.</h2>
+    <h2>Append-only workflow history for this case.</h2>
   </div>
-  {% include "partials/_timeline.html" with events=events %}
+
+  {% if events %}
+    <div class="d-grid gap-3">
+      {% for event in events %}
+        <article class="rh-visual-panel rh-visual-panel--case">
+          <div class="d-flex flex-column flex-md-row justify-content-between gap-3 mb-2">
+            <div>
+              <p class="fw-semibold mb-1">{{ event.event_type|title }}</p>
+              <p class="text-muted small mb-0">{{ event.created_at|date:"j M Y, H:i" }}</p>
+            </div>
+            <div class="text-md-end text-muted small">
+              {% if event.actor %}
+                {{ event.actor.get_full_name|default:event.actor.email }}
+              {% else %}
+                System
+              {% endif %}
+            </div>
+          </div>
+
+          {% if event.payload %}
+            <pre class="mb-0 small">{{ event.payload|pprint }}</pre>
+          {% endif %}
+        </article>
+      {% endfor %}
+    </div>
+  {% else %}
+    {% include "partials/_empty_state.html" with title="No timeline events yet" body="Case creation, uploads, status changes, and risk scoring will appear here." %}
+  {% endif %}
 </section>
