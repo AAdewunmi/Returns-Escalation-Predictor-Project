@@ -1,18 +1,14 @@
 <!-- path: templates/ops/partials/_case_action_bar.html -->
-<section class="card border-0 shadow-sm mb-4">
-  <div class="card-body d-flex flex-column flex-lg-row justify-content-between align-items-lg-center gap-3">
-    <div>
-      <h2 class="h6 text-uppercase text-muted fw-semibold mb-1">Action bar</h2>
-      <p class="mb-0 text-muted">
-        Use these anchors to move quickly through workflow, notes, evidence, and audit history.
-      </p>
-    </div>
+<section class="rh-card mb-4" aria-label="Case section navigation">
+  <div class="rh-section-heading mb-3">
+    <div class="rh-kicker">Quick navigation</div>
+    <h2>Jump between workflow, documents, timeline, and case actions.</h2>
+  </div>
 
-    <div class="d-flex flex-wrap gap-2">
-      <a href="#status-panel" class="btn btn-primary btn-sm">Workflow</a>
-      <a href="#notes-panel" class="btn btn-outline-secondary btn-sm">Notes</a>
-      <a href="#evidence-list" class="btn btn-outline-secondary btn-sm">Evidence</a>
-      <a href="#timeline-panel" class="btn btn-outline-secondary btn-sm">Timeline</a>
-    </div>
+  <div class="d-flex flex-wrap gap-2">
+    <a href="#case-status-panel" class="btn btn-dark btn-sm">Workflow state</a>
+    <a href="#case-document-table" class="btn btn-outline-secondary rh-btn-secondary btn-sm">Documents</a>
+    <a href="#case-timeline" class="btn btn-outline-secondary rh-btn-secondary btn-sm">Timeline</a>
+    <a href="#case-action-panel" class="btn btn-outline-secondary rh-btn-secondary btn-sm">Case actions</a>
   </div>
 </section>
