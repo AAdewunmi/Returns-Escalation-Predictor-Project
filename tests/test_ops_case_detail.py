@@ -50,6 +50,7 @@ def test_ops_case_detail_renders_documents_timeline_and_risk(client) -> None:
     assert "photo-proof.jpg" in content
     assert "Escalation risk" in content
     assert "Timeline" in content
+    assert "Quick navigation" in content
     assert "Operational workflow controls" in content
     assert "Apply status update" in content
     assert "Request information" in content
@@ -103,6 +104,35 @@ def test_ops_case_detail_shows_current_empty_states_when_case_is_sparse(client) 
     assert "No timeline events yet" in content
     assert "No score yet" in content
     assert "No notes yet" in content
+
+
+@pytest.mark.django_db
+def test_ops_case_detail_shows_notes_in_reverse_chronological_order(client) -> None:
+    """Newest notes should appear first in the internal notes panel."""
+
+    ops_user = UserFactory(email="ops-notes-order@example.com")
+    add_group(ops_user, "Ops")
+    return_case = ReturnCaseFactory(order_reference="OPS-NOTES-ORDER")
+    first_note = CaseNote.objects.create(
+        return_case=return_case,
+        author=ops_user,
+        body="Older note",
+        is_internal=True,
+    )
+    second_note = CaseNote.objects.create(
+        return_case=return_case,
+        author=ops_user,
+        body="Newer note",
+        is_internal=True,
+    )
+
+    client.force_login(ops_user)
+    response = client.get(reverse("ops:case-detail", kwargs={"case_id": return_case.pk}))
+
+    content = response.content.decode()
+
+    assert response.status_code == 200
+    assert content.index(second_note.body) < content.index(first_note.body)
 
 
 @pytest.mark.django_db
