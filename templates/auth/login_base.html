@@ -1,42 +1,89 @@
 {% extends "base.html" %}
 
+{% block title %}{{ surface_title }} | ReturnHub{% endblock %}
 {% block page_header %}{% endblock %}
 
 {% block content %}
-  <section class="rh-band rh-band--workflow py-4">
-    <div class="row justify-content-center">
-      <div class="col-12 col-lg-6">
-        <div class="rh-card">
-          <div class="rh-section-heading mb-4">
-            <div class="rh-kicker">{{ surface_title }}</div>
-            <h2>Sign in to {{ brand_name }}</h2>
-            <p>{{ surface_description }}</p>
+  <section class="rh-band rh-band--workflow py-4 py-lg-5">
+    <div class="rh-auth-shell">
+      <div class="rh-auth-frame">
+        <aside class="rh-auth-aside" aria-label="{{ surface_title }} guidance">
+          <div class="rh-kicker">{{ brand_name }}</div>
+          <h1>{{ surface_title }}</h1>
+          <p class="rh-auth-lead">{{ surface_description }}</p>
+
+          <div class="rh-auth-trust" aria-label="ReturnHub sign-in principles">
+            <span class="rh-trust-item">One shared auth flow</span>
+            <span class="rh-trust-item">Role-aware redirects</span>
+            <span class="rh-trust-item">Branded entry points</span>
           </div>
 
-          {% if form.non_field_errors %}
-            <div class="alert alert-danger" role="alert">
-              {{ form.non_field_errors }}
-            </div>
-          {% endif %}
+          <div class="rh-auth-surface-links">
+            <a class="rh-auth-surface-link {% if surface == 'admin' %}is-active{% endif %}" href="/login/admin/">Admin</a>
+            <a class="rh-auth-surface-link {% if surface == 'ops' %}is-active{% endif %}" href="/login/ops/">Ops</a>
+            <a class="rh-auth-surface-link {% if surface == 'customer' %}is-active{% endif %}" href="/login/customer/">Customer</a>
+            <a class="rh-auth-surface-link {% if surface == 'merchant' %}is-active{% endif %}" href="/login/merchant/">Merchant</a>
+          </div>
 
-          <form method="post" novalidate>
-            {% csrf_token %}
-            {% if next %}
-              <input type="hidden" name="next" value="{{ next }}">
+          <div class="rh-auth-note">
+            <strong>Surface routing</strong>
+            <span>Successful sign-in returns the user to an allowed console or a safe requested path.</span>
+          </div>
+        </aside>
+
+        <div class="rh-auth-card rh-card">
+          <div class="rh-auth-card__topbar">
+            <span class="rh-visual-dot"></span>
+            <span class="rh-visual-dot"></span>
+            <span class="rh-visual-dot"></span>
+            <div class="rh-visual-window-title">Secure sign-in</div>
+          </div>
+
+          <div class="rh-auth-card__body">
+            {% if form.non_field_errors %}
+              <div class="alert alert-danger" role="alert">
+                {{ form.non_field_errors }}
+              </div>
             {% endif %}
 
-            <div class="mb-3">
-              <label class="form-label" for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
-              {{ form.username }}
+            <form method="post" novalidate>
+              {% csrf_token %}
+              {% if next %}
+                <input type="hidden" name="next" value="{{ next }}">
+              {% elif request.GET.next %}
+                <input type="hidden" name="next" value="{{ request.GET.next }}">
+              {% endif %}
+
+              <div class="mb-3">
+                <label class="form-label" for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+                {{ form.username }}
+                {% if form.username.errors %}
+                  <div class="invalid-feedback d-block">{{ form.username.errors|join:", " }}</div>
+                {% endif %}
+              </div>
+
+              <div class="mb-4">
+                <label class="form-label" for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+                {{ form.password }}
+                {% if form.password.errors %}
+                  <div class="invalid-feedback d-block">{{ form.password.errors|join:", " }}</div>
+                {% endif %}
+              </div>
+
+              <button type="submit" class="btn btn-primary rh-btn-primary btn-lg w-100">Sign in</button>
+            </form>
+
+            <div class="rh-auth-divider">
+              <span>Role entry points</span>
             </div>
 
-            <div class="mb-4">
-              <label class="form-label" for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
-              {{ form.password }}
+            <div class="rh-auth-mini-links">
+              <a class="btn btn-outline-secondary rh-btn-secondary btn-sm" href="/login/admin/">Admin</a>
+              <a class="btn btn-outline-secondary rh-btn-secondary btn-sm" href="/login/ops/">Ops</a>
+              <a class="btn btn-outline-secondary rh-btn-secondary btn-sm" href="/login/customer/">Customer</a>
+              <a class="btn btn-outline-secondary rh-btn-secondary btn-sm" href="/login/merchant/">Merchant</a>
             </div>
-
-            <button type="submit" class="btn btn-dark w-100">Sign in</button>
-          </form>
+          </div>
         </div>
       </div>
     </div>
