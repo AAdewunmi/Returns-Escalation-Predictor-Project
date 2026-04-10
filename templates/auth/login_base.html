@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block page_header %}{% endblock %}
+
+{% block content %}
+  <section class="rh-band rh-band--workflow py-4">
+    <div class="row justify-content-center">
+      <div class="col-12 col-lg-6">
+        <div class="rh-card">
+          <div class="rh-section-heading mb-4">
+            <div class="rh-kicker">{{ surface_title }}</div>
+            <h2>Sign in to {{ brand_name }}</h2>
+            <p>{{ surface_description }}</p>
+          </div>
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">
+              {{ form.non_field_errors }}
+            </div>
+          {% endif %}
+
+          <form method="post" novalidate>
+            {% csrf_token %}
+            {% if next %}
+              <input type="hidden" name="next" value="{{ next }}">
+            {% endif %}
+
+            <div class="mb-3">
+              <label class="form-label" for="{{ form.username.id_for_label }}">{{ form.username.label }}</label>
+              {{ form.username }}
+            </div>
+
+            <div class="mb-4">
+              <label class="form-label" for="{{ form.password.id_for_label }}">{{ form.password.label }}</label>
+              {{ form.password }}
+            </div>
+
+            <button type="submit" class="btn btn-dark w-100">Sign in</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </section>
+{% endblock %}
