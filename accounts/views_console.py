@@ -2,8 +2,14 @@
 
 from console.views import (
     AdminConsoleView as BaseAdminConsoleView,
+)
+from console.views import (
     CustomerConsoleView as BaseCustomerConsoleView,
+)
+from console.views import (
     MerchantConsoleView as BaseMerchantConsoleView,
+)
+from console.views import (
     OpsConsoleView as BaseOpsConsoleView,
 )
 
