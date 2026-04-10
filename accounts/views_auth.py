@@ -44,9 +44,7 @@ class AdminLoginView(SurfaceLoginView):
     template_name = "auth/login_admin.html"
     surface = "admin"
     surface_title = "Admin surface"
-    surface_description = (
-        "Administration entry is reserved and branded."
-    )
+    surface_description = "Administration entry is reserved and branded."
 
 
 class OpsLoginView(SurfaceLoginView):
@@ -55,9 +53,7 @@ class OpsLoginView(SurfaceLoginView):
     template_name = "auth/login_ops.html"
     surface = "ops"
     surface_title = "Ops surface"
-    surface_description = (
-        "Ops entry is reserved for queue-driven work."
-    )
+    surface_description = "Ops entry is reserved for queue-driven work."
 
 
 class CustomerLoginView(SurfaceLoginView):
@@ -66,9 +62,7 @@ class CustomerLoginView(SurfaceLoginView):
     template_name = "auth/login_customer.html"
     surface = "customer"
     surface_title = "Customer surface"
-    surface_description = (
-        "Customer entry is reserved for case tracking."
-    )
+    surface_description = "Customer entry is reserved for case tracking."
 
 
 class MerchantLoginView(SurfaceLoginView):
@@ -77,6 +71,4 @@ class MerchantLoginView(SurfaceLoginView):
     template_name = "auth/login_merchant.html"
     surface = "merchant"
     surface_title = "Merchant surface"
-    surface_description = (
-        "Merchant entry is reserved for linked case responses."
-    )
+    surface_description = "Merchant entry is reserved for linked case responses."
