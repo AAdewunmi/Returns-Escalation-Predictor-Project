@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.urls import reverse
 
-from apps.accounts.constants import GROUP_NAMES, ROLE_CUSTOMER, ROLE_OPS
+from accounts.constants import GROUP_NAMES, ROLE_CUSTOMER, ROLE_OPS
 
 pytestmark = pytest.mark.django_db
 

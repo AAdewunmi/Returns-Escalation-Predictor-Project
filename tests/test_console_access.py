@@ -6,7 +6,7 @@ from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.urls import reverse
 
-from apps.accounts.constants import GROUP_NAMES, ROLE_CUSTOMER, ROLE_OPS
+from accounts.constants import GROUP_NAMES, ROLE_CUSTOMER, ROLE_OPS
 
 pytestmark = pytest.mark.django_db
 
@@ -31,7 +31,7 @@ def test_anonymous_customer_console_redirects_to_customer_login(client):
 
     assert response.status_code == 302
     assert response.headers["Location"].startswith(reverse("accounts:login_customer"))
-    assert "next=%2Fconsole%2Fcustomer%2F" in response.headers["Location"]
+    assert "next=/console/customer/" in response.headers["Location"]
 
 
 def test_customer_can_access_customer_console(client):
@@ -42,7 +42,7 @@ def test_customer_can_access_customer_console(client):
     response = client.get(reverse("accounts:console_customer"))
 
     assert response.status_code == 200
-    assert b"Track your return cases" in response.content
+    assert b"Track the most recent return activity in one customer-facing shell." in response.content
 
 
 def test_customer_gets_403_on_ops_console(client):
@@ -63,4 +63,4 @@ def test_ops_can_access_ops_console(client):
     response = client.get(reverse("accounts:console_ops"))
 
     assert response.status_code == 200
-    assert b"Triage and case workflow" in response.content
+    assert b"Work the live return queue inside the same shared ReturnHub shell." in response.content
