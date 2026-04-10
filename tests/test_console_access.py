@@ -42,7 +42,9 @@ def test_customer_can_access_customer_console(client):
     response = client.get(reverse("accounts:console_customer"))
 
     assert response.status_code == 200
-    assert b"Track the most recent return activity in one customer-facing shell." in response.content
+    assert (
+        b"Track the most recent return activity in one customer-facing shell." in response.content
+    )
 
 
 def test_customer_gets_403_on_ops_console(client):
