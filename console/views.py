@@ -3,12 +3,17 @@
 
 from __future__ import annotations
 
-from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse
 from django.views.generic import TemplateView
 
+from accounts.mixins import (
+    AdminSurfaceMixin,
+    CustomerSurfaceMixin,
+    MerchantSurfaceMixin,
+    OpsSurfaceMixin,
+)
 from common.pagination import paginate_queryset
 from returns.models import ReturnCase
 from returns.ops_forms import OpsCaseUpdateForm, OpsNoteForm, OpsRequestInfoForm
@@ -69,26 +74,10 @@ MERCHANT_TIMELINE_ITEMS = (
 )
 
 
-class RoleRequiredMixin(LoginRequiredMixin, UserPassesTestMixin):
-    """Require the current user to belong to one of the configured groups."""
-
-    allowed_groups: tuple[str, ...] = ()
-    raise_exception = True
-
-    def test_func(self) -> bool:
-        """Validate group membership for the current request."""
-        user = self.request.user
-        return user.is_superuser or any(
-            user.groups.filter(name__iexact=group_name).exists()
-            for group_name in self.allowed_groups
-        )
-
-
-class AdminConsoleView(RoleRequiredMixin, TemplateView):
+class AdminConsoleView(AdminSurfaceMixin, TemplateView):
     """In-product admin console shell."""
 
     template_name = "console/admin_dashboard.html"
-    allowed_groups = ("Admin",)
 
     def get_context_data(self, **kwargs):
         """Build the admin dashboard context."""
@@ -98,10 +87,8 @@ class AdminConsoleView(RoleRequiredMixin, TemplateView):
         return context
 
 
-class BaseOpsQueueView(RoleRequiredMixin, TemplateView):
+class BaseOpsQueueView(OpsSurfaceMixin, TemplateView):
     """Shared ops queue context for the server-rendered console shell."""
-
-    allowed_groups = ("Ops", "Admin")
 
     def get_context_data(self, **kwargs):
         """Build the ops queue context."""
@@ -150,11 +137,10 @@ class OpsQueueView(OpsConsoleView):
         return context
 
 
-class OpsCaseDetailView(RoleRequiredMixin, TemplateView):
+class OpsCaseDetailView(OpsSurfaceMixin, TemplateView):
     """Standalone ops case detail page aligned with the queue shell."""
 
     template_name = "ops/case_detail.html"
-    allowed_groups = ("Ops", "Admin")
 
     def _get_action_forms(
         self,
@@ -336,11 +322,10 @@ class OpsCaseDetailView(RoleRequiredMixin, TemplateView):
         return self.render_to_response(context, status=status_code)
 
 
-class CustomerConsoleView(RoleRequiredMixin, TemplateView):
+class CustomerConsoleView(CustomerSurfaceMixin, TemplateView):
     """Customer console shell."""
 
     template_name = "console/customer_dashboard.html"
-    allowed_groups = ("Customer", "Admin")
 
     def get_context_data(self, **kwargs):
         """Build the customer dashboard context."""
@@ -367,11 +352,10 @@ class CustomerConsoleView(RoleRequiredMixin, TemplateView):
         return context
 
 
-class MerchantConsoleView(RoleRequiredMixin, TemplateView):
+class MerchantConsoleView(MerchantSurfaceMixin, TemplateView):
     """Merchant console shell."""
 
     template_name = "console/merchant_dashboard.html"
-    allowed_groups = ("Merchant", "Admin")
 
     def get_context_data(self, **kwargs):
         """Build the merchant dashboard context."""
