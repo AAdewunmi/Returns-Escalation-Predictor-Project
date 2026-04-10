@@ -31,7 +31,7 @@ def is_admin_user(user) -> bool:
     if not getattr(user, "is_authenticated", False):
         return False
 
-    return user_in_group(user, GROUP_NAMES[ROLE_ADMIN])
+    return user.is_superuser or user_in_group(user, GROUP_NAMES[ROLE_ADMIN])
 
 
 def user_has_surface_access(user, role: str) -> bool:
