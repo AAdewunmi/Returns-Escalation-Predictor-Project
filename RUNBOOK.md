@@ -1,57 +1,35 @@
-# ReturnHub Project Runbook
+# ReturnHub Runbook
 
-This runbook takes the project from clean clone to a verified current-state local environment. It is written for deterministic setup and manual verification of the implemented product surfaces, API behavior, risk output access controls, and local quality gates.
+This runbook takes the project from clean clone to a verified local environment and checks the routes, workflows, APIs, ML artifacts, and proof commands that currently match the repository.
 
 ## Scope
 
-This runbook verifies the following outcomes:
+This runbook verifies:
 
-- Docker and PostgreSQL local environment
-- Django app boot and migrations
-- deterministic demo seed data
-- public UI routes
-- authenticated console routes
-- case detail workspace rendering and inline document uploads
-- returns API create, detail, status, notes, and risk behavior
-- returns document and audit-export behavior
-- risk visibility controls for ops, admins, customers, and merchants
-- API and ML documentation alignment checks
-- lint, formatting, test, and coverage checks
+- Docker-based local setup with PostgreSQL
+- Django migrations and deterministic demo data
+- public and authenticated UI routes
+- ops queue and ops case-detail workflows
+- shared case-detail document upload flow
+- returns, documents, queue, risk, audit-export, and analytics APIs
+- ML dataset and training commands
+- formatting, lint, tests, and coverage gate commands
+- console-only proof commands suitable for article evidence
 
 ## Prerequisites
-
-Before starting, confirm that the local machine has:
 
 - Git
 - Docker
 - Docker Compose
-- a free local port for `8000`
-- a free local port for `5432`
+- free ports `8000` and `5432`
 
-## Repository bootstrap
+## Bootstrap
 
-Clone the repository.
+Clone the repository and move into it.
 
 ```bash
 git clone <your-repo-url> returnhub
-```
-
-Expected result:
-
-```text
-A local `returnhub/` directory is created.
-```
-
-Move into the project directory.
-
-```bash
 cd returnhub
-```
-
-Expected result:
-
-```text
-The shell is now at the repository root.
 ```
 
 Create the local environment file.
@@ -60,58 +38,25 @@ Create the local environment file.
 cp .env.example .env
 ```
 
-Expected result:
-
-```text
-A local `.env` file exists at the repository root.
-```
-
-## Start containers
-
-Build and start the application and database containers.
+Start the containers.
 
 ```bash
 docker compose up --build -d
-```
-
-Expected result:
-
-```text
-The `db` and `web` services start successfully in detached mode.
-```
-
-Check container status.
-
-```bash
 docker compose ps
 ```
 
 Expected result:
 
-```text
-The `db` service is healthy and the `web` service is running.
-```
+- `db` is healthy
+- `web` is running
 
-## Apply database migrations
-
-Run migrations.
+Apply migrations.
 
 ```bash
 docker compose exec -T web python manage.py migrate --noinput
 ```
 
-Expected result shape:
-
-```text
-Operations to perform:
-  Apply all migrations: ...
-Running migrations:
-  No migrations to apply.
-```
-
-## Seed deterministic demo data
-
-Run the seed command.
+Seed demo data.
 
 ```bash
 docker compose exec -T web python manage.py seed_demo_data
@@ -123,813 +68,432 @@ Expected result:
 Seed complete. Stable return case count: 32
 ```
 
-On a clean database the count is `32`. In long-lived local environments that already contain extra runbook-generated cases, the seed command remains idempotent for its fixture rows but the printed total count may be higher.
-
-Run the seed command a second time to confirm idempotency.
+Run it again to confirm idempotency.
 
 ```bash
 docker compose exec -T web python manage.py seed_demo_data
 ```
 
-Expected result:
+## Verify seeded roles and users
 
-```text
-Seed complete. Stable return case count: 32
-```
-
-## Verify demo users and seeded case count
-
-Check the total return case count.
-
-```bash
-docker compose exec -T web python manage.py shell -c "from returns.models import ReturnCase; print(ReturnCase.objects.count())"
-```
-
-Expected result:
-
-```text
-32
-```
-
-If previous runbooks created extra cases in the same local database, this count may be greater than `32`. Use the clean reset procedure when you need the exact baseline fixture count.
-
-Check that the expected role groups exist.
+Check groups.
 
 ```bash
 docker compose exec -T web python manage.py shell -c "from django.contrib.auth.models import Group; print(list(Group.objects.order_by('name').values_list('name', flat=True)))"
 ```
 
-Expected result:
+Expected:
 
 ```text
 ['Admin', 'Customer', 'Merchant', 'Ops']
 ```
 
-Check the expected local demo usernames.
+Check users.
 
 ```bash
 docker compose exec -T web python manage.py shell -c "from django.contrib.auth import get_user_model; User = get_user_model(); print(list(User.objects.order_by('username').values_list('username', flat=True)))"
 ```
 
-Expected result:
+Expected:
 
 ```text
 ['admin', 'customer', 'merchant', 'ops']
 ```
 
+Shared local password for the seeded users:
+
+```text
+password123
+```
+
+Check return-case count.
+
+```bash
+docker compose exec -T web python manage.py shell -c "from returns.models import ReturnCase; print(ReturnCase.objects.count())"
+```
+
+Expected baseline:
+
+```text
+32
+```
+
 ## Public route verification
 
-Open the landing page in a browser.
+Open:
+
+- `http://127.0.0.1:8000/`
+- `http://127.0.0.1:8000/login/admin/`
+- `http://127.0.0.1:8000/login/ops/`
+- `http://127.0.0.1:8000/login/customer/`
+- `http://127.0.0.1:8000/login/merchant/`
+
+Expected behavior:
+
+- the landing page presents ReturnHub as a returns workflow product
+- each role-entry page renders successfully
+- the public shell is branded and responsive
+
+## Authenticated route verification
+
+Log in with a seeded user, then open:
+
+- `http://127.0.0.1:8000/console/admin/`
+- `http://127.0.0.1:8000/console/ops/`
+- `http://127.0.0.1:8000/console/customer/`
+- `http://127.0.0.1:8000/console/merchant/`
+
+Expected behavior:
+
+- admin sees total-case context
+- ops sees queue summary cards and queue rows
+- customer sees recent linked cases
+- merchant sees recent linked cases
+
+## Ops queue verification
+
+Open:
 
 ```text
-http://127.0.0.1:8000/
+http://127.0.0.1:8000/ops/
 ```
 
-Expected visible behaviour:
+Verify:
 
-- the page title shows ReturnHub branding
-- the landing page headline explains the returns workflow product
-- four role entry cards are visible
-- buttons exist for Admin, Ops, Customer, and Merchant
-- the layout feels branded and not like a default Django page
+- the page loads for `ops` and `admin`
+- queue filters accept `status`, `priority`, `risk_label`, `search`, and `page`
+- pagination uses a page size of `15`
+- invalid pages normalize to page `1`
+- out-of-range pages resolve to the last page
+- summary counts update with filtered results
 
-Open the admin surface entry page.
+Check the API equivalent while authenticated as ops or admin:
 
 ```text
-http://127.0.0.1:8000/login/admin/
+GET /api/returns/queue/?status=submitted&priority=high&risk_label=medium&search=RH&page=1
 ```
 
-Expected visible behaviour:
+Expected response shape:
 
-- a branded page loads successfully
-- the page explains that the admin entry is reserved and branded
-- the page provides a route back to the landing page
+- top-level `count`, `next`, `previous`, `results`
+- echoed `filters`
+- `summary` with status totals
 
-Open the ops surface entry page.
+## Ops case-detail verification
+
+Pick a seeded case ID and open:
 
 ```text
-http://127.0.0.1:8000/login/ops/
+http://127.0.0.1:8000/ops/<case_id>/
 ```
 
-Expected visible behaviour:
+Verify the page renders:
 
-- a branded page loads successfully
-- the page explains that the ops entry is reserved for queue-driven work
+- case header
+- quick navigation
+- workflow state panel
+- notes panel
+- documents panel
+- timeline
+- risk panel
+- action panel
+- upload panel
 
-Open the customer surface entry page.
+Expected behavior:
+
+- the route is `ops:case-detail`
+- the page renders current workflow state and ownership context
+- the page includes documents, notes, timeline, and risk sections
+- sparse cases show stable empty states such as `No documents yet`, `No notes yet`, `No timeline events yet`, and `No score yet`
+
+## Ops actions verification
+
+The ops case-detail page handles inline actions through the same `ops:case-detail` route. It does not use separate `/workflow/`, `/request-info/`, or `/notes/` endpoints.
+
+Supported actions posted to `/ops/<case_id>/`:
+
+- `ops_action=case-update`
+- `ops_action=request-info`
+- `ops_action=add-note`
+
+Expected behavior:
+
+- valid status updates return `200`
+- request-for-information moves the case into `waiting_customer` or `waiting_merchant`
+- note creation returns `200`
+- invalid submissions return `400` with local panel errors
+- unauthorized customer submissions return `403`
+
+Expected event types:
+
+- status changes and request-for-information actions emit `status_updated`
+- note creation emits `note_added`
+
+## Shared case-detail and upload verification
+
+Open:
 
 ```text
-http://127.0.0.1:8000/login/customer/
+http://127.0.0.1:8000/cases/<case_id>/
 ```
 
-Expected visible behaviour:
+Verify role-aware behavior:
 
-- a branded page loads successfully
-- the page explains that the customer entry is reserved for case tracking
+- ops and admin can view the case and upload either document kind
+- the owning customer can view the case and upload only `evidence`
+- the linked merchant can view the case and upload only `response`
+- unrelated customer or merchant actors should be denied
 
-Open the merchant surface entry page.
+Upload checks:
 
-```text
-http://127.0.0.1:8000/login/merchant/
+- upload a valid JPG or PDF
+- confirm the upload panel returns a local success message
+- confirm the document table refreshes in place
+- confirm a `document_uploaded` event is added
+
+Document visibility checks:
+
+- customers should only see documents marked `visible_to_customer`
+- merchants should only see documents marked `visible_to_merchant`
+- ops and admins should see all case documents
+
+## API verification
+
+Authenticate with one of the seeded users and verify the live routes.
+
+Create a case as `customer`:
+
+```http
+POST /api/returns/
+Content-Type: application/json
 ```
 
-Expected visible behaviour:
+Example payload:
 
-- a branded page loads successfully
-- the page explains that the merchant entry is reserved for linked case responses
-
-## Responsive UI check
-
-Use browser dev tools to test the landing page at smaller widths.
-
-```text
-Mobile width example: 390px
-Tablet width example: 768px
-Desktop width example: 1280px
-```
-
-Expected visible behaviour:
-
-- role cards stack cleanly at narrow widths
-- navigation remains readable
-- primary action buttons remain visible without awkward overlap
-- spacing and hierarchy stay coherent
-
-## Pagination contract verification
-
-Check the fallback for out-of-range page numbers using the shared pagination utility.
-
-```bash
-docker compose exec -T web python manage.py shell -c "from returns.models import ReturnCase; from common.pagination import paginate_queryset; print(paginate_queryset(ReturnCase.objects.order_by('id'), '999').count_line)"
-```
-
-Expected result:
-
-```text
-Showing 31-32 of 32
-```
-
-On a long-lived database with extra runbook cases, the upper bound and total may be higher while the pagination fallback behavior remains the same.
-
-Check invalid-page fallback.
-
-```bash
-docker compose exec -T web python manage.py shell -c "from returns.models import ReturnCase; from common.pagination import paginate_queryset; print(paginate_queryset(ReturnCase.objects.order_by('id'), 'banana').page_obj.number)"
-```
-
-Expected result:
-
-```text
-1
-```
-
-Check zero-page fallback.
-
-```bash
-docker compose exec -T web python manage.py shell -c "from returns.models import ReturnCase; from common.pagination import paginate_queryset; print(paginate_queryset(ReturnCase.objects.order_by('id'), '0').page_obj.number)"
-```
-
-Expected result:
-
-```text
-1
-```
-
-## Returns API and risk verification
-
-### Create a deterministic case through the real API and persist a linked `RiskScore`
-
-This uses the real `/api/returns/` create path so `RiskScore` is created through the same service-layer persistence flow as the app.
-
-```bash
-docker compose exec -T web python manage.py shell <<'PY'
-import json
-from pathlib import Path
-
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
-from rest_framework.test import APIClient
-
-from accounts.models import MerchantProfile
-from returns.models import RiskScore
-
-User = get_user_model()
-
-customer_group = Group.objects.get(name="Customer")
-customer_user = User.objects.filter(groups=customer_group).order_by("id").first()
-merchant = MerchantProfile.objects.order_by("id").first()
-
-if customer_user is None:
-    raise SystemExit("No seeded customer found.")
-
-if merchant is None:
-    raise SystemExit("No merchant profile found.")
-
-client = APIClient()
-client.force_authenticate(customer_user)
-
-response = client.post(
-    "/api/returns/",
-    data={
-        "merchant_id": str(merchant.pk),
-        "external_order_ref": "ORDER-RISK-API-001",
-        "item_category": "electronics",
-        "return_reason": "damaged",
-        "customer_message": "The parcel corner was crushed and the screen is black after power on.",
-        "order_value": "950.00",
-        "delivery_date": "2026-03-01",
-    },
-    format="json",
-    HTTP_HOST="localhost",
-)
-
-print("create_status_code =", response.status_code)
-
-payload = getattr(response, "data", None)
-if payload is None:
-    print(response.content.decode())
-    raise SystemExit("Case creation failed before DRF response rendering.")
-
-print(json.dumps(payload, indent=2, default=str))
-
-if response.status_code != 201:
-    raise SystemExit("Case creation failed.")
-
-case_id = str(payload["id"])
-risk_exists = RiskScore.objects.filter(case_id=case_id).exists()
-
-print("risk_exists =", risk_exists)
-
-Path("/tmp/returnhub_risk_case_id.txt").write_text(case_id, encoding="utf-8")
-Path("/tmp/returnhub_risk_customer_email.txt").write_text(customer_user.email, encoding="utf-8")
-PY
-```
-
-Expected result shape:
-
-```text
-create_status_code = 201
+```json
 {
-  "id": "<case-id>",
-  "order_reference": "ORDER-RISK-API-001",
-  "status": "submitted",
-  "priority": "medium",
-  "merchant_name": "<merchant-name>",
-  "customer_email": "<seeded-customer-email>",
+  "merchant_id": 1,
+  "external_order_ref": "RH-MANUAL-0001",
   "item_category": "electronics",
-  "return_reason": "damaged",
-  "customer_message": "The parcel corner was crushed and the screen is black after power on.",
-  "order_value": "950.00",
-  "delivery_date": "2026-03-01",
-  "risk": null,
-  "created_at": "<timestamp>",
-  "updated_at": "<timestamp>"
+  "return_reason": "damaged item",
+  "customer_message": "Screen arrived cracked.",
+  "order_value": "199.99",
+  "delivery_date": "2026-01-02"
 }
-risk_exists = True
 ```
 
-The create response may include `"risk": null` for the customer-facing caller, which is expected.
+Verify:
 
-### As ops, call `/api/returns/{id}/risk/` and confirm the structured payload returns
+- response is `201`
+- case starts at `status=submitted`
+- case starts at `priority=medium`
+- a `case_created` event exists
+- a `RiskScore` exists for the case
 
-```bash
-docker compose exec -T web python manage.py shell <<'PY'
-import json
-from pathlib import Path
-
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
-from rest_framework.test import APIClient
-
-User = get_user_model()
-
-case_id = Path("/tmp/returnhub_risk_case_id.txt").read_text(encoding="utf-8").strip()
-
-ops_group = Group.objects.get(name="Ops")
-ops_user = User.objects.filter(groups=ops_group).order_by("id").first()
-
-if ops_user is None:
-    raise SystemExit("No seeded ops user found.")
-
-client = APIClient()
-client.force_authenticate(ops_user)
-
-response = client.get(
-    f"/api/returns/{case_id}/risk/",
-    HTTP_HOST="localhost",
-)
-
-print("status_code =", response.status_code)
-
-payload = getattr(response, "data", None)
-if payload is None:
-    print(response.content.decode())
-    raise SystemExit("Risk detail request failed before DRF response rendering.")
-
-print(json.dumps(payload, indent=2, default=str))
-PY
-```
-
-Expected result shape:
+Check detail:
 
 ```text
-status_code = 200
+GET /api/returns/<case_id>/
+```
+
+Check status update as ops or admin:
+
+```http
+PATCH /api/returns/<case_id>/status/
+Content-Type: application/json
+```
+
+Example payload:
+
+```json
 {
-  "model_version": "retrain_baseline-logreg-v1-seed-7-rows-500",
-  "score": "<decimal-score>",
-  "label": "<low|medium|high>",
-  "reason_codes": [
-    {
-      "code": "<reason-code>",
-      "direction": "<up|down>",
-      "detail": "<human-readable-detail>"
-    }
-  ],
-  "scored_at": "<timestamp>"
+  "status": "in_review",
+  "priority": "high"
 }
 ```
 
-The exact `model_version`, `score`, `label`, `reason_codes`, and `scored_at` depend on the current active model registry and scoring output, but the response shape should match this contract.
+Check note creation:
 
-### As the owning customer, call `/api/returns/{id}/` and confirm `risk` is `null`
-
-```bash
-docker compose exec -T web python manage.py shell <<'PY'
-import json
-from pathlib import Path
-
-from django.contrib.auth import get_user_model
-from rest_framework.test import APIClient
-
-User = get_user_model()
-
-case_id = Path("/tmp/returnhub_risk_case_id.txt").read_text(encoding="utf-8").strip()
-customer_email = Path("/tmp/returnhub_risk_customer_email.txt").read_text(encoding="utf-8").strip()
-
-customer_user = User.objects.get(email=customer_email)
-
-client = APIClient()
-client.force_authenticate(customer_user)
-
-response = client.get(
-    f"/api/returns/{case_id}/",
-    HTTP_HOST="localhost",
-)
-
-print("status_code =", response.status_code)
-
-payload = getattr(response, "data", None)
-if payload is None:
-    print(response.content.decode())
-    raise SystemExit("Case detail request failed before DRF response rendering.")
-
-print(json.dumps(payload, indent=2, default=str))
-print("risk_is_null =", payload.get("risk") is None)
-PY
+```http
+POST /api/returns/<case_id>/notes/
+Content-Type: application/json
 ```
 
-Expected result shape:
+Example payload:
 
-```text
-status_code = 200
+```json
 {
-  "id": "<case-id>",
-  "order_reference": "ORDER-RISK-API-001",
-  "status": "submitted",
-  "priority": "medium",
-  "merchant_name": "<merchant-name>",
-  "customer_email": "<seeded-customer-email>",
-  "item_category": "electronics",
-  "return_reason": "damaged",
-  "customer_message": "The parcel corner was crushed and the screen is black after power on.",
-  "order_value": "950.00",
-  "delivery_date": "2026-03-01",
-  "risk": null,
-  "created_at": "<timestamp>",
-  "updated_at": "<timestamp>"
+  "body": "Customer contacted support with photo evidence pending."
 }
-risk_is_null = True
 ```
 
-### Confirm the risk endpoint returns `403` to customers
+Check documents:
 
-```bash
-docker compose exec -T web python manage.py shell <<'PY'
-from pathlib import Path
+- `GET /api/returns/<case_id>/documents/`
+- `POST /api/returns/<case_id>/documents/`
 
-from django.contrib.auth import get_user_model
-from rest_framework.test import APIClient
+Check risk:
 
-User = get_user_model()
+- `GET /api/returns/<case_id>/risk/`
 
-case_id = Path("/tmp/returnhub_risk_case_id.txt").read_text(encoding="utf-8").strip()
-customer_email = Path("/tmp/returnhub_risk_customer_email.txt").read_text(encoding="utf-8").strip()
+Expected:
 
-customer_user = User.objects.get(email=customer_email)
+- `ops` and `admin` receive risk payloads
+- `customer` and `merchant` receive `403`
 
-client = APIClient()
-client.force_authenticate(customer_user)
+Check audit export:
 
-response = client.get(
-    f"/api/returns/{case_id}/risk/",
-    HTTP_HOST="localhost",
-)
+- `GET /api/returns/<case_id>/audit-export/`
 
-print("status_code =", response.status_code)
+Expected:
 
-payload = getattr(response, "data", None)
-if payload is None:
-    print(response.content.decode())
-    raise SystemExit("Customer risk request failed before DRF response rendering.")
+- CSV response
+- case rows
+- risk rows when a score exists
+- event rows
+- document metadata rows
 
-print("response_body =", payload)
-PY
-```
-
-Expected result:
+Check analytics as ops or admin:
 
 ```text
-status_code = 403
-response_body = {'detail': 'Only ops and admins can view risk output.'}
+GET /api/analytics/returns/?from=2026-01-01&to=2026-12-31
 ```
 
-### Confirm the risk endpoint returns `403` to merchants
+Expected:
+
+- `from`
+- `to`
+- `total_cases`
+- `status_counts`
+- `priority_counts`
+
+Also verify that customers cannot access the analytics route.
+
+## ML verification
+
+Check the committed active-model registry.
 
 ```bash
-docker compose exec -T web python manage.py shell <<'PY'
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
-from rest_framework.test import APIClient
-
-from returns.models import ReturnCase
-
-User = get_user_model()
-
-merchant_group = Group.objects.get(name="Merchant")
-merchant_user = User.objects.filter(groups=merchant_group).order_by("id").first()
-case = ReturnCase.objects.order_by("-created_at").first()
-
-if merchant_user is None:
-    raise SystemExit("No seeded merchant user found.")
-
-if case is None:
-    raise SystemExit("No case found.")
-
-client = APIClient()
-client.force_authenticate(merchant_user)
-
-response = client.get(
-    f"/api/returns/{case.pk}/risk/",
-    HTTP_HOST="localhost",
-)
-
-print("status_code =", response.status_code)
-
-payload = getattr(response, "data", None)
-if payload is None:
-    print(response.content.decode())
-    raise SystemExit("Merchant risk request failed before DRF response rendering.")
-
-print("response_body =", payload)
-PY
+docker compose exec -T web python manage.py shell -c "from pathlib import Path; print(Path('ml/registry/model_registry.json').read_text())"
 ```
 
-Expected result:
+Expected current active model metadata:
 
-```text
-status_code = 403
-response_body = {'detail': 'Only ops and admins can view risk output.'}
-```
+- version: `retrain_baseline-logreg-v1-seed-7-rows-500`
+- model type: `logistic_regression`
+- contract version: `return-risk-sprint2-v1`
+- reason code schema version: `return-risk-reasons-sprint3-v1`
 
-## Console verification
-
-### Open `/console/ops/` and confirm the risk messaging renders above Recent Cases
+Generate a dataset:
 
 ```bash
-docker compose exec -T web python manage.py shell <<'PY'
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import Group
-from django.test import Client
-
-User = get_user_model()
-
-ops_group = Group.objects.get(name="Ops")
-ops_user = User.objects.filter(groups=ops_group).order_by("id").first()
-
-if ops_user is None:
-    raise SystemExit("No seeded ops user found.")
-
-client = Client()
-client.force_login(ops_user)
-
-response = client.get("/console/ops/", HTTP_HOST="localhost")
-html = response.content.decode()
-
-risk_copy_index = html.find("controlled triage signal")
-recent_cases_index = html.find("Recent cases")
-
-print("status_code =", response.status_code)
-print("has_risk_copy =", "controlled triage signal" in html)
-print("has_ops_only_copy =", "ops only" in html)
-print("has_recent_cases =", "Recent cases" in html)
-print(
-    "risk_copy_before_recent_cases =",
-    risk_copy_index != -1 and recent_cases_index != -1 and risk_copy_index < recent_cases_index,
-)
-PY
+docker compose exec -T web python manage.py generate_training_dataset --seed 7 --rows 300
 ```
 
-Expected result:
+Expected output file:
 
 ```text
-status_code = 200
-has_risk_copy = True
-has_ops_only_copy = True
-has_recent_cases = True
-risk_copy_before_recent_cases = True
+artifacts/ml/evidence_aware_training_dataset.csv
 ```
 
-### Open the other authenticated console routes
-
-These checks confirm that the current role-based console surfaces render successfully for their seeded users.
+Train the baseline model:
 
 ```bash
-docker compose exec -T web python manage.py shell <<'PY'
-from django.contrib.auth import get_user_model
-from django.test import Client
-
-User = get_user_model()
-
-users = {
-    "admin": User.objects.get(username="admin"),
-    "customer": User.objects.get(username="customer"),
-    "merchant": User.objects.get(username="merchant"),
-}
-
-paths = {
-    "admin": "/console/admin/",
-    "customer": "/console/customer/",
-    "merchant": "/console/merchant/",
-}
-
-client = Client()
-
-for role, user in users.items():
-    client.force_login(user)
-    response = client.get(paths[role], HTTP_HOST="localhost")
-    print(role, response.status_code)
-    client.logout()
-PY
+docker compose exec -T web python manage.py train_escalation_model --seed 7 --size 500
 ```
 
-Expected result:
-
-```text
-admin 200
-customer 200
-merchant 200
-```
-
-## Documentation verification
-
-Read the API and ML docs and confirm endpoint names and registry metadata match committed code.
+Retrain through the wrapper flow:
 
 ```bash
-docker compose exec -T web python manage.py shell <<'PY'
-from pathlib import Path
-import json
-
-api_doc = Path("docs/api/returns-workflow.md").read_text(encoding="utf-8")
-ml_doc = Path("docs/ml/model-registry.md").read_text(encoding="utf-8")
-registry = json.loads(Path("ml/registry/model_registry.json").read_text(encoding="utf-8"))
-
-checks = {
-    "api_doc_has_returns_create": "POST /api/returns/" in api_doc,
-    "api_doc_has_returns_detail": "GET /api/returns/{id}/" in api_doc,
-    "api_doc_has_returns_risk": "GET /api/returns/{id}/risk/" in api_doc,
-    "api_doc_has_returns_documents": "POST /api/returns/{id}/documents/" in api_doc,
-    "api_doc_has_audit_export": "GET /api/returns/{id}/audit-export/" in api_doc,
-    "api_doc_omits_stale_analytics_endpoint": "GET /api/analytics/returns/?from=&to=" not in api_doc,
-    "ml_doc_has_registry_path": "ml/registry/model_registry.json" in ml_doc,
-    "ml_doc_has_logistic_model_type": "logistic_regression" in ml_doc,
-    "registry_version_matches": registry["active_model"]["version"].startswith("retrain_baseline-logreg-v1"),
-    "registry_model_type_matches": registry["active_model"]["model_type"] == "logistic_regression",
-    "registry_contract_matches": registry["active_model"]["contract_version"] == "return-risk-sprint2-v1",
-}
-
-for key, value in checks.items():
-    print(f"{key} = {value}")
-PY
+docker compose exec -T web python manage.py retrain_baseline_model --seed 7 --rows 500
 ```
 
-Expected result:
+Expected outputs under `ml_artifacts/`:
 
-```text
-api_doc_has_returns_create = True
-api_doc_has_returns_detail = True
-api_doc_has_returns_risk = True
-api_doc_has_returns_documents = True
-api_doc_has_audit_export = True
-api_doc_omits_stale_analytics_endpoint = True
-ml_doc_has_registry_path = True
-ml_doc_has_logistic_model_type = True
-registry_version_matches = True
-registry_model_type_matches = True
-registry_contract_matches = True
-```
+- `<model_version>.pkl`
+- `<model_version>.json`
 
-## Test verification
+## Quality gates
 
-Run the full test suite.
-
-```bash
-docker compose exec -T web pytest -q
-```
-
-Expected result shape:
-
-```text
-<all tests pass>
-```
-
-Run tests with coverage.
-
-```bash
-docker compose exec -T web pytest -q --cov=. --cov-report=term-missing --cov-report=xml --cov-fail-under=80
-```
-
-Expected result:
-
-```text
-The test suite passes and the total coverage meets or exceeds 80%.
-```
-
-## Lint and format verification
-
-Run Ruff.
-
-```bash
-docker compose exec -T web python -m ruff check .
-```
-
-Expected result:
-
-```text
-All checks passed!
-```
-
-Run Black format check.
+Run formatting check:
 
 ```bash
 docker compose exec -T web python -m black . --check
 ```
 
-Expected result shape:
-
-```text
-All done! ✨ 🍰 ✨
-<n> files would be left unchanged.
-```
-
-## Error page verification
-
-A branded 404 page should render for unknown routes when `DEBUG=False`. This is already covered by tests, but it can also be checked manually in a non-development configuration if needed.
-
-Open an unknown route.
-
-```text
-http://127.0.0.1:8000/not-a-real-page/
-```
-
-Expected visible behaviour in non-debug mode:
-
-- a branded 404 page renders
-- the page uses the shared app shell
-- the page provides a clear recovery path back to the landing page
-
-## Current definition of done checklist
-
-The local environment should be considered verified when all items below are true:
-
-- containers build and start successfully
-- migrations apply successfully
-- demo data seeds successfully
-- repeated seeding keeps the case count at `32`
-- case detail workspaces render and linked users can upload documents inline
-- public UI routes load successfully
-- authenticated console routes render successfully for seeded users
-- pagination fallback checks return expected results
-- returns API create and detail checks pass
-- risk endpoint access control behaves correctly for ops, customers, and merchants
-- API and ML docs match the committed contracts and registry metadata
-- pytest passes
-- coverage gate passes
-- Ruff passes
-- Black check passes
-
-## Clean reset procedure
-
-If local state becomes inconsistent, perform a clean reset.
-
-Stop and remove containers and volumes.
+Run lint:
 
 ```bash
-docker compose down -v
+docker compose exec -T web python -m ruff check .
 ```
 
-Expected result:
-
-```text
-Containers stop and local Postgres volume data is removed.
-```
-
-Rebuild and restart.
+Run tests:
 
 ```bash
-docker compose up --build -d
+docker compose exec -T web pytest -q
 ```
 
-Expected result:
-
-```text
-Fresh containers are created and started.
-```
-
-Reapply migrations.
+Run coverage gate:
 
 ```bash
-docker compose exec -T web python manage.py migrate --noinput
+docker compose exec -T web pytest -q --cov=. --cov-report=term-missing --cov-report=xml --cov-fail-under=85
 ```
 
-Expected result:
+## Convenience targets
 
-```text
-The database schema is recreated cleanly.
-```
+Equivalent Make targets:
 
-Re-seed demo data.
+- `make bootstrap`
+- `make up`
+- `make down`
+- `make ps`
+- `make migrate`
+- `make test`
+- `make test-cov`
+- `make lint`
+- `make format`
+- `make format-check`
+- `make check`
+
+## Proof Commands
+
+These commands are designed for article evidence. They suppress noisy expected error traces by:
+
+- using `Client(HTTP_HOST='localhost', raise_request_exception=False)`
+- disabling the `django.request` logger inside the shell command
+
+### Queue verification proof
 
 ```bash
-docker compose exec -T web python manage.py seed_demo_data
+docker compose exec web python manage.py shell -c "import logging; from django.test import Client; from django.urls import resolve; from django.contrib.auth import get_user_model; from returns.services.queue import build_queue_queryset, parse_queue_filters; from common.pagination import paginate_queryset; logging.getLogger('django.request').disabled = True; User = get_user_model(); client = Client(HTTP_HOST='localhost', raise_request_exception=False); user = User.objects.filter(groups__name__iexact='Ops').first() or User.objects.filter(is_superuser=True).first(); client.force_login(user); queryset = build_queue_queryset(parse_queue_filters({})); invalid_page = paginate_queryset(queryset, 'abc').page_obj; zero_page = paginate_queryset(queryset, '0').page_obj; last_page = paginate_queryset(queryset, '999').page_obj; full = client.get('/ops/'); htmx = client.get('/ops/', HTTP_HX_REQUEST='true'); empty = client.get('/ops/?status=closed&priority=high&search=unlikely_runbook_value'); full_content = full.content.decode(); htmx_content = htmx.content.decode(); empty_content = empty.content.decode(); print('OPS_QUEUE_URL=/ops/'); print('OPS_QUEUE_VIEW=ops:queue'); print(f'OPS_QUEUE_ROUTE_CHECK={resolve(\"/ops/\").view_name == \"ops:queue\"}'); print(f'OPS_QUEUE_PAGE_RENDER_CHECK={full.status_code == 200 and \"Returns queue\" in full_content}'); print(f'OPS_QUEUE_PAGINATION_CHECK={invalid_page.number == 1 and zero_page.number == 1 and last_page.number == last_page.paginator.num_pages}'); print(f'OPS_QUEUE_HTMX_PARTIAL_CHECK={htmx.status_code == 200 and \"Return cases\" in htmx_content and \"Showing\" in htmx_content}'); print(f'OPS_QUEUE_EMPTY_STATE_CHECK={\"No cases match these filters\" in empty_content}')"
 ```
 
-Expected result:
-
-```text
-Seed complete. Stable return case count: 32
-```
-
-If extra verification cases exist, the printed count may be higher. The important check is that rerunning the seed command does not create duplicate fixture rows.
-
-## Troubleshooting
-
-### `web` container exits immediately
-
-Inspect logs.
+### Case detail verification proof
 
 ```bash
-docker compose logs web
+docker compose exec web python manage.py shell -c "import logging; from django.test import Client; from django.urls import reverse, resolve; from django.contrib.auth import get_user_model; from returns.models import ReturnCase; logging.getLogger('django.request').disabled = True; User = get_user_model(); client = Client(HTTP_HOST='localhost', raise_request_exception=False); user = User.objects.filter(groups__name__iexact='Ops').first() or User.objects.filter(is_superuser=True).first(); case = ReturnCase.objects.order_by('id').first(); sparse_case = ReturnCase.objects.filter(documents__isnull=True, risk_score__isnull=True, notes__isnull=True, events__isnull=True).distinct().first() or case; client.force_login(user); response = client.get(reverse('ops:case-detail', args=[case.pk])); sparse_response = client.get(reverse('ops:case-detail', args=[sparse_case.pk])); content = response.content.decode(); sparse_content = sparse_response.content.decode(); print(f'CASE_ID={case.pk}'); print(f'CASE_REFERENCE={case.order_reference}'); print(f'OPS_CASE_DETAIL_URL={reverse(\"ops:case-detail\", args=[case.pk])}'); print('OPS_CASE_DETAIL_VIEW=ops:case-detail'); print(f'OPS_CASE_DETAIL_ROUTE_CHECK={resolve(reverse(\"ops:case-detail\", args=[case.pk])).view_name == \"ops:case-detail\"}'); print(f'OPS_CASE_DETAIL_PAGE_RENDER_CHECK={response.status_code == 200}'); print(f'OPS_CASE_DETAIL_WORKFLOW_STATE_CHECK={\"Workflow state\" in content}'); print(f'OPS_CASE_DETAIL_DOCUMENTS_SECTION_CHECK={(\"Documents\" in content) or (\"Evidence\" in content)}'); print(f'OPS_CASE_DETAIL_TIMELINE_SECTION_CHECK={\"Audit timeline\" in content}'); print(f'OPS_CASE_DETAIL_RISK_PANEL_CHECK={\"Escalation risk\" in content}'); print(f'OPS_CASE_DETAIL_EMPTY_DOCUMENTS_CHECK={\"No documents yet\" in sparse_content}'); print(f'OPS_CASE_DETAIL_EMPTY_RISK_CHECK={\"No score yet\" in sparse_content}')"
 ```
 
-Expected result:
-
-```text
-Logs identify the import, dependency, or configuration issue.
-```
-
-### Database health check does not pass
-
-Inspect database logs.
+### Workflow action proof
 
 ```bash
-docker compose logs db
+docker compose exec web python manage.py shell -c "import logging; from django.test import Client; from django.contrib.auth import get_user_model; from returns.models import ReturnCase, CaseEvent, CaseNote; logging.getLogger('django.request').disabled = True; User = get_user_model(); client = Client(HTTP_HOST='localhost', raise_request_exception=False); ops_user = User.objects.filter(groups__name__iexact='Ops').first() or User.objects.filter(is_superuser=True).first(); customer_user = User.objects.filter(groups__name__iexact='Customer').first(); update_case = ReturnCase.objects.filter(status='submitted').order_by('id').first() or ReturnCase.objects.order_by('id').first(); request_case = ReturnCase.objects.filter(status='submitted').exclude(pk=update_case.pk).order_by('id').first() or update_case; note_case = ReturnCase.objects.exclude(pk__in=[update_case.pk, request_case.pk]).order_by('id').first() or update_case; invalid_case = ReturnCase.objects.filter(status='approved').order_by('id').first() or update_case; client.force_login(ops_user); workflow_response = client.post(f'/ops/{update_case.pk}/', {'ops_action': 'case-update', 'status': 'in_review', 'priority': 'high'}, HTTP_X_REQUESTED_WITH='XMLHttpRequest'); update_case.refresh_from_db(); workflow_event = CaseEvent.objects.filter(return_case=update_case, event_type='status_updated', payload__new_status='in_review').exists(); request_response = client.post(f'/ops/{request_case.pk}/', {'ops_action': 'request-info', 'recipient': 'customer', 'message': 'Please upload a clearer image of the damaged item.'}, HTTP_X_REQUESTED_WITH='XMLHttpRequest'); request_case.refresh_from_db(); request_event = CaseEvent.objects.filter(return_case=request_case, event_type='status_updated', payload__note__icontains='Requested additional information from customer').exists(); note_body = 'Customer appears responsive. Await merchant packaging confirmation.'; note_response = client.post(f'/ops/{note_case.pk}/', {'ops_action': 'add-note', 'body': note_body}, HTTP_X_REQUESTED_WITH='XMLHttpRequest'); note_event = CaseEvent.objects.filter(return_case=note_case, event_type='note_added').exists(); note_saved = CaseNote.objects.filter(return_case=note_case, body=note_body).exists(); invalid_response = client.post(f'/ops/{invalid_case.pk}/', {'ops_action': 'case-update', 'status': '', 'priority': ''}, HTTP_X_REQUESTED_WITH='XMLHttpRequest'); invalid_html = invalid_response.json().get('action_panel_html', ''); client.force_login(customer_user); wrong_role_response = client.post(f'/ops/{note_case.pk}/', {'ops_action': 'add-note', 'body': 'Unauthorised note attempt'}, HTTP_X_REQUESTED_WITH='XMLHttpRequest'); print(f'OPS_WORKFLOW_UPDATE_CHECK={workflow_response.status_code == 200 and update_case.status == \"in_review\" and update_case.priority == \"high\" and workflow_event}'); print(f'OPS_REQUEST_INFO_CHECK={request_response.status_code == 200 and request_case.status == \"waiting_customer\" and request_event}'); print(f'OPS_ADD_NOTE_CHECK={note_response.status_code == 200 and note_saved and note_event}'); print(f'OPS_INVALID_WORKFLOW_CHECK={invalid_response.status_code == 400}'); print(f'OPS_INVALID_WORKFLOW_ERROR_CHECK={\"This field is required.\" in invalid_html}'); print(f'OPS_ACTION_WRONG_ROLE_CHECK={wrong_role_response.status_code == 403}')"
 ```
 
-Expected result:
+### Layout verification proof
 
-```text
-Logs show whether PostgreSQL startup or credentials are the issue.
+```bash
+docker compose exec web python manage.py shell -c "import logging; from django.test import Client; from django.contrib.auth import get_user_model; from returns.models import ReturnCase, CaseNote; logging.getLogger('django.request').disabled = True; User = get_user_model(); client = Client(HTTP_HOST='localhost', raise_request_exception=False); user = User.objects.filter(groups__name__iexact='Ops').first() or User.objects.filter(is_superuser=True).first(); nav_case = ReturnCase.objects.order_by('id').first(); sparse_case = ReturnCase.objects.exclude(pk=nav_case.pk).order_by('id').first() or nav_case; CaseNote.objects.filter(return_case=nav_case).delete(); CaseNote.objects.filter(return_case=sparse_case).delete(); CaseNote.objects.create(return_case=nav_case, author=user, body='Older note for ordering check'); CaseNote.objects.create(return_case=nav_case, author=user, body='Newer note for ordering check'); client.force_login(user); response = client.get(f'/ops/{nav_case.pk}/'); sparse_response = client.get(f'/ops/{sparse_case.pk}/'); content = response.content.decode(); sparse_content = sparse_response.content.decode(); print(f'OPS_CASE_DETAIL_QUICK_NAVIGATION_CHECK={\"Quick navigation\" in content}'); print(f'OPS_ACTION_BAR_WORKFLOW_LINK_CHECK={\"#case-status-panel\" in content}'); print(f'OPS_ACTION_BAR_NOTES_LINK_CHECK={\"#case-notes-panel\" in content}'); print(f'OPS_ACTION_BAR_DOCUMENTS_LINK_CHECK={\"#case-document-table\" in content}'); print(f'OPS_ACTION_BAR_TIMELINE_LINK_CHECK={\"#case-timeline\" in content}'); print(f'OPS_CASE_DETAIL_NOTES_PLACEMENT_CHECK={content.index(\"Workflow state\") < content.index(\"Internal notes\") < content.index(\"Documents\")}'); print(f'OPS_NOTES_ORDERING_RENDER_CHECK={content.index(\"Newer note for ordering check\") < content.index(\"Older note for ordering check\")}'); print(f'OPS_EMPTY_NOTES_CHECK={\"No notes yet\" in sparse_content}')"
 ```
 
-### Django cannot connect to PostgreSQL
+### Day 5 ops surface proof
 
-Check that `.env` values match the Compose configuration and confirm that `POSTGRES_HOST=db`.
+```bash
+docker compose exec web python manage.py shell -c "import logging; from django.test import Client; from django.contrib.auth import get_user_model; from returns.models import ReturnCase; logging.getLogger('django.request').disabled = True; User = get_user_model(); client = Client(HTTP_HOST='localhost', raise_request_exception=False); user = User.objects.filter(groups__name__iexact='Ops').first() or User.objects.filter(is_superuser=True).first(); first_case = ReturnCase.objects.order_by('id').first(); sparse_case = ReturnCase.objects.filter(order_reference='RH-RUNBOOK-SPARSE').first() or first_case; client.force_login(user); queue = client.get('/ops/'); detail = client.get(f'/ops/{first_case.pk}/'); page_two = client.get('/ops/?page=2'); empty = client.get('/ops/?status=closed&priority=high&search=unlikely_runbook_value'); sparse = client.get(f'/ops/{sparse_case.pk}/'); queue_content = queue.content.decode(); detail_content = detail.content.decode(); empty_content = empty.content.decode(); sparse_content = sparse.content.decode(); print(f'OPS_QUEUE_SMOKE_RENDER_CHECK={queue.status_code == 200 and \"Returns queue\" in queue_content}'); print(f'OPS_DETAIL_SMOKE_RENDER_CHECK={detail.status_code == 200 and first_case.order_reference in detail_content}'); print(f'OPS_QUEUE_PAGE_TWO_CHECK={page_two.status_code == 200 and \"Showing 16-\" in page_two.content.decode()}'); print(f'OPS_QUEUE_EMPTY_STATE_CHECK={\"No cases match these filters\" in empty_content}'); print(f'OPS_DETAIL_EMPTY_DOCUMENTS_CHECK={\"No documents yet\" in sparse_content}'); print(f'OPS_DETAIL_EMPTY_TIMELINE_CHECK={\"No timeline events yet\" in sparse_content}'); print(f'OPS_DETAIL_LOADING_LAYER_CHECK={(\"data-loading-label\" in detail_content) and (\"rh-fragment-panel__status\" in detail_content)}'); print(f'OPS_DETAIL_FRAGMENT_IDS_CHECK={(\"case-status-panel\" in detail_content) and (\"case-notes-panel\" in detail_content)}')"
+```
 
-### `APIClient` calls fail inside `manage.py shell`
+### Compact console proof
 
-If a shell-based API check raises `Invalid HTTP_HOST header: 'testserver'`, rerun the request with `HTTP_HOST="localhost"` as shown in this runbook.
-
-### Tests fail after local experimentation
-
-Use the clean reset procedure, then rerun migrations, seed data, and tests.
-
-## End state
-
-At the end of this runbook, the local environment should be in a verified current-project state with:
-
-- working public pages
-- working authenticated console surfaces
-- deterministic demo data
-- passing returns and risk verification
-- documentation aligned with committed contracts
-- CI-equivalent local quality checks passing
+```bash
+bash -lc "docker compose exec web pytest -q tests/test_ops_queue.py tests/test_ops_case_detail.py tests/test_ops_console.py tests/test_console_shell.py tests/test_case_detail_empty_states.py tests/test_ops_queue_api.py && docker compose exec web python -m ruff check . && docker compose exec web python -m black . --check && docker compose exec web python manage.py shell -c \"import logging; from django.test import Client; from django.urls import resolve, reverse; from django.contrib.auth import get_user_model; from returns.models import ReturnCase, CaseEvent, CaseNote; logging.getLogger('django.request').disabled = True; User = get_user_model(); client = Client(HTTP_HOST='localhost', raise_request_exception=False); ops_user = User.objects.filter(groups__name__iexact='Ops').first() or User.objects.filter(is_superuser=True).first(); customer_user = User.objects.filter(groups__name__iexact='Customer').first(); queue_case = ReturnCase.objects.filter(status='submitted').order_by('id').first() or ReturnCase.objects.order_by('id').first(); request_case = ReturnCase.objects.filter(status='submitted').exclude(pk=queue_case.pk).order_by('id').first() or queue_case; note_case = ReturnCase.objects.exclude(pk__in=[queue_case.pk, request_case.pk]).order_by('id').first() or queue_case; client.force_login(ops_user); queue = client.get('/ops/'); detail = client.get(f'/ops/{queue_case.pk}/'); page_two = client.get('/ops/?page=2'); empty = client.get('/ops/?status=closed&priority=high&search=unlikely_runbook_value'); workflow = client.post(f'/ops/{queue_case.pk}/', {'ops_action': 'case-update', 'status': 'in_review', 'priority': 'high'}, HTTP_X_REQUESTED_WITH='XMLHttpRequest'); queue_case.refresh_from_db(); request_info = client.post(f'/ops/{request_case.pk}/', {'ops_action': 'request-info', 'recipient': 'customer', 'message': 'Please upload a clearer image of the damaged item.'}, HTTP_X_REQUESTED_WITH='XMLHttpRequest'); note_body = 'Compact proof note'; add_note = client.post(f'/ops/{note_case.pk}/', {'ops_action': 'add-note', 'body': note_body}, HTTP_X_REQUESTED_WITH='XMLHttpRequest'); CaseNote.objects.filter(return_case=queue_case).delete(); CaseNote.objects.create(return_case=queue_case, author=ops_user, body='Older compact proof note'); CaseNote.objects.create(return_case=queue_case, author=ops_user, body='Newer compact proof note'); detail_after = client.get(f'/ops/{queue_case.pk}/'); sparse_case = ReturnCase.objects.filter(order_reference='RH-RUNBOOK-SPARSE').first() or queue_case; sparse = client.get(f'/ops/{sparse_case.pk}/'); client.force_login(customer_user); wrong_role = client.post(f'/ops/{note_case.pk}/', {'ops_action': 'add-note', 'body': 'Unauthorised note attempt'}, HTTP_X_REQUESTED_WITH='XMLHttpRequest'); detail_content = detail_after.content.decode(); sparse_content = sparse.content.decode(); empty_content = empty.content.decode(); print(f'OPS_QUEUE_ROUTE_CHECK={resolve(\\\"/ops/\\\").view_name == \\\"ops:queue\\\"}'); print(f'OPS_QUEUE_PAGE_RENDER_CHECK={queue.status_code == 200}'); print(f'OPS_CASE_DETAIL_ROUTE_CHECK={resolve(reverse(\\\"ops:case-detail\\\", args=[queue_case.pk])).view_name == \\\"ops:case-detail\\\"}'); print(f'OPS_CASE_DETAIL_PAGE_RENDER_CHECK={detail.status_code == 200}'); print(f'OPS_WORKFLOW_UPDATE_CHECK={workflow.status_code == 200 and queue_case.status == \\\"in_review\\\" and queue_case.priority == \\\"high\\\" and CaseEvent.objects.filter(return_case=queue_case, event_type=\\\"status_updated\\\", payload__new_status=\\\"in_review\\\").exists()}'); print(f'OPS_REQUEST_INFO_CHECK={request_info.status_code == 200 and CaseEvent.objects.filter(return_case=request_case, event_type=\\\"status_updated\\\", payload__note__icontains=\\\"Requested additional information from customer\\\").exists()}'); print(f'OPS_ADD_NOTE_CHECK={add_note.status_code == 200 and CaseNote.objects.filter(return_case=note_case, body=note_body).exists() and CaseEvent.objects.filter(return_case=note_case, event_type=\\\"note_added\\\").exists()}'); print(f'OPS_NOTES_ORDERING_RENDER_CHECK={detail_content.index(\\\"Newer compact proof note\\\") < detail_content.index(\\\"Older compact proof note\\\")}'); print(f'OPS_QUEUE_PAGE_TWO_CHECK={page_two.status_code == 200 and \\\"Showing 16-\\\" in page_two.content.decode()}'); print(f'OPS_QUEUE_EMPTY_STATE_CHECK={\\\"No cases match these filters\\\" in empty_content}'); print(f'OPS_DETAIL_EMPTY_DOCUMENTS_CHECK={\\\"No documents yet\\\" in sparse_content}'); print(f'OPS_DETAIL_EMPTY_TIMELINE_CHECK={\\\"No timeline events yet\\\" in sparse_content}'); print(f'OPS_ACTION_WRONG_ROLE_CHECK={wrong_role.status_code == 403}')\""
+```

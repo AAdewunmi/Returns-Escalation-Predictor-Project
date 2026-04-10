@@ -1,75 +1,99 @@
 <!-- path: docs/ml/baseline-escalation-risk.md -->
-# Baseline Escalation Risk Model
+# Baseline Escalation Risk
 
-## Purpose
+This document describes the ML flow currently implemented for return-case escalation scoring.
 
-ReturnHub now has a seeded baseline training flow plus a retraining wrapper for the evidence-aware feature path. The implementation is deterministic so repeated runs with the same seed and row count produce stable training data and model metadata.
+## Current approach
 
-## Training inputs
+The project uses a logistic-regression baseline with:
 
-The baseline trainer and inference path share the committed feature contract in `ml/contracts/return_case_features.json`. The current feature set includes:
+- deterministic synthetic training data
+- a committed feature contract
+- versioned pickle and metadata artifacts
+- a committed active-model registry
+- persisted `RiskScore` records on return cases
 
-- item category code
-- delivery-to-return days
-- return reason code
-- damaged-return indicator
-- customer message length bucket
-- prior returns count
-- order value band
-- high order-value indicator
-- customer evidence count
-- hours to first customer evidence
-- merchant document count
+## Feature contract
 
-These features are defined and encoded by:
+Training and inference share the feature contract in:
 
 - `ml/contracts/return_case_features.json`
 - `ml/features.py`
 
-## Data stance
+The current implementation includes signals derived from:
 
-Training data is synthetic and deterministic. The training rows are generated
-from a random seed in `ml/training/baseline.py`, so repeated runs with the same
-inputs produce the same feature rows and labels. `ml/training/train.py` wraps the same trainer and writes a retrain-prefixed model version when the retrain command is used.
+- item category
+- delivery-to-return timing
+- return reason
+- customer message length
+- prior returns history
+- order-value buckets
+- customer evidence activity
+- merchant document activity
 
-No external dataset is required for the baseline training flow.
+## Training data
 
-## Model choice
+Training data is synthetic and deterministic.
 
-The current baseline trainer uses:
+Current dataset flows:
 
-- `DictVectorizer`
-- `LogisticRegression`
-- seed-controlled synthetic row generation
+- `ml/datasets/synthetic.py` generates seeded rows
+- `ml/datasets/dataset.py` exposes the dataset wrapper
+- `ml/management/commands/generate_training_dataset.py` writes CSV output
 
-The trained artefact is saved as a versioned `.pkl` file.
+Default dataset export command:
 
-## Current implementation notes
+```bash
+docker compose exec -T web python manage.py generate_training_dataset --seed 7 --rows 300
+```
 
-- The baseline trainer is exposed as a Python function and through Django
-  management commands.
-- The core training function is `train_and_save_baseline_model(...)` in
-  `ml/training/baseline.py`.
-- The standard training command is
-  `ml/management/commands/train_escalation_model.py`.
-- The retrain command is `ml/management/commands/retrain_baseline_model.py`.
-- The dataset export command is
-  `ml/management/commands/generate_training_dataset.py`.
-- The trainer computes a SHA-256 hash of the committed feature contract file and
-  stores it in the training metadata.
-- `scikit-learn` is imported inside the training function, so importing the
-  module itself does not require `sklearn` to be installed.
-- Executing training still requires `scikit-learn` to be available in the
-  runtime environment.
+Default output path:
 
-## Artefact outputs
+```text
+artifacts/ml/evidence_aware_training_dataset.csv
+```
 
-Running baseline training writes:
+## Training commands
 
-- model artefact file: `<model_version>.pkl`
-- metadata file: `<model_version>.json`
+Baseline training:
 
-The metadata currently includes:
+```bash
+docker compose exec -T web python manage.py train_escalation_model --seed 7 --size 500
+```
+
+Retraining wrapper:
+
+```bash
+docker compose exec -T web python manage.py retrain_baseline_model --seed 7 --rows 500
+```
+
+Current committed active version:
+
+```text
+retrain_baseline-logreg-v1-seed-7-rows-500
+```
+
+## Artifact layout
+
+Training writes versioned artifacts under:
+
+```text
+ml_artifacts/
+```
+
+Per model version:
+
+- `<model_version>.pkl`
+- `<model_version>.json`
+
+Committed example artifacts currently present:
+
+- `ml_artifacts/retrain_baseline-logreg-v1-seed-7-rows-500.pkl`
+- `ml_artifacts/retrain_baseline-logreg-v1-seed-7-rows-500.json`
+
+## Metadata contract
+
+Training metadata currently includes:
 
 - `model_version`
 - `feature_contract_version`
@@ -80,93 +104,55 @@ The metadata currently includes:
 - `metrics`
 - `trained_at`
 
-## Registry behavior
+The inference path requires `feature_contract_hash` to be present in metadata.
 
-The management command updates the committed active-model registry after a
-successful training run.
+## Inference flow
 
-The command writes the active model entry to:
+Runtime scoring path:
 
-- `ml/registry/model_registry.json`
+1. `returns/services/risk.py` requests a scoring result.
+2. `ml/services/scoring.py` loads the active registry entry and artifacts.
+3. `ml/features.extract_case_features(...)` builds the feature vector.
+4. The model returns a probability.
+5. The score is quantized to two decimal places.
+6. Labels are mapped with current thresholds:
+   - `>= 0.75` -> `high`
+   - `>= 0.45` -> `medium`
+   - otherwise -> `low`
+7. Reason codes are generated from the feature vector.
+8. The result is persisted as `RiskScore`.
 
-The current registry contract stores a single `active_model` object with:
+If the active artifact cannot be loaded safely, scoring falls back to the placeholder scorer in `ml/scoring.py`.
 
-- `version`
-- `model_type`
-- `contract_version`
-- `reason_code_schema_version`
-- `status`
+## Risk persistence
 
-Related file locations:
+The returns domain stores one `RiskScore` per case and updates that row on rescore.
 
-- training module: `ml/training/baseline.py`
-- training wrapper: `ml/training/train.py`
-- dataset wrapper: `ml/datasets/dataset.py`
-- training command: `ml/management/commands/train_escalation_model.py`
-- retrain command: `ml/management/commands/retrain_baseline_model.py`
-- dataset export command: `ml/management/commands/generate_training_dataset.py`
-- registry service: `ml/services/model_registry.py`
-- active model registry: `ml/registry/model_registry.json`
+Rescoring currently happens on:
 
-## How to run it currently
+- case creation
+- status update
+- document upload
 
-The baseline trainer can now be run through Django management commands.
+Each rescore emits a `risk_scored` audit event.
 
-Example:
+## Dependencies
 
-```bash
-python manage.py train_escalation_model --seed 7 --size 500
-```
+ML-related runtime packages currently listed in the repository:
 
-Docker equivalent:
-
-```bash
-docker compose exec -T web python manage.py train_escalation_model --seed 7 --size 500
-```
-
-Retrain wrapper example:
-
-```bash
-docker compose exec -T web python manage.py retrain_baseline_model --seed 7 --rows 500
-```
-
-Dataset export example:
-
-```bash
-docker compose exec -T web python manage.py generate_training_dataset --seed 7 --rows 300
-```
-
-The command:
-
-- trains the baseline model
-- writes the model artefact and metadata to the configured output directory
-- registers the trained model as the active model in
-  `ml/registry/model_registry.json`
-
-The retrain command registers a retrain-prefixed version such as
-`retrain_baseline-logreg-v1-seed-7-rows-500`.
-
-The trainer is also still available as an importable Python function. A minimal
-invocation looks like this:
-
-```bash
-python -c "from pathlib import Path; from ml.training.baseline import train_and_save_baseline_model; print(train_and_save_baseline_model(Path('tmp/ml_artifacts')))"
-```
+- `pandas`
+- `scikit-learn`
+- `joblib`
 
 ## Test coverage
 
-Baseline training coverage currently lives in:
+Relevant tests currently cover training, scoring, registry access, artifacts, features, and dataset generation, including:
 
 - `tests/test_baseline_training.py`
 - `tests/test_ml_training.py`
 - `tests/test_ml_management_commands.py`
-
-Those tests validate:
-
-- synthetic row reproducibility
-- seed sensitivity
-- metadata shape
-- stable metadata for repeated runs with the same inputs
-
-Training-dependent test cases skip cleanly when `sklearn` is unavailable in the
-runtime container.
+- `tests/test_model_registry.py`
+- `tests/test_artifact_scoring.py`
+- `tests/test_feature_contract.py`
+- `tests/test_ml_feature_extraction.py`
+- `tests/test_risk_dataset_generation.py`

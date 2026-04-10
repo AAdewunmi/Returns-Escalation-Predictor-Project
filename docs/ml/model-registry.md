@@ -1,40 +1,75 @@
 <!-- path: docs/ml/model-registry.md -->
-# ReturnHub Model Registry
+# Model Registry
 
-ReturnHub uses a committed model registry so scoring can resolve the active model version and validate contract metadata consistently.
+ReturnHub uses a committed JSON registry to point scoring and operational workflows at one active model version.
 
 ## Registry file
 
-`ml/registry/model_registry.json`
+Path:
 
-The active entry includes:
+```text
+ml/registry/model_registry.json
+```
 
-- `version`
-- `model_type`
-- `contract_version`
-- `reason_code_schema_version`
-- `status`
+Current structure:
 
-## Active model entry
+```json
+{
+  "active_model": {
+    "contract_version": "return-risk-sprint2-v1",
+    "model_type": "logistic_regression",
+    "reason_code_schema_version": "return-risk-reasons-sprint3-v1",
+    "status": "active",
+    "version": "retrain_baseline-logreg-v1-seed-7-rows-500"
+  }
+}
+```
 
-The current active entry is artifact-backed and points at a logistic-regression baseline, for example `retrain_baseline-logreg-v1-seed-7-rows-500` with `model_type = logistic_regression`.
+## Current active model
 
-This entry exists so the application can:
+- version: `retrain_baseline-logreg-v1-seed-7-rows-500`
+- model type: `logistic_regression`
+- contract version: `return-risk-sprint2-v1`
+- reason code schema version: `return-risk-reasons-sprint3-v1`
+- status: `active`
 
-- persist a stable `RiskScore`
-- attach a model version to predictions
-- enforce feature contract continuity
-- expose structured reason codes to ops users
-- preserve one explicit model pointer for inference and retraining workflows
+## How the registry is used
 
-## Contract boundaries
+The scoring path in `ml/services/scoring.py`:
 
-The registry entry must remain compatible with:
+- loads the active registry entry
+- resolves the expected `.pkl` artifact under `ml_artifacts/`
+- resolves the matching metadata `.json`
+- rejects loading when the registry, artifact, or metadata is missing or invalid
+
+The returns risk service then uses that scoring result to persist `returns.models.RiskScore`.
+
+## Registry boundaries
+
+The active entry must remain compatible with:
 
 - `ml/contracts/return_case_features.json`
+- `ml/features.py`
 - `ml/reason_codes.py`
 - `ml/services/model_registry.py`
 - `ml/services/scoring.py`
 - `returns/services/risk.py`
 
-Updating the active model version should not require changes to the API field names or `RiskScore` persistence shape.
+## Update paths
+
+The registry is updated by these commands:
+
+- `python manage.py train_escalation_model --seed 7 --size 500`
+- `python manage.py retrain_baseline_model --seed 7 --rows 500`
+
+The standard training command writes an active entry from `train_and_save_baseline_model(...)`.
+
+The retrain wrapper writes an active entry from `ml.training.train.train_and_persist(...)`.
+
+## Operational expectation
+
+Changing the active registry entry should not require API shape changes. The application expects the active model to preserve:
+
+- persisted `RiskScore` fields
+- reason-code schema compatibility
+- the committed feature-contract boundary
