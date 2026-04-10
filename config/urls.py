@@ -1,5 +1,5 @@
 # path: config/urls.py
-"""Root URL configuration for the ReturnHub project."""
+"""Project URL configuration for ReturnHub."""
 
 from django.conf import settings
 from django.conf.urls.static import static
@@ -11,13 +11,13 @@ handler404 = "ui.error_views.error_404"
 handler500 = "ui.error_views.error_500"
 
 urlpatterns = [
-    path("admin/", admin.site.urls),
     path("", include("ui.urls")),
+    path("", include("accounts.urls")),
+    path("ops/", include(("returns.urls.ops", "ops"), namespace="ops")),
     path("api/", include("api.urls")),
     path("api/analytics/", include("analytics.api.urls")),
     path("api/returns/", include("returns.api.urls")),
-    path("ops/", include(("returns.urls.ops", "ops"), namespace="ops")),
-    path("console/", include("console.urls")),
+    path("admin/", admin.site.urls),
 ]
 
 if settings.DEBUG:
