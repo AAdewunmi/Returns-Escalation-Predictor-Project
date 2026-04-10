@@ -4,13 +4,13 @@
 from django.urls import reverse
 from django.utils.http import url_has_allowed_host_and_scheme
 
-from apps.accounts.constants import (
+from accounts.constants import (
+    GROUP_NAMES,
     PRIMARY_ROLE_ORDER,
     SURFACE_ALLOWED_PREFIXES,
     SURFACE_CONSOLE_ROUTE_NAMES,
 )
-from apps.accounts.mixins import is_admin_user, user_has_surface_access, user_in_group
-from apps.accounts.constants import GROUP_NAMES
+from accounts.mixins import is_admin_user, user_has_surface_access, user_in_group
 
 
 def get_primary_surface(user):

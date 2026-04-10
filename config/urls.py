@@ -11,9 +11,10 @@ handler404 = "ui.error_views.error_404"
 handler500 = "ui.error_views.error_500"
 
 urlpatterns = [
-    path("", include("ui.urls")),
     path("", include("accounts.urls")),
+    path("", include("ui.urls")),
     path("ops/", include(("returns.urls.ops", "ops"), namespace="ops")),
+    path("console/", include("console.urls")),
     path("api/", include("api.urls")),
     path("api/analytics/", include("analytics.api.urls")),
     path("api/returns/", include("returns.api.urls")),
