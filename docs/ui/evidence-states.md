@@ -1,40 +1,96 @@
 <!-- path: docs/ui/evidence-states.md -->
-# Evidence UI states
+# Evidence States
 
-Sprint 4 introduces evidence as a reusable product surface. The UI should feel calm, operational, and trustworthy rather than like a generic file-upload widget.
+This document describes the document and evidence behavior currently implemented around the shared case detail page and the returns document APIs.
 
-## Primary components
+## Current surfaces
 
-The evidence workspace currently relies on five core components:
+Evidence-related UI appears in:
+
+- `/cases/{case_id}/`
+- `/ops/{case_id}/`
+- `GET /api/returns/{case_id}/documents/`
+- `POST /api/returns/{case_id}/documents/`
+
+## Current components
+
+The repository currently uses these evidence-oriented components:
 
 - document table
 - upload panel
-- risk summary
+- risk panel
 - timeline
-- form errors
+- form error rendering
 
-## State expectations
+## Empty state
 
-### Empty evidence state
+When no documents are visible for a case:
 
-Use a bordered empty panel with a concise explanation. Do not render empty tables. The message should explain that documents uploaded by customers, merchants, or ops will appear here in created order.
+- the page should render a stable empty state
+- the document region should not collapse awkwardly
+- copy should make it clear that uploads from permitted actors will appear here
 
-### Upload validation state
+## Upload success state
 
-Keep validation feedback local to the upload panel. Errors should use semantic alert styling and identify the field causing the problem.
+Server-rendered uploads on `/cases/{case_id}/documents/upload/` currently:
 
-### Success state
+- submit the form asynchronously
+- return JSON containing refreshed `upload_panel_html`
+- return JSON containing refreshed `document_table_html`
+- keep the success message local to the upload panel
 
-Keep the success message local to the upload panel and refresh the document table in place. The current case detail page submits the upload form with `fetch(...)` and swaps only the upload panel and document table fragments from the JSON response.
+Expected success copy in the current flow:
 
-### Forbidden state
+```text
+Document uploaded successfully.
+```
 
-If a customer or merchant does not own the case, the GET case workspace should return `403`. If the authenticated actor lacks an upload-capable role but is otherwise allowed to view the page, render the workspace without the upload form and show an “Actor role unavailable” fallback in the panel. Unauthorized upload POST requests should return `403` with refreshed panel HTML, not a generic server error.
+## Validation and workflow-error state
 
-### No-risk state
+If form validation fails or the document service rejects the upload:
 
-Cases without a risk score should still show the risk panel. Render “No score yet” with explanatory supporting copy so the layout remains stable.
+- the upload panel is re-rendered with local errors
+- the surrounding page shell remains intact
+- the response uses `400`
 
-## Responsive notes
+## Forbidden state
 
-The evidence page must stack to a single column on smaller breakpoints. The risk panel should become full width. Tables should retain readability through horizontal scrolling rather than compressing columns into illegible text.
+Current forbidden behaviors:
+
+- unrelated customers or merchants cannot access another actor's case data
+- upload attempts without a valid actor role return `403`
+- customers can only upload `evidence`
+- merchants can only upload `response`
+
+For the API routes, permission failures also return `403` with a structured error payload.
+
+## Visibility state
+
+Document visibility is role-aware:
+
+- ops and admins see all documents for the case
+- customers see only documents with `visible_to_customer=True`
+- merchants see only documents with `visible_to_merchant=True`
+
+Default visibility on upload:
+
+- `evidence`: customer-visible, merchant-hidden
+- `response`: merchant-visible, customer-hidden
+
+## Risk-adjacent state
+
+Evidence uploads trigger a best-effort rescore. On ops-facing surfaces, the risk panel should remain present even when no persisted score exists yet.
+
+Fallback copy expectation:
+
+```text
+No score yet
+```
+
+## Responsive behavior
+
+Evidence-related layouts should continue to:
+
+- stack to one column on narrow screens
+- preserve upload controls and error visibility
+- allow document tables to scroll horizontally when needed

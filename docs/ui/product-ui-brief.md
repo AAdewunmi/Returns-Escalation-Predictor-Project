@@ -1,22 +1,89 @@
-# path: docs/ui/product-ui-brief.md
-# ReturnHub product UI brief
+# ReturnHub Product UI Brief
 
-ReturnHub should feel calm, capable, and operational from the first click. The public landing page should position the product as a returns workflow system for retail operations rather than a developer demo. Copy should be direct, practical, and trustworthy.
+This brief reflects the product surfaces that currently exist in the repository.
 
-The visual tone should avoid heavy gradients, novelty dashboards, or crowded metric walls. Surfaces should feel structured and deliberate, with clear hierarchy between summary content, next actions, and supporting detail.
+## Product stance
 
-## Primary audiences
+ReturnHub is not just an API demo. The shipped UI already exposes role-aware workflow surfaces for public entry, dashboards, triage, and case review. The design goal is to make return operations legible without hiding the shared service-layer behavior underneath.
 
-The first public surface has four immediate audiences. Admin users need platform management entry. Ops users need queue and triage entry. Customers need a simple way to track and support their own return cases. Merchants need a role-specific surface for response handling.
+## Current audiences
 
-## Page hierarchy
+The repository currently serves four product audiences:
 
-The landing page should open with product framing, one concise supporting sentence, and four role entry actions. Below that, the page should explain the workflow in a few operational steps and show product principles such as auditability, predictable case handling, and clear ownership boundaries.
+- admins
+- ops users
+- customers
+- merchants
 
-## Reusable shell expectations
+## Current route map
 
-Every future authenticated surface should inherit a consistent shell with a top navigation area, alert region, constrained content width, and predictable spacing. Dense tables, status pills, empty states, pagination, document tables, upload panels, timeline panels, and hero shells should be reusable components rather than one-off template fragments.
+Public:
 
-## Accessibility expectations
+- `/`
+- `/login/admin/`
+- `/login/ops/`
+- `/login/customer/`
+- `/login/merchant/`
 
-Colour contrast must remain readable in light mode. Focus states must be visible. Semantic headings and list markup should be used consistently. Actions must be reachable by keyboard. Decorative visuals should never carry exclusive meaning.
+Authenticated dashboards:
+
+- `/console/admin/`
+- `/console/ops/`
+- `/console/customer/`
+- `/console/merchant/`
+
+Workflow pages:
+
+- `/ops/`
+- `/ops/{case_id}/`
+- `/cases/{case_id}/`
+
+## Surface intent by audience
+
+Admin:
+
+- monitor overall system activity through the admin console shell
+- retain access to Django admin for low-level administration
+
+Ops:
+
+- work from a prioritized queue
+- inspect risk, notes, events, and evidence in one case-detail workspace
+- update status, request information, and add internal notes inline
+
+Customer:
+
+- access only their own cases
+- view case detail and visible documents
+- upload evidence to their own cases
+
+Merchant:
+
+- access only merchant-linked cases
+- review shared workflow context
+- upload response documents to linked cases
+
+## Current UI priorities
+
+The current repository emphasizes:
+
+- clear route boundaries by role
+- reusable shell structure across pages
+- workflow-first layouts over decorative dashboards
+- inline partial refresh for ops actions and document uploads
+- stable presentation of audit history, evidence, and risk
+
+## UX constraints from current implementation
+
+- risk is intentionally hidden from customer and merchant detail payloads
+- document upload options depend on actor role
+- ops queue and case detail must stay useful under dense operational data
+- error states should return branded pages or local panel-level validation instead of raw framework output where possible
+
+## Near-term documentation baseline
+
+Any future UI documentation should continue to treat these implemented surfaces as the source of truth:
+
+- landing and role-entry pages are real product routes, not placeholders in the docs
+- `/ops/` and `/ops/{case_id}/` are the main ops workflow surfaces
+- `/cases/{case_id}/` is the shared role-aware case workspace

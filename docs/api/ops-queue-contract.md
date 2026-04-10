@@ -1,13 +1,9 @@
 <!-- path: docs/api/ops-queue-contract.md -->
 # Ops Queue Contract
 
-## Purpose
+This document describes the queue contract currently shared by the server-rendered ops surface at `/ops/` and the DRF queue endpoint at `/api/returns/queue/`.
 
-This contract defines the intended query, ordering, and pagination behaviour for the ReturnHub ops queue based on the current project schema. It should remain aligned with the shared service-layer contract used by any future API or server-rendered ops queue surface.
-
-## Filters
-
-Supported query parameters:
+## Supported query parameters
 
 - `status`
 - `priority`
@@ -15,7 +11,9 @@ Supported query parameters:
 - `search`
 - `page`
 
-Current status values in the project:
+## Accepted values
+
+Statuses:
 
 - `submitted`
 - `in_review`
@@ -24,49 +22,99 @@ Current status values in the project:
 - `approved`
 - `rejected`
 
-Current priority values in the project:
+Priorities:
 
 - `low`
 - `medium`
 - `high`
 - `urgent`
 
-## Ordering rules
+Risk labels:
 
-Ordering is explicit and stable, and is applied before pagination:
+- `low`
+- `medium`
+- `high`
 
-1. SLA-breached cases first
-2. Higher priority before lower priority
-3. Earlier `sla_due_at` first
-4. Earlier `created_at` first
-5. `id` as the final tiebreaker
+Unknown `risk_label` values are normalized away and do not apply a filter.
 
-## Search rules
+## Search behavior
 
-Search is applied before pagination and can match:
+`search` is trimmed and applied before pagination. It matches:
 
 - `order_reference`
-- customer name
+- customer first name
+- customer last name
 - customer email
 - merchant display name
 
-## Pagination contract
+## Ordering
 
-- query parameter: `page`
-- page size: `15`
-- missing page: page `1`
-- invalid or non-integer page: page `1`
-- page less than or equal to zero: page `1`
+The queue is built in `returns.services.queue.build_queue_queryset(...)` and ordered explicitly:
 
-## Filter preservation
+1. SLA-breached active cases first
+2. higher priority before lower priority
+3. earlier `sla_due_at`
+4. earlier `created_at`
+5. ascending `id`
 
-Pagination links must preserve all active filters except the page number itself.
+SLA breach ranking is applied only to active cases in:
+
+- `submitted`
+- `in_review`
+- `waiting_customer`
+- `waiting_merchant`
 
 ## Risk annotation
 
-Queue items read the latest persisted `RiskScore` record for each `ReturnCase` and expose:
+Queue rows do not score cases inline. They annotate each case from the latest persisted `RiskScore` record and expose:
 
 - `current_risk_score`
 - `current_risk_label`
 
-The queue does not calculate risk inline. It only consumes persisted output from the scoring workflow stored on `returns.models.RiskScore`.
+If no persisted risk score exists, those fields are `null`.
+
+## Pagination
+
+Shared queue pagination contract:
+
+- query parameter: `page`
+- page size: `15`
+- missing page: `1`
+- non-integer page: `1`
+- page `<= 0`: `1`
+- out-of-range page in the server-rendered surface resolves to the last page through shared pagination utilities
+
+Pagination links preserve active filters except for `page`.
+
+## Response shape
+
+The API queue response currently returns:
+
+- `count`
+- `next`
+- `previous`
+- `results`
+- `filters`
+- `summary`
+
+`filters` echoes:
+
+- `status`
+- `priority`
+- `risk_label`
+- `search`
+- `page`
+
+`summary` includes:
+
+- `total`
+- `submitted`
+- `waiting_customer`
+- `waiting_merchant`
+- `in_review`
+- `approved`
+- `rejected`
+
+## Access control
+
+Only authenticated ops and admin users may access the queue API or the `/ops/` queue surface.

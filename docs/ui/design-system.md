@@ -1,22 +1,91 @@
-# path: docs/ui/design-system.md
-# ReturnHub design system foundation
+# ReturnHub Design System
 
-## Tone
+This document describes the design-system baseline currently represented by the templates and styles in `static/css/tokens.css`, `static/css/app.css`, and the shared template partials.
 
-Use a retail-operations style that feels quiet, reliable, and clear. The interface should favour legibility over decoration and trust over novelty.
+## Product tone
 
-## Core tokens
+The UI should feel:
 
-Surface colours should distinguish page background, cards, and muted support areas. Accent colour should be used for primary action and active navigation. Success, warning, and danger colours should be semantic and reserved for state communication.
+- operational
+- clear
+- trustworthy
+- calm under dense workflow content
 
-Typography should use a restrained scale with clear heading, section, body, and helper text sizes. Cards should use soft borders, moderate radius, and restrained elevation. Dense tables should prioritise scan speed and row separation.
+The codebase currently favors a server-rendered application shell with reusable partials over isolated one-off page designs.
 
-## Component direction
+## Surface types
 
-Navigation should remain slim and readable. Status pills should be compact and semantically coloured. Empty states should provide context plus one sensible next step. Flash messages should appear near the top of the content region and should not shift layout aggressively. Case-local upload success and validation states may also render inside the upload panel when only one section of the page is refreshed.
+The current UI system supports three surface families:
 
-Shared partials should carry repeated markup for console hero shells, recent-case cards, visual timelines, document tables, risk summaries, upload panels, and form errors so role-specific templates do not duplicate structure.
+- public marketing and role-entry pages
+- authenticated role dashboards
+- workflow pages for ops queue, ops case detail, and shared case detail
 
-## Responsive rules
+## Shared shell expectations
 
-Public surfaces should stack cleanly on mobile while preserving primary actions above the fold. Multi-column layouts should collapse into one column without losing heading hierarchy or action clarity.
+The application shell is expected to provide:
+
+- consistent ReturnHub branding
+- predictable page titles
+- top-level navigation
+- flash-message placement near the top of content
+- responsive content width and spacing
+
+Template-level shell metadata is provided by `common.context_processors.app_shell`.
+
+## Reusable components in the repository
+
+Current shared partials include patterns for:
+
+- app navigation
+- console hero shell
+- recent-case cards
+- queue summary cards
+- queue and filter bars
+- status badges
+- risk badges
+- risk summary panels
+- document tables
+- upload panels
+- notes panels
+- note lists and forms
+- timelines
+- empty states
+- pagination
+- request-info panels
+
+Ops-specific partials mirror those same patterns for the dedicated `/ops/` surfaces.
+
+## Data-density rules
+
+The current product surface is intentionally table- and panel-oriented. Design decisions should preserve:
+
+- fast scanning in queue tables
+- visible status and priority signals
+- stable placement for notes, events, and documents
+- local success and validation feedback instead of global page disruption
+
+## State styling rules
+
+- status pills and badges should carry semantic meaning but remain compact
+- risk should always be visible as a dedicated panel on ops-facing case detail
+- success and validation feedback for uploads should stay in the upload panel
+- empty states should explain the absence of data and the next likely action
+
+## Responsive behavior
+
+Current templates are expected to:
+
+- stack multi-column layouts on smaller screens
+- keep queue and document tables readable through overflow handling rather than over-compression
+- preserve visible headings, action buttons, and status context on mobile widths
+
+## Accessibility baseline
+
+Documentation and templates should continue to assume:
+
+- semantic headings
+- visible focus states
+- readable color contrast
+- keyboard-accessible actions
+- text labels instead of color-only meaning
