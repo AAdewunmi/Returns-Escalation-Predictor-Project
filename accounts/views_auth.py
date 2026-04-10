@@ -43,9 +43,9 @@ class AdminLoginView(SurfaceLoginView):
 
     template_name = "auth/login_admin.html"
     surface = "admin"
-    surface_title = "Admin access"
+    surface_title = "Admin surface"
     surface_description = (
-        "Use the admin surface to manage platform configuration and open the Django admin."
+        "Administration entry is reserved and branded."
     )
 
 
@@ -54,9 +54,9 @@ class OpsLoginView(SurfaceLoginView):
 
     template_name = "auth/login_ops.html"
     surface = "ops"
-    surface_title = "Ops access"
+    surface_title = "Ops surface"
     surface_description = (
-        "Use the ops surface to triage returns, review events, and move cases through workflow."
+        "Ops entry is reserved for queue-driven work."
     )
 
 
@@ -65,9 +65,9 @@ class CustomerLoginView(SurfaceLoginView):
 
     template_name = "auth/login_customer.html"
     surface = "customer"
-    surface_title = "Customer access"
+    surface_title = "Customer surface"
     surface_description = (
-        "Use the customer portal to follow case status and upload supporting evidence."
+        "Customer entry is reserved for case tracking."
     )
 
 
@@ -76,7 +76,7 @@ class MerchantLoginView(SurfaceLoginView):
 
     template_name = "auth/login_merchant.html"
     surface = "merchant"
-    surface_title = "Merchant access"
+    surface_title = "Merchant surface"
     surface_description = (
-        "Use the merchant portal to review return cases related to your account and respond."
+        "Merchant entry is reserved for linked case responses."
     )
