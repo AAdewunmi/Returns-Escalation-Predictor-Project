@@ -4,10 +4,19 @@ from __future__ import annotations
 
 import pytest
 from django.contrib.auth.models import AnonymousUser, Group
+from django.core.exceptions import PermissionDenied
+from django.http import HttpResponse
 from django.test import RequestFactory
 from django.urls import reverse
+from django.views import View
 
-from accounts.mixins import is_admin_user, user_has_surface_access, user_in_group
+from accounts.mixins import (
+    OpsSurfaceMixin,
+    SurfaceAccessMixin,
+    is_admin_user,
+    user_has_surface_access,
+    user_in_group,
+)
 from accounts.services.surface_redirects import (
     get_primary_surface,
     resolve_post_login_url,
@@ -17,6 +26,29 @@ from accounts.views_auth import OpsLoginView
 from tests.factories import UserFactory
 
 pytestmark = pytest.mark.django_db
+
+
+class DummySurfaceView(SurfaceAccessMixin, View):
+    """Minimal view for exercising the shared surface access dispatch logic."""
+
+    required_surface = "ops"
+
+    def get(self, request, *args, **kwargs):
+        return HttpResponse("ok")
+
+
+class MissingSurfaceView(SurfaceAccessMixin, View):
+    """Minimal view with no required surface for misconfiguration tests."""
+
+    def get(self, request, *args, **kwargs):
+        return HttpResponse("ok")
+
+
+class DummyOpsSurfaceView(OpsSurfaceMixin, View):
+    """Minimal ops view for subclass coverage."""
+
+    def get(self, request, *args, **kwargs):
+        return HttpResponse("ok")
 
 
 def add_group(user, group_name: str) -> None:
@@ -40,6 +72,20 @@ def test_is_admin_user_returns_true_for_superuser() -> None:
     assert is_admin_user(admin_user) is True
 
 
+def test_is_admin_user_returns_false_for_authenticated_non_admin() -> None:
+    """Authenticated users without admin access should not count as admins."""
+
+    user = UserFactory()
+
+    assert is_admin_user(user) is False
+
+
+def test_is_admin_user_returns_false_for_anonymous_user() -> None:
+    """Anonymous users should never count as admins."""
+
+    assert is_admin_user(AnonymousUser()) is False
+
+
 def test_user_has_surface_access_for_matching_role() -> None:
     """Users should access only the surface that matches their role."""
 
@@ -57,6 +103,20 @@ def test_user_has_surface_access_returns_false_for_unknown_role() -> None:
     add_group(ops_user, "Ops")
 
     assert user_has_surface_access(ops_user, "unknown") is False
+
+
+def test_user_has_surface_access_returns_true_for_superuser() -> None:
+    """Superusers should be allowed onto every surface."""
+
+    admin_user = UserFactory(is_superuser=True, is_staff=True)
+
+    assert user_has_surface_access(admin_user, "ops") is True
+
+
+def test_user_has_surface_access_returns_false_for_anonymous_user() -> None:
+    """Anonymous users should never satisfy surface access checks."""
+
+    assert user_has_surface_access(AnonymousUser(), "ops") is False
 
 
 def test_get_primary_surface_prefers_first_matching_role() -> None:
@@ -148,3 +208,65 @@ def test_ops_login_view_context_exposes_surface_content() -> None:
     assert context["surface"] == "ops"
     assert context["surface_title"] == "Ops surface"
     assert context["surface_description"] == "Ops entry is reserved for queue-driven work."
+
+
+def test_surface_access_mixin_redirects_anonymous_users_to_surface_login() -> None:
+    """Anonymous requests should be redirected to the configured surface login."""
+
+    request = RequestFactory().get("/console/ops/")
+    request.user = AnonymousUser()
+
+    response = DummySurfaceView.as_view()(request)
+
+    assert response.status_code == 302
+    assert response.url == f"{reverse('accounts:login_ops')}?next=/console/ops/"
+
+
+def test_surface_access_mixin_raises_for_missing_required_surface() -> None:
+    """Surface views must declare a required surface."""
+
+    request = RequestFactory().get("/console/ops/")
+    request.user = AnonymousUser()
+
+    with pytest.raises(ValueError, match="required_surface must be set"):
+        MissingSurfaceView.as_view()(request)
+
+
+def test_surface_access_mixin_raises_permission_denied_for_wrong_role() -> None:
+    """Authenticated users without surface access should receive a 403 contract."""
+
+    customer_user = UserFactory()
+    add_group(customer_user, "Customer")
+    request = RequestFactory().get("/console/ops/")
+    request.user = customer_user
+
+    with pytest.raises(PermissionDenied, match="do not have access"):
+        DummySurfaceView.as_view()(request)
+
+
+def test_surface_access_mixin_allows_authorized_user_through_dispatch() -> None:
+    """Authorized users should reach the wrapped view."""
+
+    ops_user = UserFactory()
+    add_group(ops_user, "Ops")
+    request = RequestFactory().get("/console/ops/")
+    request.user = ops_user
+
+    response = DummySurfaceView.as_view()(request)
+
+    assert response.status_code == 200
+    assert response.content == b"ok"
+
+
+def test_ops_surface_mixin_inherits_ops_surface_contract() -> None:
+    """Concrete surface mixins should enforce the same access behavior."""
+
+    ops_user = UserFactory()
+    add_group(ops_user, "Ops")
+    request = RequestFactory().get("/console/ops/")
+    request.user = ops_user
+
+    response = DummyOpsSurfaceView.as_view()(request)
+
+    assert response.status_code == 200
+    assert response.content == b"ok"
