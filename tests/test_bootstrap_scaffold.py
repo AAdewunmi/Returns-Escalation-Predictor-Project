@@ -16,7 +16,7 @@ def test_landing_route_renders_bootstrap_page(client):
     response = client.get(reverse("landing"))
 
     assert response.status_code == 200
-    assert b"ReturnHub bootstrap is live." in response.content
+    assert b"Resolve return cases faster with one operational system of record." in response.content
 
 
 def test_root_url_resolves_to_bootstrap_landing_view():

@@ -8,4 +8,4 @@ def test_bootstrap_landing_page_renders(client) -> None:
     response = client.get(reverse("landing"))
 
     assert response.status_code == 200
-    assert b"ReturnHub bootstrap is live." in response.content
+    assert b"Resolve return cases faster with one operational system of record." in response.content
