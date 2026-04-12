@@ -73,7 +73,7 @@
                 <td>{{ case.merchant.display_name|default:"Unknown merchant" }}</td>
                 <td>{{ case.created_at|date:"j M Y" }}</td>
                 <td class="text-end">
-                  <a class="btn btn-sm btn-outline-dark" href="{% url 'customer_portal:case_detail' pk=case.pk %}">
+                  <a class="btn btn-sm btn-outline-dark" href="{% url 'customer_portal:case_detail' case_id=case.pk %}">
                     Open case
                   </a>
                 </td>

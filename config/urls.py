@@ -13,6 +13,7 @@ handler500 = "ui.error_views.error_500"
 urlpatterns = [
     path("", include("accounts.urls")),
     path("", include("ui.urls")),
+    path("customer/", include(("returns.urls_customer", "customer_portal"), namespace="customer_portal")),
     path("ops/", include(("returns.urls.ops", "ops"), namespace="ops")),
     path("console/", include("console.urls")),
     path("api/", include("api.urls")),
