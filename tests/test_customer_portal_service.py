@@ -13,7 +13,12 @@ from returns.services.customer_portal import (
     get_customer_case_for_user,
     upload_customer_evidence,
 )
-from tests.factories import CaseEventFactory, EvidenceDocumentFactory, ReturnCaseFactory, UserFactory
+from tests.factories import (
+    CaseEventFactory,
+    EvidenceDocumentFactory,
+    ReturnCaseFactory,
+    UserFactory,
+)
 
 
 def add_group(user, group_name: str) -> None:
