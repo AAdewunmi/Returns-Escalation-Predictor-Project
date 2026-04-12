@@ -57,7 +57,11 @@ def test_customer_case_detail_view_renders_for_linked_customer(client, db) -> No
     assert b"Document actions" in response.content
 
 
-def test_customer_case_detail_post_redirects_after_successful_upload(client, db, monkeypatch) -> None:
+def test_customer_case_detail_post_redirects_after_successful_upload(
+    client,
+    db,
+    monkeypatch,
+) -> None:
     """Valid customer uploads should redirect back to the customer case detail page."""
 
     return_case = ReturnCaseFactory(order_reference="CUST-UPLOAD-001")
@@ -88,7 +92,10 @@ def test_customer_case_detail_post_redirects_after_successful_upload(client, db,
     )
 
     assert response.status_code == 302
-    assert response.url == reverse("customer_portal:case_detail", kwargs={"case_id": return_case.pk})
+    assert response.url == reverse(
+        "customer_portal:case_detail",
+        kwargs={"case_id": return_case.pk},
+    )
     assert captured == {
         "case": return_case,
         "uploaded_by": return_case.customer.user,
