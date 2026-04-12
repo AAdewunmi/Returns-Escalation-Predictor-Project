@@ -1,0 +1,92 @@
+<!--templates/customer/case_detail.html-->
+{% extends "base.html" %}
+
+{% block title %}Customer case detail | ReturnHub{% endblock %}
+
+{% block content %}
+<section class="container py-4">
+    <div class="mb-4">
+        <a href="{% url 'customer_portal:case_list' %}" class="btn btn-link px-0">Back to cases</a>
+        <p class="text-uppercase text-muted small fw-semibold mb-2">Customer case</p>
+        <h1 class="h2 mb-2">{{ case.reference|default:case.pk }}</h1>
+        <p class="text-muted mb-0">
+            Review the latest status, supporting documents, and audit activity for this return.
+        </p>
+    </div>
+
+    <div class="row g-4">
+        <div class="col-12 col-xl-8">
+            <div class="card app-card mb-4">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Case summary</h2>
+                    <dl class="row mb-0">
+                        <dt class="col-sm-4">Status</dt>
+                        <dd class="col-sm-8">{% include "partials/_status_badge.html" with value=case.status %}</dd>
+
+                        <dt class="col-sm-4">Priority</dt>
+                        <dd class="col-sm-8">{{ case.priority|title }}</dd>
+
+                        <dt class="col-sm-4">Merchant</dt>
+                        <dd class="col-sm-8">{{ case.merchant.name }}</dd>
+
+                        <dt class="col-sm-4">Reason</dt>
+                        <dd class="col-sm-8">{{ case.return_reason }}</dd>
+
+                        <dt class="col-sm-4">Message</dt>
+                        <dd class="col-sm-8">{{ case.customer_message }}</dd>
+                    </dl>
+                </div>
+            </div>
+
+            <div class="card app-card">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Documents</h2>
+                    {% if case.documents.all %}
+                        <div class="list-group list-group-flush">
+                            {% for document in case.documents.all %}
+                                <div class="list-group-item px-0">
+                                    <div class="d-flex justify-content-between align-items-start gap-3">
+                                        <div>
+                                            <p class="fw-semibold mb-1">{{ document.original_filename }}</p>
+                                            <p class="text-muted mb-0">
+                                                {{ document.kind|title }} · {{ document.created_at|date:"d M Y H:i" }}
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        {% include "partials/_empty_state.html" with title="No documents yet" body="Upload a file if support has asked for more evidence." %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <div class="col-12 col-xl-4">
+            <div class="card app-card mb-4">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Upload evidence</h2>
+                    {% include "customer/partials/_upload_form.html" with form=form %}
+                </div>
+            </div>
+
+            <div class="card app-card">
+                <div class="card-body">
+                    <h2 class="h5 mb-3">Recent activity</h2>
+                    <ul class="list-unstyled mb-0">
+                        {% for event in case.events.all|slice:":8" %}
+                            <li class="pb-3 mb-3 border-bottom">
+                                <p class="fw-semibold mb-1">{{ event.message }}</p>
+                                <p class="text-muted small mb-0">{{ event.created_at|date:"d M Y H:i" }}</p>
+                            </li>
+                        {% empty %}
+                            <li class="text-muted">No activity has been recorded yet.</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
