@@ -23,11 +23,17 @@ def test_customer_portal_routes_resolve_to_live_views() -> None:
 
     assert reverse("customer_portal:case_list") == "/customer/"
     assert resolve("/customer/").view_name == "customer_portal:case_list"
-    assert reverse("customer_portal:case_detail", kwargs={"case_id": 42}) == "/customer/42/"
+    assert reverse(
+        "customer_portal:case_detail",
+        kwargs={"case_id": 42},
+    ) == "/customer/42/"
     assert resolve("/customer/42/").view_name == "customer_portal:case_detail"
 
 
-def test_customer_case_list_paginates_and_hides_other_customers(client, db) -> None:
+def test_customer_case_list_paginates_and_hides_other_customers(
+    client,
+    db,
+) -> None:
     """Customers should see only their own cases across page 1 and page 2."""
 
     first_case = ReturnCaseFactory(order_reference="CUST-LIST-001")
@@ -55,7 +61,10 @@ def test_customer_case_list_paginates_and_hides_other_customers(client, db) -> N
     assert b"CUST-OTHER-001" not in response_page_2.content
 
 
-def test_customer_case_list_invalid_and_out_of_range_pages_fall_back_cleanly(client, db) -> None:
+def test_customer_case_list_invalid_and_out_of_range_pages_fall_back_cleanly(
+    client,
+    db,
+) -> None:
     """Invalid pages should resolve to page 1 and out-of-range values to the last page."""
 
     first_case = ReturnCaseFactory(order_reference="CUST-PAGE-001")
@@ -108,7 +117,13 @@ def test_customer_case_detail_post_redirects_after_successful_upload(
 
     captured = {}
 
-    def fake_upload_customer_evidence(*, return_case, uploaded_by, uploaded_file, description):
+    def fake_upload_customer_evidence(
+        *,
+        return_case,
+        uploaded_by,
+        uploaded_file,
+        description,
+    ):
         captured["case"] = return_case
         captured["uploaded_by"] = uploaded_by
         captured["filename"] = uploaded_file.name
