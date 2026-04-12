@@ -1,0 +1,22 @@
+<!--templates/customer/partials/_upload_form.html-->
+<form method="post" enctype="multipart/form-data" novalidate>
+    {% csrf_token %}
+
+    <div class="mb-3">
+        <label class="form-label" for="{{ form.evidence_file.id_for_label }}">{{ form.evidence_file.label }}</label>
+        {{ form.evidence_file }}
+        {% if form.evidence_file.errors %}
+            <div class="invalid-feedback d-block">{{ form.evidence_file.errors|join:", " }}</div>
+        {% endif %}
+    </div>
+
+    <div class="mb-3">
+        <label class="form-label" for="{{ form.description.id_for_label }}">{{ form.description.label }}</label>
+        {{ form.description }}
+        {% if form.description.errors %}
+            <div class="invalid-feedback d-block">{{ form.description.errors|join:", " }}</div>
+        {% endif %}
+    </div>
+
+    <button type="submit" class="btn btn-primary w-100">Upload evidence</button>
+</form>
