@@ -23,10 +23,13 @@ def test_customer_portal_routes_resolve_to_live_views() -> None:
 
     assert reverse("customer_portal:case_list") == "/customer/"
     assert resolve("/customer/").view_name == "customer_portal:case_list"
-    assert reverse(
-        "customer_portal:case_detail",
-        kwargs={"case_id": 42},
-    ) == "/customer/42/"
+    assert (
+        reverse(
+            "customer_portal:case_detail",
+            kwargs={"case_id": 42},
+        )
+        == "/customer/42/"
+    )
     assert resolve("/customer/42/").view_name == "customer_portal:case_detail"
 
 
@@ -185,14 +188,20 @@ def test_customer_can_upload_evidence_to_owned_case(client, db, monkeypatch) -> 
     )
 
     assert response.status_code == 302
-    assert EvidenceDocument.objects.filter(
-        return_case=return_case,
-        kind=EvidenceDocument.DocumentKind.EVIDENCE,
-    ).count() == 1
-    assert CaseEvent.objects.filter(
-        return_case=return_case,
-        event_type="document_uploaded",
-    ).count() == 1
+    assert (
+        EvidenceDocument.objects.filter(
+            return_case=return_case,
+            kind=EvidenceDocument.DocumentKind.EVIDENCE,
+        ).count()
+        == 1
+    )
+    assert (
+        CaseEvent.objects.filter(
+            return_case=return_case,
+            event_type="document_uploaded",
+        ).count()
+        == 1
+    )
 
 
 def test_customer_case_detail_post_renders_errors_for_invalid_upload(client, db) -> None:
@@ -221,9 +230,7 @@ def test_customer_cannot_open_another_customers_case(client, db) -> None:
     add_group(other_case.customer.user, "customer")
 
     client.force_login(own_case.customer.user)
-    response = client.get(
-        reverse("customer_portal:case_detail", kwargs={"case_id": other_case.pk})
-    )
+    response = client.get(reverse("customer_portal:case_detail", kwargs={"case_id": other_case.pk}))
 
     assert own_case.customer.pk != other_case.customer.pk
     assert response.status_code == 404
