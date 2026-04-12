@@ -1,92 +1,73 @@
-<!--templates/customer/case_detail.html-->
+<!-- path: templates/customer/case_detail.html -->
 {% extends "base.html" %}
 
-{% block title %}Customer case detail | ReturnHub{% endblock %}
+{% block title %}{{ case.order_reference }} | ReturnHub{% endblock %}
+{% block page_header %}{% endblock %}
 
 {% block content %}
-<section class="container py-4">
-    <div class="mb-4">
-        <a href="{% url 'customer_portal:case_list' %}" class="btn btn-link px-0">Back to cases</a>
-        <p class="text-uppercase text-muted small fw-semibold mb-2">Customer case</p>
-        <h1 class="h2 mb-2">{{ case.reference|default:case.pk }}</h1>
-        <p class="text-muted mb-0">
-            Review the latest status, supporting documents, and audit activity for this return.
+  <section class="rh-card rh-hero mb-4">
+    <div class="rh-hero-grid">
+      <div class="rh-hero-copy">
+        <nav aria-label="Breadcrumb">
+          <ol class="breadcrumb mb-2">
+            <li class="breadcrumb-item"><a href="{% url 'customer_portal:case_list' %}">Customer portal</a></li>
+            <li class="breadcrumb-item active" aria-current="page">{{ case.order_reference }}</li>
+          </ol>
+        </nav>
+        <div class="rh-kicker">Customer Case Workspace</div>
+        <h1>{{ case.order_reference }}</h1>
+        <p class="rh-hero-lead">
+          Review the current workflow status, visible documents, and append-only case activity for this return.
         </p>
+        <div class="rh-trust-row" aria-label="Customer case summary signals">
+          <span class="rh-trust-item">{% include "partials/_status_badge.html" with status=case.status %}</span>
+          <span class="rh-trust-item">{{ case.item_category|title }}</span>
+          <span class="rh-trust-item">{{ case.delivery_date }}</span>
+        </div>
+      </div>
+      <aside aria-label="Case summary">
+        <section class="rh-card">
+          <div class="rh-kicker">Case Summary</div>
+          <h2 class="h4">Current return details</h2>
+          <dl class="row mb-0">
+            <dt class="col-sm-5">Priority</dt>
+            <dd class="col-sm-7">{{ case.priority|title }}</dd>
+
+            <dt class="col-sm-5">Merchant</dt>
+            <dd class="col-sm-7">{{ case.merchant.display_name|default:"Unknown merchant" }}</dd>
+
+            <dt class="col-sm-5">Reason</dt>
+            <dd class="col-sm-7">{{ case.return_reason|title }}</dd>
+
+            <dt class="col-sm-5">Customer note</dt>
+            <dd class="col-sm-7">{{ case.customer_message|default:"No customer note provided." }}</dd>
+          </dl>
+        </section>
+      </aside>
+    </div>
+  </section>
+
+  <div class="row g-4">
+    <div class="col-12 col-xl-8">
+      <section class="rh-card mb-4">
+        <div class="rh-section-heading mb-3">
+          <div class="rh-kicker">Documents</div>
+          <h2>Customer-visible evidence and linked case files.</h2>
+        </div>
+        {% include "partials/_document_table.html" with documents=case.documents.all %}
+      </section>
+
+      <section class="rh-card">
+        <div class="rh-section-heading mb-3">
+          <div class="rh-kicker">Timeline</div>
+          <h2>Append-only case history for the current return.</h2>
+        </div>
+        {% include "partials/_timeline.html" with events=case.events.all %}
+      </section>
     </div>
 
-    <div class="row g-4">
-        <div class="col-12 col-xl-8">
-            <div class="card app-card mb-4">
-                <div class="card-body">
-                    <h2 class="h5 mb-3">Case summary</h2>
-                    <dl class="row mb-0">
-                        <dt class="col-sm-4">Status</dt>
-                        <dd class="col-sm-8">{% include "partials/_status_badge.html" with value=case.status %}</dd>
-
-                        <dt class="col-sm-4">Priority</dt>
-                        <dd class="col-sm-8">{{ case.priority|title }}</dd>
-
-                        <dt class="col-sm-4">Merchant</dt>
-                        <dd class="col-sm-8">{{ case.merchant.name }}</dd>
-
-                        <dt class="col-sm-4">Reason</dt>
-                        <dd class="col-sm-8">{{ case.return_reason }}</dd>
-
-                        <dt class="col-sm-4">Message</dt>
-                        <dd class="col-sm-8">{{ case.customer_message }}</dd>
-                    </dl>
-                </div>
-            </div>
-
-            <div class="card app-card">
-                <div class="card-body">
-                    <h2 class="h5 mb-3">Documents</h2>
-                    {% if case.documents.all %}
-                        <div class="list-group list-group-flush">
-                            {% for document in case.documents.all %}
-                                <div class="list-group-item px-0">
-                                    <div class="d-flex justify-content-between align-items-start gap-3">
-                                        <div>
-                                            <p class="fw-semibold mb-1">{{ document.original_filename }}</p>
-                                            <p class="text-muted mb-0">
-                                                {{ document.kind|title }} · {{ document.created_at|date:"d M Y H:i" }}
-                                            </p>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% endfor %}
-                        </div>
-                    {% else %}
-                        {% include "partials/_empty_state.html" with title="No documents yet" body="Upload a file if support has asked for more evidence." %}
-                    {% endif %}
-                </div>
-            </div>
-        </div>
-
-        <div class="col-12 col-xl-4">
-            <div class="card app-card mb-4">
-                <div class="card-body">
-                    <h2 class="h5 mb-3">Upload evidence</h2>
-                    {% include "customer/partials/_upload_form.html" with form=form %}
-                </div>
-            </div>
-
-            <div class="card app-card">
-                <div class="card-body">
-                    <h2 class="h5 mb-3">Recent activity</h2>
-                    <ul class="list-unstyled mb-0">
-                        {% for event in case.events.all|slice:":8" %}
-                            <li class="pb-3 mb-3 border-bottom">
-                                <p class="fw-semibold mb-1">{{ event.message }}</p>
-                                <p class="text-muted small mb-0">{{ event.created_at|date:"d M Y H:i" }}</p>
-                            </li>
-                        {% empty %}
-                            <li class="text-muted">No activity has been recorded yet.</li>
-                        {% endfor %}
-                    </ul>
-                </div>
-            </div>
-        </div>
+    <div class="col-12 col-xl-4">
+      {% include "partials/_upload_panel.html" with upload_form=form upload_success_message="" return_case=case actor_role="customer" %}
     </div>
-</section>
+  </div>
 {% endblock %}
