@@ -1,9 +1,10 @@
-"""Tests for merchant portal routes and views."""
+"""Integration tests for merchant portal views."""
 
 from __future__ import annotations
 
 from datetime import timedelta
 
+import pytest
 from django.contrib.auth.models import Group
 from django.contrib.messages import get_messages
 from django.core.files.uploadedfile import SimpleUploadedFile
@@ -12,6 +13,8 @@ from django.utils import timezone
 
 from returns.models import CaseEvent, EvidenceDocument
 from tests.factories import CaseEventFactory, ReturnCaseFactory
+
+pytestmark = pytest.mark.django_db
 
 
 def add_group(user, group_name: str) -> None:
