@@ -9,7 +9,13 @@ from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from accounts.constants import GROUP_NAMES, ROLE_ADMIN, ROLE_CUSTOMER, ROLE_MERCHANT, ROLE_OPS
+from accounts.constants import (
+    GROUP_NAMES,
+    ROLE_ADMIN,
+    ROLE_CUSTOMER,
+    ROLE_MERCHANT,
+    ROLE_OPS,
+)
 from accounts.models import CustomerProfile, MerchantProfile
 from returns.models import ReturnCase
 
@@ -94,17 +100,31 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS("ReturnHub demo seed complete."))
         self.stdout.write(f"Admin user: {admin_user.username}")
         self.stdout.write(f"Ops user: {ops_user.username}")
-        self.stdout.write(f"Customer users: {customer_one_user.username}, {customer_two_user.username}")
-        self.stdout.write(f"Merchant users: {merchant_one_user.username}, {merchant_two_user.username}")
+        self.stdout.write(
+            f"Customer users: {customer_one_user.username}, {customer_two_user.username}"
+        )
+        self.stdout.write(
+            f"Merchant users: {merchant_one_user.username}, {merchant_two_user.username}"
+        )
         self.stdout.write(f"Total cases: {ReturnCase.objects.count()}")
 
     def _ensure_groups(self):
         """Create required role groups if they do not already exist."""
+
         for group_name in GROUP_NAMES.values():
             Group.objects.get_or_create(name=group_name)
 
-    def _ensure_user(self, username, email, password, role, is_staff=False, is_superuser=False):
+    def _ensure_user(
+        self,
+        username,
+        email,
+        password,
+        role,
+        is_staff=False,
+        is_superuser=False,
+    ):
         """Create or update a demo user and attach the correct group."""
+
         user, _ = User.objects.update_or_create(
             username=username,
             defaults={
@@ -147,7 +167,14 @@ class Command(BaseCommand):
         profile.save()
         return profile
 
-    def _ensure_merchant_profile(self, *, user, merchant_code, display_name, support_email):
+    def _ensure_merchant_profile(
+        self,
+        *,
+        user,
+        merchant_code,
+        display_name,
+        support_email,
+    ):
         """Create or update a merchant profile without colliding on unique merchant codes."""
 
         profile = MerchantProfile.objects.filter(user=user).first()
@@ -194,12 +221,10 @@ class Command(BaseCommand):
                     "merchant": merchant,
                     "status": statuses[(index - 1) % len(statuses)],
                     "priority": (
-                        ReturnCase.Priority.MEDIUM
-                        if index % 2 == 0
-                        else ReturnCase.Priority.HIGH
+                        ReturnCase.Priority.MEDIUM if index % 2 == 0 else ReturnCase.Priority.HIGH
                     ),
                     "item_category": "electronics" if index % 2 == 0 else "apparel",
-                    "return_reason": "Damaged item" if index % 2 == 0 else "Not as described",
+                    "return_reason": ("Damaged item" if index % 2 == 0 else "Not as described"),
                     "customer_message": f"Demo case {index} for deterministic pagination coverage.",
                     "order_value": "79.99" if index % 2 == 0 else "149.99",
                     "delivery_date": date(2025, 12, 1) + timedelta(days=index),
