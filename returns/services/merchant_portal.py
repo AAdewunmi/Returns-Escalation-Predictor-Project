@@ -5,8 +5,8 @@ from __future__ import annotations
 from collections.abc import Mapping
 from urllib.parse import urlencode
 
-from django.db.models import Prefetch
 from django.db import transaction
+from django.db.models import Prefetch
 from django.shortcuts import get_object_or_404
 
 from accounts.mixins import is_admin_user
