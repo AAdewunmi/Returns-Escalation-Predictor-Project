@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}Merchant Portal | ReturnHub{% endblock %}
+{% block page_header %}{% endblock %}
+
+{% block content %}
+  <section class="rh-card rh-hero mb-4">
+    <div class="rh-hero-grid">
+      <div class="rh-hero-copy">
+        <div class="rh-kicker">Merchant Portal</div>
+        <h1>Merchant-linked return cases</h1>
+        <p class="rh-hero-lead">
+          Review case status, track customer-submitted context, and open each return workspace to upload a response.
+        </p>
+        <div class="rh-trust-row" aria-label="Merchant case summary signals">
+          <span class="rh-trust-item">Merchant-facing workspace</span>
+          <span class="rh-trust-item">Response uploads</span>
+          <span class="rh-trust-item">Role-based visibility</span>
+        </div>
+      </div>
+      <aside aria-label="Merchant case filters">
+        <section class="rh-card">
+          <div class="rh-kicker">Filters</div>
+          <h2 class="h4">Refine the list</h2>
+          <form method="get">
+            <div class="mb-3">
+              <label class="form-label" for="id_status">Status</label>
+              <select name="status" id="id_status" class="form-select">
+                <option value="">All statuses</option>
+                <option value="submitted" {% if selected_status == "submitted" %}selected{% endif %}>Submitted</option>
+                <option value="in_review" {% if selected_status == "in_review" %}selected{% endif %}>In review</option>
+                <option value="waiting_customer" {% if selected_status == "waiting_customer" %}selected{% endif %}>Waiting for customer</option>
+                <option value="waiting_merchant" {% if selected_status == "waiting_merchant" %}selected{% endif %}>Waiting for merchant</option>
+                <option value="approved" {% if selected_status == "approved" %}selected{% endif %}>Approved</option>
+                <option value="rejected" {% if selected_status == "rejected" %}selected{% endif %}>Rejected</option>
+              </select>
+            </div>
+            <button class="btn btn-dark" type="submit">Apply filters</button>
+          </form>
+        </section>
+      </aside>
+    </div>
+  </section>
+
+  {% if page_obj.paginator.count %}
+    <section class="rh-card">
+      <div class="rh-section-heading mb-3">
+        <div class="rh-kicker">Case Queue</div>
+        <h2>Keep merchant-owned returns visible, current, and easy to action.</h2>
+      </div>
+      <div class="table-responsive">
+        <table class="table table-hover rh-table align-middle mb-0">
+          <thead>
+            <tr>
+              <th scope="col">Reference</th>
+              <th scope="col">Status</th>
+              <th scope="col">Priority</th>
+              <th scope="col">Customer</th>
+              <th scope="col">Opened</th>
+              <th scope="col" class="text-end">Workspace</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for case in cases %}
+              <tr>
+                <td>
+                  <div class="fw-semibold">{{ case.order_reference }}</div>
+                  <div class="text-muted small">{{ case.item_category|title }}</div>
+                </td>
+                <td>{% include "partials/_status_badge.html" with status=case.status %}</td>
+                <td>{{ case.priority|title }}</td>
+                <td>{{ case.customer.display_name|default:case.customer.user.username }}</td>
+                <td>{{ case.created_at|date:"j M Y" }}</td>
+                <td class="text-end">
+                  <a class="btn btn-sm btn-outline-dark" href="{% url 'merchant_portal:case_detail' case_id=case.pk %}">
+                    Open case
+                  </a>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="mt-4">
+      {% include "partials/_pagination.html" with pagination=pagination %}
+    </div>
+  {% else %}
+    {% include "partials/_empty_state.html" with title="No merchant cases yet" body="This merchant account does not have any linked return cases yet." %}
+  {% endif %}
+{% endblock %}

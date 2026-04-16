@@ -17,6 +17,10 @@ urlpatterns = [
         "customer/",
         include(("returns.urls_customer", "customer_portal"), namespace="customer_portal"),
     ),
+    path(
+        "merchant/",
+        include(("returns.urls_merchant", "merchant_portal"), namespace="merchant_portal"),
+    ),
     path("ops/", include(("returns.urls.ops", "ops"), namespace="ops")),
     path("console/", include("console.urls")),
     path("api/", include("api.urls")),
