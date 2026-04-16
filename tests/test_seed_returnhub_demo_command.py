@@ -53,12 +53,16 @@ def test_seed_returnhub_demo_is_idempotent() -> None:
     call_command("seed_returnhub_demo")
     call_command("seed_returnhub_demo")
 
-    assert CustomerProfile.objects.filter(
-        external_reference__in=["CUS-DEMO-0001", "CUS-DEMO-0002"]
-    ).count() == 2
-    assert MerchantProfile.objects.filter(
-        merchant_code__in=["MER-DEMO-0001", "MER-DEMO-0002"]
-    ).count() == 2
+    assert (
+        CustomerProfile.objects.filter(
+            external_reference__in=["CUS-DEMO-0001", "CUS-DEMO-0002"]
+        ).count()
+        == 2
+    )
+    assert (
+        MerchantProfile.objects.filter(merchant_code__in=["MER-DEMO-0001", "MER-DEMO-0002"]).count()
+        == 2
+    )
     assert ReturnCase.objects.filter(order_reference__startswith="RH-").count() == 32
 
 
