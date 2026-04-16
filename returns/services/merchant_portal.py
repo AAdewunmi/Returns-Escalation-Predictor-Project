@@ -83,6 +83,29 @@ def get_merchant_case_for_user(user, case_pk: int) -> ReturnCase:
     return get_object_or_404(queryset, pk=case_pk)
 
 
+def build_merchant_case_detail_context(user, case_pk: int) -> dict[str, object]:
+    """Return merchant case detail context with dashboard-specific signals."""
+
+    return_case = get_merchant_case_for_user(user, case_pk)
+    response_history = [
+        event
+        for event in return_case.events.all()
+        if event.event_type == "merchant_response_submitted"
+    ]
+    merchant_activity = [
+        event
+        for event in return_case.events.all()
+        if event.actor_role == "merchant" or event.event_type == "merchant_response_submitted"
+    ]
+
+    return {
+        "case": return_case,
+        "latest_merchant_response": response_history[0] if response_history else None,
+        "merchant_response_history": response_history,
+        "merchant_activity": merchant_activity,
+    }
+
+
 @transaction.atomic
 def submit_merchant_response(
     return_case,

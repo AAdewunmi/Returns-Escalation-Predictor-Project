@@ -10,8 +10,8 @@ from django.views.generic import TemplateView
 from accounts.mixins import MerchantSurfaceMixin
 from returns.forms_merchant import MerchantResponseForm
 from returns.services.merchant_portal import (
+    build_merchant_case_detail_context,
     build_merchant_case_page,
-    get_merchant_case_for_user,
     submit_merchant_response,
 )
 
@@ -37,16 +37,23 @@ class MerchantCaseDetailView(MerchantSurfaceMixin, View):
     def get_case(self):
         """Return the merchant-visible case for the current request."""
 
-        return get_merchant_case_for_user(self.request.user, self.kwargs["case_id"])
+        return build_merchant_case_detail_context(
+            self.request.user,
+            self.kwargs["case_id"],
+        )["case"]
 
     def get(self, request, *args, **kwargs):
         """Render the case detail page."""
 
+        context = build_merchant_case_detail_context(
+            self.request.user,
+            self.kwargs["case_id"],
+        )
         return render(
             request,
             self.template_name,
             {
-                "case": self.get_case(),
+                **context,
                 "form": MerchantResponseForm(),
             },
         )
@@ -74,7 +81,10 @@ class MerchantCaseDetailView(MerchantSurfaceMixin, View):
             request,
             self.template_name,
             {
-                "case": case,
+                **build_merchant_case_detail_context(
+                    self.request.user,
+                    self.kwargs["case_id"],
+                ),
                 "form": form,
             },
         )

@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
+
 from django.contrib.auth.models import Group
 from django.contrib.messages import get_messages
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import resolve, reverse
+from django.utils import timezone
 
 from returns.models import CaseEvent, EvidenceDocument
-from tests.factories import ReturnCaseFactory
+from tests.factories import CaseEventFactory, ReturnCaseFactory
 
 
 def add_group(user, group_name: str) -> None:
@@ -96,6 +99,34 @@ def test_merchant_case_detail_view_renders_for_linked_merchant(client, db) -> No
 
     return_case = ReturnCaseFactory(order_reference="MERCH-DETAIL-001")
     add_group(return_case.merchant.user, "merchant")
+    older_event = CaseEventFactory(
+        return_case=return_case,
+        actor=return_case.merchant.user,
+        actor_role="merchant",
+        event_type="merchant_response_submitted",
+        payload={
+            "response_note": "Initial warehouse check complete.",
+            "document_id": "",
+            "document_kind": "",
+            "has_document": False,
+        },
+    )
+    latest_event = CaseEventFactory(
+        return_case=return_case,
+        actor=return_case.merchant.user,
+        actor_role="merchant",
+        event_type="merchant_response_submitted",
+        payload={
+            "response_note": "Escalated to carrier with supporting evidence.",
+            "document_id": "123",
+            "document_kind": "response",
+            "has_document": True,
+        },
+    )
+    CaseEvent.objects.filter(pk=older_event.pk).update(
+        created_at=timezone.now() - timedelta(days=1)
+    )
+    CaseEvent.objects.filter(pk=latest_event.pk).update(created_at=timezone.now())
 
     client.force_login(return_case.merchant.user)
     response = client.get(
@@ -106,6 +137,10 @@ def test_merchant_case_detail_view_renders_for_linked_merchant(client, db) -> No
     assert b"Merchant Case Workspace" in response.content
     assert b"MERCH-DETAIL-001" in response.content
     assert b"Merchant response" in response.content
+    assert b"Latest merchant response" in response.content
+    assert b"Response history" in response.content
+    assert b"Merchant Activity" in response.content
+    assert b"Escalated to carrier with supporting evidence." in response.content
 
 
 def test_merchant_case_detail_post_redirects_after_note_only_submission(

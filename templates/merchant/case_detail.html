@@ -50,6 +50,75 @@
     <div class="col-12 col-xl-8">
       <section class="rh-card mb-4">
         <div class="rh-section-heading mb-3">
+          <div class="rh-kicker">Merchant Dashboard</div>
+          <h2>Track the latest merchant response and the running response trail.</h2>
+        </div>
+        <div class="row g-3">
+          <div class="col-12 col-lg-6">
+            <div class="rh-visual-panel rh-visual-panel--case h-100">
+              <h3 class="h5">Latest merchant response</h3>
+              {% if latest_merchant_response %}
+                <p class="text-muted small mb-2">
+                  {{ latest_merchant_response.created_at|date:"j M Y, H:i" }}
+                </p>
+                <p class="mb-2">
+                  {{ latest_merchant_response.payload.response_note|default:"No note provided." }}
+                </p>
+                <div class="rh-visual-meta">
+                  <span>
+                    {% if latest_merchant_response.payload.has_document %}
+                      Includes supporting file
+                    {% else %}
+                      Note only
+                    {% endif %}
+                  </span>
+                  {% if latest_merchant_response.payload.document_kind %}
+                    <span>{{ latest_merchant_response.payload.document_kind|title }}</span>
+                  {% endif %}
+                </div>
+              {% else %}
+                <p class="mb-0 text-muted">
+                  No merchant response has been submitted yet.
+                </p>
+              {% endif %}
+            </div>
+          </div>
+          <div class="col-12 col-lg-6">
+            <div class="rh-visual-panel rh-visual-panel--case h-100">
+              <h3 class="h5">Response history</h3>
+              {% if merchant_response_history %}
+                <ol class="list-unstyled mb-0">
+                  {% for event in merchant_response_history %}
+                    <li class="{% if not forloop.last %}pb-3 mb-3 border-bottom{% endif %}">
+                      <div class="d-flex justify-content-between gap-3">
+                        <strong>Response {{ forloop.revcounter }}</strong>
+                        <span class="text-muted small">{{ event.created_at|date:"j M Y, H:i" }}</span>
+                      </div>
+                      <p class="mb-1">
+                        {{ event.payload.response_note|default:"No note provided." }}
+                      </p>
+                      <div class="text-muted small">
+                        {% if event.payload.has_document %}
+                          Supporting file attached
+                        {% else %}
+                          Note only
+                        {% endif %}
+                      </div>
+                    </li>
+                  {% endfor %}
+                </ol>
+              {% else %}
+                <p class="mb-0 text-muted">
+                  Merchant responses will appear here in append-only order once submitted.
+                </p>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="rh-card mb-4">
+        <div class="rh-section-heading mb-3">
           <div class="rh-kicker">Documents</div>
           <h2>Merchant-visible evidence and response files linked to this return.</h2>
         </div>
@@ -58,10 +127,10 @@
 
       <section class="rh-card">
         <div class="rh-section-heading mb-3">
-          <div class="rh-kicker">Timeline</div>
-          <h2>Append-only case history for the current return.</h2>
+          <div class="rh-kicker">Merchant Activity</div>
+          <h2>Merchant-side actions and response events for the current return.</h2>
         </div>
-        {% include "partials/_timeline.html" with events=case.events.all %}
+        {% include "partials/_timeline.html" with events=merchant_activity %}
       </section>
     </div>
 

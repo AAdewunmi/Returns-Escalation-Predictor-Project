@@ -1,28 +1,27 @@
-<!--path: templates/merchant/partials/_response_form.html-->
 <form method="post" enctype="multipart/form-data" novalidate>
-    {% csrf_token %}
+  {% csrf_token %}
 
-    {% if form.non_field_errors %}
-        <div class="alert alert-danger" role="alert">
-            {{ form.non_field_errors }}
-        </div>
+  {% include "partials/_form_errors.html" with form=form %}
+
+  <div class="mb-3">
+    <label class="form-label" for="{{ form.response_note.id_for_label }}">
+      {{ form.response_note.label }}
+    </label>
+    {{ form.response_note }}
+    {% if form.response_note.errors %}
+      <div class="invalid-feedback d-block">{{ form.response_note.errors|join:", " }}</div>
     {% endif %}
+  </div>
 
-    <div class="mb-3">
-        <label class="form-label" for="{{ form.response_note.id_for_label }}">{{ form.response_note.label }}</label>
-        {{ form.response_note }}
-        {% if form.response_note.errors %}
-            <div class="invalid-feedback d-block">{{ form.response_note.errors|join:", " }}</div>
-        {% endif %}
-    </div>
+  <div class="mb-3">
+    <label class="form-label" for="{{ form.response_file.id_for_label }}">
+      {{ form.response_file.label }}
+    </label>
+    {{ form.response_file }}
+    {% if form.response_file.errors %}
+      <div class="invalid-feedback d-block">{{ form.response_file.errors|join:", " }}</div>
+    {% endif %}
+  </div>
 
-    <div class="mb-3">
-        <label class="form-label" for="{{ form.response_file.id_for_label }}">{{ form.response_file.label }}</label>
-        {{ form.response_file }}
-        {% if form.response_file.errors %}
-            <div class="invalid-feedback d-block">{{ form.response_file.errors|join:", " }}</div>
-        {% endif %}
-    </div>
-
-    <button type="submit" class="btn btn-primary w-100">Submit response</button>
+  <button type="submit" class="btn btn-dark w-100">Submit response</button>
 </form>
