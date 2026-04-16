@@ -1,0 +1,78 @@
+<!--path: templates/merchant/case_list.html-->
+{% extends "base.html" %}
+
+{% block title %}Merchant portal | ReturnHub{% endblock %}
+
+{% block content %}
+<section class="container py-4">
+    <div class="d-flex flex-column flex-lg-row align-items-lg-end justify-content-between gap-3 mb-4">
+        <div>
+            <p class="text-uppercase text-muted small fw-semibold mb-2">Merchant portal</p>
+            <h1 class="h2 mb-2">Cases linked to your account</h1>
+            <p class="text-muted mb-0">
+                Review the operational state of each return and send a response back into the workflow.
+            </p>
+        </div>
+        <form method="get" class="d-flex gap-2 align-items-end">
+            <div>
+                <label class="form-label" for="id_status">Status</label>
+                <select name="status" id="id_status" class="form-select">
+                    <option value="">All</option>
+                    <option value="new" {% if selected_status == "new" %}selected{% endif %}>New</option>
+                    <option value="awaiting_merchant" {% if selected_status == "awaiting_merchant" %}selected{% endif %}>Awaiting merchant</option>
+                    <option value="in_review" {% if selected_status == "in_review" %}selected{% endif %}>In review</option>
+                    <option value="resolved" {% if selected_status == "resolved" %}selected{% endif %}>Resolved</option>
+                </select>
+            </div>
+            <button class="btn btn-outline-primary" type="submit">Apply</button>
+        </form>
+    </div>
+
+    {% if page_obj.paginator.count %}
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <p class="text-muted mb-0">
+                Showing {{ page_obj.start_index }}-{{ page_obj.end_index }} of {{ page_obj.paginator.count }}
+            </p>
+        </div>
+
+        <div class="card app-card">
+            <div class="table-responsive">
+                <table class="table table-hover align-middle mb-0">
+                    <thead>
+                        <tr>
+                            <th>Reference</th>
+                            <th>Status</th>
+                            <th>Customer</th>
+                            <th>Priority</th>
+                            <th>Opened</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for case in cases %}
+                            <tr>
+                                <td>{{ case.reference|default:case.pk }}</td>
+                                <td>{% include "partials/_status_badge.html" with value=case.status %}</td>
+                                <td>{{ case.customer.full_name|default:case.customer.user.get_full_name|default:case.customer.user.username }}</td>
+                                <td>{{ case.priority|title }}</td>
+                                <td>{{ case.created_at|date:"d M Y" }}</td>
+                                <td class="text-end">
+                                    <a class="btn btn-sm btn-outline-primary" href="{% url 'merchant_portal:case_detail' pk=case.pk %}">
+                                        View case
+                                    </a>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            {% include "partials/_pagination.html" with page_obj=page_obj query_string=query_string %}
+        </div>
+    {% else %}
+        {% include "partials/_empty_state.html" with title="No merchant-linked cases yet" body="Cases related to your merchant account will appear here once they are created." %}
+    {% endif %}
+</section>
+{% endblock %}
