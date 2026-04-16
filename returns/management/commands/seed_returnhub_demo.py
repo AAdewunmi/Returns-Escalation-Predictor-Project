@@ -1,15 +1,17 @@
-# path: returns/management/commands/seed_returnhub_demo.py
 """Seed a deterministic multi-surface demo environment for ReturnHub."""
 
-from datetime import timedelta
+from __future__ import annotations
+
+from datetime import date, timedelta
 
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import Group
 from django.core.management.base import BaseCommand
 from django.utils import timezone
 
-from apps.accounts.constants import GROUP_NAMES, ROLE_ADMIN, ROLE_CUSTOMER, ROLE_MERCHANT, ROLE_OPS
-from apps.returns.models import CustomerProfile, MerchantProfile, ReturnCase
+from accounts.constants import GROUP_NAMES, ROLE_ADMIN, ROLE_CUSTOMER, ROLE_MERCHANT, ROLE_OPS
+from accounts.models import CustomerProfile, MerchantProfile
+from returns.models import ReturnCase
 
 User = get_user_model()
 
@@ -64,20 +66,34 @@ class Command(BaseCommand):
 
         customer_one = CustomerProfile.objects.update_or_create(
             user=customer_one_user,
-            defaults={"full_name": "Customer One"},
+            defaults={
+                "external_reference": "CUS-DEMO-0001",
+                "display_name": "Customer One",
+            },
         )[0]
         customer_two = CustomerProfile.objects.update_or_create(
             user=customer_two_user,
-            defaults={"full_name": "Customer Two"},
+            defaults={
+                "external_reference": "CUS-DEMO-0002",
+                "display_name": "Customer Two",
+            },
         )[0]
 
         merchant_one = MerchantProfile.objects.update_or_create(
             user=merchant_one_user,
-            defaults={"name": "Merchant One"},
+            defaults={
+                "merchant_code": "MER-DEMO-0001",
+                "display_name": "Merchant One",
+                "support_email": "merchant.one@returnhub.local",
+            },
         )[0]
         merchant_two = MerchantProfile.objects.update_or_create(
             user=merchant_two_user,
-            defaults={"name": "Merchant Two"},
+            defaults={
+                "merchant_code": "MER-DEMO-0002",
+                "display_name": "Merchant Two",
+                "support_email": "merchant.two@returnhub.local",
+            },
         )[0]
 
         self._ensure_cases(customer_one, merchant_one, start_index=1, count=16)
@@ -114,18 +130,33 @@ class Command(BaseCommand):
 
     def _ensure_cases(self, customer, merchant, start_index, count):
         """Create or update a fixed block of deterministic return cases."""
-        statuses = ["new", "awaiting_customer", "in_review", "resolved"]
+        statuses = [
+            ReturnCase.Status.SUBMITTED,
+            ReturnCase.Status.WAITING_CUSTOMER,
+            ReturnCase.Status.IN_REVIEW,
+            ReturnCase.Status.WAITING_MERCHANT,
+            ReturnCase.Status.APPROVED,
+            ReturnCase.Status.REJECTED,
+        ]
 
         for index in range(start_index, start_index + count):
             ReturnCase.objects.update_or_create(
-                reference=f"RH-{index:05d}",
+                order_reference=f"RH-{index:05d}",
                 defaults={
                     "customer": customer,
                     "merchant": merchant,
                     "status": statuses[(index - 1) % len(statuses)],
-                    "priority": "medium" if index % 2 == 0 else "high",
-                    "return_reason": "damaged_item" if index % 2 == 0 else "not_as_described",
+                    "priority": (
+                        ReturnCase.Priority.MEDIUM
+                        if index % 2 == 0
+                        else ReturnCase.Priority.HIGH
+                    ),
+                    "item_category": "electronics" if index % 2 == 0 else "apparel",
+                    "return_reason": "Damaged item" if index % 2 == 0 else "Not as described",
                     "customer_message": f"Demo case {index} for deterministic pagination coverage.",
+                    "order_value": "79.99" if index % 2 == 0 else "149.99",
+                    "delivery_date": date(2025, 12, 1) + timedelta(days=index),
                     "sla_due_at": timezone.now() + timedelta(days=2),
+                    "last_status_changed_at": timezone.now(),
                 },
             )
