@@ -10,14 +10,14 @@
       <div class="rh-hero-copy">
         <nav aria-label="Breadcrumb">
           <ol class="breadcrumb mb-2">
-            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-item"><a href="/">ReturnHub</a></li>
             <li class="breadcrumb-item active" aria-current="page">{{ return_case.order_reference }}</li>
           </ol>
         </nav>
         <div class="rh-kicker">Return Case Workspace</div>
         <h1>{{ return_case.order_reference }}</h1>
         <p class="rh-hero-lead">
-          Evidence, timeline, and risk context for the current return case.
+          Review evidence, append-only case activity, and risk context for the current return.
         </p>
         <div class="rh-trust-row" aria-label="Case summary signals">
           <span class="rh-trust-item">{{ return_case.item_category|title }}</span>
@@ -46,7 +46,7 @@
       <section class="rh-card">
         <div class="rh-section-heading mb-3">
           <div class="rh-kicker">Timeline</div>
-          <h2>Append-only case history for operational review.</h2>
+          <h2>Append-only case history for the current return.</h2>
         </div>
         {% include "partials/_timeline.html" with events=events %}
       </section>
