@@ -9,7 +9,11 @@ from accounts.constants import (
     ROLE_MERCHANT,
     ROLE_OPS,
 )
-from accounts.mixins import is_admin_user, user_in_group, user_has_surface_access
+from accounts.mixins import (
+    is_admin_user,
+    user_has_surface_access,
+    user_in_group,
+)
 
 register = template.Library()
 
