@@ -12,6 +12,7 @@ from django.shortcuts import get_object_or_404
 from accounts.mixins import is_admin_user
 from common.pagination import paginate_queryset
 from returns.models import CaseEvent, EvidenceDocument, ReturnCase
+from returns.services.cases import _actor_role
 from returns.services.documents import DocumentUploadInput, upload_document_for_case
 
 
@@ -82,16 +83,63 @@ def get_merchant_case_for_user(user, case_pk: int) -> ReturnCase:
     return get_object_or_404(queryset, pk=case_pk)
 
 
-@transaction.atomic
-def upload_merchant_response(return_case, uploaded_by, uploaded_file, description: str = ""):
-    """Persist merchant response documents using the canonical upload service."""
+def build_merchant_case_detail_context(user, case_pk: int) -> dict[str, object]:
+    """Return merchant case detail context with dashboard-specific signals."""
 
-    return upload_document_for_case(
+    return_case = get_merchant_case_for_user(user, case_pk)
+    response_history = [
+        event
+        for event in return_case.events.all()
+        if event.event_type == "merchant_response_submitted"
+    ]
+    merchant_activity = [
+        event
+        for event in return_case.events.all()
+        if event.actor_role == "merchant" or event.event_type == "merchant_response_submitted"
+    ]
+
+    return {
+        "case": return_case,
+        "latest_merchant_response": response_history[0] if response_history else None,
+        "merchant_response_history": response_history,
+        "merchant_activity": merchant_activity,
+    }
+
+
+@transaction.atomic
+def submit_merchant_response(
+    return_case,
+    submitted_by,
+    response_note: str = "",
+    response_file=None,
+):
+    """Persist a merchant response event and optional supporting document."""
+
+    response_note = (response_note or "").strip()
+    document = None
+
+    if response_file is not None:
+        document = upload_document_for_case(
+            return_case=return_case,
+            actor=submitted_by,
+            upload_input=DocumentUploadInput(
+                kind=EvidenceDocument.DocumentKind.RESPONSE,
+                uploaded_file=response_file,
+                notes=response_note,
+            ),
+        )
+
+    CaseEvent.objects.create(
         return_case=return_case,
-        actor=uploaded_by,
-        upload_input=DocumentUploadInput(
-            kind=EvidenceDocument.DocumentKind.RESPONSE,
-            uploaded_file=uploaded_file,
-            notes=description,
-        ),
+        actor=submitted_by,
+        actor_role=_actor_role(submitted_by),
+        event_type="merchant_response_submitted",
+        payload={
+            "response_note": response_note,
+            "document_id": str(document.pk) if document else "",
+            "document_kind": document.kind if document else "",
+            "has_document": document is not None,
+        },
     )
+
+    return document

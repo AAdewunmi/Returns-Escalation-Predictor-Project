@@ -2,13 +2,16 @@
 
 from __future__ import annotations
 
+from datetime import timedelta
+
 from django.contrib.auth.models import Group
 from django.contrib.messages import get_messages
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.urls import resolve, reverse
+from django.utils import timezone
 
 from returns.models import CaseEvent, EvidenceDocument
-from tests.factories import ReturnCaseFactory
+from tests.factories import CaseEventFactory, ReturnCaseFactory
 
 
 def add_group(user, group_name: str) -> None:
@@ -96,6 +99,34 @@ def test_merchant_case_detail_view_renders_for_linked_merchant(client, db) -> No
 
     return_case = ReturnCaseFactory(order_reference="MERCH-DETAIL-001")
     add_group(return_case.merchant.user, "merchant")
+    older_event = CaseEventFactory(
+        return_case=return_case,
+        actor=return_case.merchant.user,
+        actor_role="merchant",
+        event_type="merchant_response_submitted",
+        payload={
+            "response_note": "Initial warehouse check complete.",
+            "document_id": "",
+            "document_kind": "",
+            "has_document": False,
+        },
+    )
+    latest_event = CaseEventFactory(
+        return_case=return_case,
+        actor=return_case.merchant.user,
+        actor_role="merchant",
+        event_type="merchant_response_submitted",
+        payload={
+            "response_note": "Escalated to carrier with supporting evidence.",
+            "document_id": "123",
+            "document_kind": "response",
+            "has_document": True,
+        },
+    )
+    CaseEvent.objects.filter(pk=older_event.pk).update(
+        created_at=timezone.now() - timedelta(days=1)
+    )
+    CaseEvent.objects.filter(pk=latest_event.pk).update(created_at=timezone.now())
 
     client.force_login(return_case.merchant.user)
     response = client.get(
@@ -106,45 +137,47 @@ def test_merchant_case_detail_view_renders_for_linked_merchant(client, db) -> No
     assert b"Merchant Case Workspace" in response.content
     assert b"MERCH-DETAIL-001" in response.content
     assert b"Merchant response" in response.content
+    assert b"Latest merchant response" in response.content
+    assert b"Response history" in response.content
+    assert b"Merchant Activity" in response.content
+    assert b"Escalated to carrier with supporting evidence." in response.content
 
 
-def test_merchant_case_detail_post_redirects_after_successful_upload(
+def test_merchant_case_detail_post_redirects_after_note_only_submission(
     client,
     db,
     monkeypatch,
 ) -> None:
-    """Valid merchant uploads should redirect back to the merchant case detail page."""
+    """Valid note-only merchant responses should redirect back to the detail page."""
 
     return_case = ReturnCaseFactory(order_reference="MERCH-UPLOAD-001")
     add_group(return_case.merchant.user, "merchant")
 
     captured = {}
 
-    def fake_upload_merchant_response(
+    def fake_submit_merchant_response(
         *,
         return_case,
-        uploaded_by,
-        uploaded_file,
-        description,
+        submitted_by,
+        response_note,
+        response_file,
     ):
         captured["case"] = return_case
-        captured["uploaded_by"] = uploaded_by
-        captured["filename"] = uploaded_file.name
-        captured["description"] = description
+        captured["submitted_by"] = submitted_by
+        captured["response_note"] = response_note
+        captured["response_file"] = response_file
         return None
 
     monkeypatch.setattr(
-        "returns.views_merchant.upload_merchant_response",
-        fake_upload_merchant_response,
+        "returns.views_merchant.submit_merchant_response",
+        fake_submit_merchant_response,
     )
 
     client.force_login(return_case.merchant.user)
     response = client.post(
         reverse("merchant_portal:case_detail", kwargs={"case_id": return_case.pk}),
         data={
-            "kind": "response",
-            "notes": "Inspection complete",
-            "file": SimpleUploadedFile("response.jpg", b"jpg", content_type="image/jpeg"),
+            "response_note": "Inspection complete",
         },
     )
 
@@ -155,16 +188,16 @@ def test_merchant_case_detail_post_redirects_after_successful_upload(
     )
     assert captured == {
         "case": return_case,
-        "uploaded_by": return_case.merchant.user,
-        "filename": "response.jpg",
-        "description": "Inspection complete",
+        "submitted_by": return_case.merchant.user,
+        "response_note": "Inspection complete",
+        "response_file": None,
     }
     messages = [message.message for message in get_messages(response.wsgi_request)]
-    assert "Response uploaded successfully." in messages
+    assert "Response submitted successfully." in messages
 
 
-def test_merchant_can_upload_response_to_owned_case(client, db, monkeypatch) -> None:
-    """Posting a response file should create a document and a case event."""
+def test_merchant_can_submit_note_and_file_to_owned_case(client, db, monkeypatch) -> None:
+    """Posting a note and file should create both document and merchant response events."""
 
     return_case = ReturnCaseFactory(order_reference="MERCH-UPLOAD-REAL-001")
     add_group(return_case.merchant.user, "merchant")
@@ -177,9 +210,8 @@ def test_merchant_can_upload_response_to_owned_case(client, db, monkeypatch) -> 
     response = client.post(
         reverse("merchant_portal:case_detail", kwargs={"case_id": return_case.pk}),
         data={
-            "kind": EvidenceDocument.DocumentKind.RESPONSE,
-            "notes": "Response document attached.",
-            "file": SimpleUploadedFile(
+            "response_note": "Response document attached.",
+            "response_file": SimpleUploadedFile(
                 "response.jpg",
                 b"binary-image-content",
                 content_type="image/jpeg",
@@ -202,10 +234,48 @@ def test_merchant_can_upload_response_to_owned_case(client, db, monkeypatch) -> 
         ).count()
         == 1
     )
+    assert (
+        CaseEvent.objects.filter(
+            return_case=return_case,
+            event_type="merchant_response_submitted",
+        ).count()
+        == 1
+    )
+
+
+def test_merchant_can_submit_note_only_to_owned_case(client, db) -> None:
+    """Posting only a note should append a merchant response event without a document."""
+
+    return_case = ReturnCaseFactory(order_reference="MERCH-NOTE-ONLY-001")
+    add_group(return_case.merchant.user, "merchant")
+
+    client.force_login(return_case.merchant.user)
+    response = client.post(
+        reverse("merchant_portal:case_detail", kwargs={"case_id": return_case.pk}),
+        data={
+            "response_note": "Awaiting carrier confirmation before next step.",
+        },
+    )
+
+    assert response.status_code == 302
+    assert (
+        EvidenceDocument.objects.filter(
+            return_case=return_case,
+            kind=EvidenceDocument.DocumentKind.RESPONSE,
+        ).count()
+        == 0
+    )
+    assert (
+        CaseEvent.objects.filter(
+            return_case=return_case,
+            event_type="merchant_response_submitted",
+        ).count()
+        == 1
+    )
 
 
 def test_merchant_case_detail_post_renders_errors_for_invalid_upload(client, db) -> None:
-    """Invalid merchant uploads should re-render the page with a 400 status."""
+    """Blank merchant responses should re-render the page with a 400 status."""
 
     return_case = ReturnCaseFactory(order_reference="MERCH-UPLOAD-002")
     add_group(return_case.merchant.user, "merchant")
@@ -213,12 +283,12 @@ def test_merchant_case_detail_post_renders_errors_for_invalid_upload(client, db)
     client.force_login(return_case.merchant.user)
     response = client.post(
         reverse("merchant_portal:case_detail", kwargs={"case_id": return_case.pk}),
-        data={"kind": "response", "notes": "Missing file"},
+        data={},
     )
 
     assert response.status_code == 400
     assert b"Merchant response" in response.content
-    assert b"This field is required." in response.content
+    assert b"Add a response note, a supporting file, or both." in response.content
 
 
 def test_merchant_cannot_open_another_merchants_case(client, db) -> None:
