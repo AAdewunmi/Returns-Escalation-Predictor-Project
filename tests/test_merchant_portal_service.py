@@ -11,7 +11,7 @@ from returns.models import EvidenceDocument
 from returns.services.merchant_portal import (
     build_merchant_case_page,
     get_merchant_case_for_user,
-    upload_merchant_response,
+    submit_merchant_response,
 )
 from tests.factories import (
     CaseEventFactory,
@@ -75,8 +75,31 @@ def test_get_merchant_case_for_user_filters_customer_only_documents() -> None:
 
 
 @pytest.mark.django_db
-def test_upload_merchant_response_uses_canonical_document_service(monkeypatch) -> None:
-    """Merchant response uploads should delegate to the shared document workflow."""
+def test_submit_merchant_response_allows_note_only_event_capture() -> None:
+    """Note-only merchant responses should append an event without creating a document."""
+
+    return_case = ReturnCaseFactory()
+    merchant_user = return_case.merchant.user
+    add_group(merchant_user, "merchant")
+
+    document = submit_merchant_response(
+        return_case,
+        merchant_user,
+        response_note="Warehouse inspection completed.",
+    )
+
+    event = return_case.events.get(event_type="merchant_response_submitted")
+
+    assert document is None
+    assert event.actor == merchant_user
+    assert event.actor_role == EvidenceDocument.ActorRole.MERCHANT
+    assert event.payload["response_note"] == "Warehouse inspection completed."
+    assert event.payload["has_document"] is False
+
+
+@pytest.mark.django_db
+def test_submit_merchant_response_uses_canonical_document_service(monkeypatch) -> None:
+    """Merchant file responses should delegate document persistence to the shared workflow."""
 
     return_case = ReturnCaseFactory()
     merchant_user = return_case.merchant.user
@@ -88,12 +111,14 @@ def test_upload_merchant_response_uses_canonical_document_service(monkeypatch) -
         lambda *args, **kwargs: None,
     )
 
-    document = upload_merchant_response(
+    document = submit_merchant_response(
         return_case,
         merchant_user,
-        uploaded_file,
-        description="Inspection notes attached",
+        response_note="Inspection notes attached",
+        response_file=uploaded_file,
     )
+
+    event = return_case.events.get(event_type="merchant_response_submitted")
 
     assert document.kind == EvidenceDocument.DocumentKind.RESPONSE
     assert document.actor_role == EvidenceDocument.ActorRole.MERCHANT
@@ -101,6 +126,9 @@ def test_upload_merchant_response_uses_canonical_document_service(monkeypatch) -
     assert document.visible_to_customer is False
     assert document.visible_to_merchant is True
     assert return_case.events.filter(event_type="document_uploaded").count() == 1
+    assert event.payload["response_note"] == "Inspection notes attached"
+    assert event.payload["document_id"] == str(document.pk)
+    assert event.payload["has_document"] is True
 
 
 @pytest.mark.django_db

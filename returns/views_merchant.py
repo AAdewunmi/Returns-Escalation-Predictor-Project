@@ -8,12 +8,12 @@ from django.views import View
 from django.views.generic import TemplateView
 
 from accounts.mixins import MerchantSurfaceMixin
+from returns.forms_merchant import MerchantResponseForm
 from returns.services.merchant_portal import (
     build_merchant_case_page,
     get_merchant_case_for_user,
-    upload_merchant_response,
+    submit_merchant_response,
 )
-from ui.forms import CaseDocumentUploadForm
 
 
 class MerchantCaseListView(MerchantSurfaceMixin, TemplateView):
@@ -47,7 +47,7 @@ class MerchantCaseDetailView(MerchantSurfaceMixin, View):
             self.template_name,
             {
                 "case": self.get_case(),
-                "form": CaseDocumentUploadForm(actor_role="merchant"),
+                "form": MerchantResponseForm(),
             },
         )
 
@@ -55,20 +55,19 @@ class MerchantCaseDetailView(MerchantSurfaceMixin, View):
         """Handle merchant response uploads on the case detail page."""
 
         case = self.get_case()
-        form = CaseDocumentUploadForm(
+        form = MerchantResponseForm(
             request.POST,
             request.FILES,
-            actor_role="merchant",
         )
 
         if form.is_valid():
-            upload_merchant_response(
+            submit_merchant_response(
                 return_case=case,
-                uploaded_by=request.user,
-                uploaded_file=form.cleaned_data["file"],
-                description=form.cleaned_data["notes"],
+                submitted_by=request.user,
+                response_note=form.cleaned_data["response_note"],
+                response_file=form.cleaned_data["response_file"],
             )
-            messages.success(request, "Response uploaded successfully.")
+            messages.success(request, "Response submitted successfully.")
             return redirect("merchant_portal:case_detail", case_id=case.pk)
 
         response = render(

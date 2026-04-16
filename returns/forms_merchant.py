@@ -1,5 +1,6 @@
-# path: returns/forms_merchant.py
 """Merchant-facing forms for response submission."""
+
+from __future__ import annotations
 
 from django import forms
 
@@ -24,8 +25,14 @@ class MerchantResponseForm(forms.Form):
         widget=forms.ClearableFileInput(attrs={"class": "form-control"}),
     )
 
+    def clean_response_note(self) -> str:
+        """Normalize surrounding whitespace on the merchant note."""
+
+        return (self.cleaned_data.get("response_note") or "").strip()
+
     def clean(self):
         """Require at least one response input."""
+
         cleaned_data = super().clean()
         if not cleaned_data.get("response_note") and not cleaned_data.get("response_file"):
             raise forms.ValidationError("Add a response note, a supporting file, or both.")

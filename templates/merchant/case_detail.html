@@ -69,23 +69,10 @@
       <section class="rh-card" aria-label="Merchant response upload panel">
         <div class="rh-kicker">Uploads</div>
         <h2 class="h4">Merchant response</h2>
-        {% include "partials/_form_errors.html" with form=form %}
-        <form method="post" enctype="multipart/form-data">
-          {% csrf_token %}
-          <div class="mb-3">
-            <label class="form-label" for="{{ form.kind.id_for_label }}">Document kind</label>
-            {{ form.kind }}
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="{{ form.file.id_for_label }}">File</label>
-            {{ form.file }}
-          </div>
-          <div class="mb-3">
-            <label class="form-label" for="{{ form.notes.id_for_label }}">Notes</label>
-            {{ form.notes }}
-          </div>
-          <button type="submit" class="btn btn-dark">Upload response</button>
-        </form>
+        <p class="text-muted mb-3">
+          Submit a note-only response or attach a supporting file when the case needs merchant-side context.
+        </p>
+        {% include "merchant/partials/_response_form.html" with form=form %}
       </section>
     </div>
   </div>
