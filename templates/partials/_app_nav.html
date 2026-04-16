@@ -1,18 +1,48 @@
-<!-- path: templates/partials/_app_nav.html -->
-<nav class="navbar navbar-expand-lg rh-topbar">
+{% load surface_access %}
+
+<nav class="rh-topbar" aria-label="Primary">
   <div class="container rh-topbar-inner">
     <a class="rh-brand" href="{% url 'landing' %}">
       <span class="rh-brand-mark" aria-hidden="true">R</span>
-      <span>{{ brand_name }}</span>
+      <span>{{ brand_name|default:"ReturnHub" }}</span>
     </a>
-    <div class="rh-topbar-links" aria-label="Primary">
+
+    <div class="rh-topbar-links">
       <a href="{% url 'landing' %}#how-it-works">How it works</a>
       <a href="{% url 'landing' %}#workflow">Workflow</a>
-      <a href="{% url 'admin-login' %}">Admin</a>
-      <a href="{% url 'ops-login' %}">Ops</a>
-      <a href="{% url 'customer-login' %}">Customer</a>
-      <a href="{% url 'merchant-login' %}">Merchant</a>
+
+      {% if request.user.is_authenticated %}
+        {% if request.user|can_access_surface:"admin" %}
+          <a href="{% url 'accounts:console_admin' %}">Admin</a>
+        {% endif %}
+        {% if request.user|can_access_surface:"ops" %}
+          <a href="{% url 'ops:queue' %}">Ops</a>
+        {% endif %}
+        {% if request.user|can_access_surface:"customer" %}
+          <a href="{% url 'customer_portal:case_list' %}">Customer</a>
+        {% endif %}
+        {% if request.user|can_access_surface:"merchant" %}
+          <a href="{% url 'merchant_portal:case_list' %}">Merchant</a>
+        {% endif %}
+      {% else %}
+        <a href="{% url 'accounts:login_admin' %}">Admin</a>
+        <a href="{% url 'accounts:login_ops' %}">Ops</a>
+        <a href="{% url 'accounts:login_customer' %}">Customer</a>
+        <a href="{% url 'accounts:login_merchant' %}">Merchant</a>
+      {% endif %}
+
       <a href="{% url 'landing' %}#support">Support</a>
+    </div>
+
+    <div class="rh-topbar-actions">
+      {% if request.user.is_authenticated %}
+        <div class="rh-topbar-meta" aria-label="Signed-in user">
+          <span class="rh-header-note">{{ request.user.get_username }}</span>
+        </div>
+        <a class="btn btn-outline-secondary btn-sm rh-topbar-secondary" href="{% url 'accounts:logout' %}">
+          Sign out
+        </a>
+      {% endif %}
     </div>
   </div>
 </nav>

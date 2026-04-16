@@ -58,6 +58,9 @@ TEMPLATES = [
                 "django.contrib.messages.context_processors.messages",
                 "common.context_processors.app_shell",
             ],
+            "libraries": {
+                "surface_access": "accounts.templatetags.surface_access",
+            },
         },
     }
 ]
