@@ -64,37 +64,29 @@ class Command(BaseCommand):
             role=ROLE_MERCHANT,
         )
 
-        customer_one = CustomerProfile.objects.update_or_create(
+        customer_one = self._ensure_customer_profile(
             user=customer_one_user,
-            defaults={
-                "external_reference": "CUS-DEMO-0001",
-                "display_name": "Customer One",
-            },
-        )[0]
-        customer_two = CustomerProfile.objects.update_or_create(
+            external_reference="CUS-DEMO-0001",
+            display_name="Customer One",
+        )
+        customer_two = self._ensure_customer_profile(
             user=customer_two_user,
-            defaults={
-                "external_reference": "CUS-DEMO-0002",
-                "display_name": "Customer Two",
-            },
-        )[0]
+            external_reference="CUS-DEMO-0002",
+            display_name="Customer Two",
+        )
 
-        merchant_one = MerchantProfile.objects.update_or_create(
+        merchant_one = self._ensure_merchant_profile(
             user=merchant_one_user,
-            defaults={
-                "merchant_code": "MER-DEMO-0001",
-                "display_name": "Merchant One",
-                "support_email": "merchant.one@returnhub.local",
-            },
-        )[0]
-        merchant_two = MerchantProfile.objects.update_or_create(
+            merchant_code="MER-DEMO-0001",
+            display_name="Merchant One",
+            support_email="merchant.one@returnhub.local",
+        )
+        merchant_two = self._ensure_merchant_profile(
             user=merchant_two_user,
-            defaults={
-                "merchant_code": "MER-DEMO-0002",
-                "display_name": "Merchant Two",
-                "support_email": "merchant.two@returnhub.local",
-            },
-        )[0]
+            merchant_code="MER-DEMO-0002",
+            display_name="Merchant Two",
+            support_email="merchant.two@returnhub.local",
+        )
 
         self._ensure_cases(customer_one, merchant_one, start_index=1, count=16)
         self._ensure_cases(customer_two, merchant_two, start_index=17, count=16)
@@ -127,6 +119,61 @@ class Command(BaseCommand):
         group = Group.objects.get(name=GROUP_NAMES[role])
         user.groups.set([group])
         return user
+
+    def _ensure_customer_profile(self, *, user, external_reference, display_name):
+        """Create or update a customer profile without colliding on unique references."""
+
+        profile = CustomerProfile.objects.filter(user=user).first()
+        if profile is None:
+            profile = CustomerProfile.objects.filter(external_reference=external_reference).first()
+        if profile is None:
+            profile = CustomerProfile(
+                user=user,
+                external_reference=external_reference,
+            )
+
+        conflicting_profile = (
+            CustomerProfile.objects.filter(external_reference=external_reference)
+            .exclude(pk=profile.pk)
+            .first()
+        )
+        if conflicting_profile is not None:
+            conflicting_profile.external_reference = f"legacy-cus-{conflicting_profile.pk}"
+            conflicting_profile.save()
+
+        profile.user = user
+        profile.external_reference = external_reference
+        profile.display_name = display_name
+        profile.save()
+        return profile
+
+    def _ensure_merchant_profile(self, *, user, merchant_code, display_name, support_email):
+        """Create or update a merchant profile without colliding on unique merchant codes."""
+
+        profile = MerchantProfile.objects.filter(user=user).first()
+        if profile is None:
+            profile = MerchantProfile.objects.filter(merchant_code=merchant_code).first()
+        if profile is None:
+            profile = MerchantProfile(
+                user=user,
+                merchant_code=merchant_code,
+            )
+
+        conflicting_profile = (
+            MerchantProfile.objects.filter(merchant_code=merchant_code)
+            .exclude(pk=profile.pk)
+            .first()
+        )
+        if conflicting_profile is not None:
+            conflicting_profile.merchant_code = f"legacy-mer-{conflicting_profile.pk}"
+            conflicting_profile.save()
+
+        profile.user = user
+        profile.merchant_code = merchant_code
+        profile.display_name = display_name
+        profile.support_email = support_email
+        profile.save()
+        return profile
 
     def _ensure_cases(self, customer, merchant, start_index, count):
         """Create or update a fixed block of deterministic return cases."""
