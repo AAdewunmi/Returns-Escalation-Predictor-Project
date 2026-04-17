@@ -1,5 +1,5 @@
 # path: common/management/commands/seed_demo_data.py
-"""Seed deterministic demo data for local development and manual testing."""
+"""Seed deterministic legacy demo data for compatibility and manual testing."""
 from datetime import date, datetime, timedelta
 
 from django.contrib.auth import get_user_model
@@ -13,9 +13,9 @@ from returns.models import CaseEvent, ReturnCase
 
 
 class Command(BaseCommand):
-    """Create stable demo users, groups, and return cases."""
+    """Create the legacy single-surface demo dataset."""
 
-    help = "Seed deterministic demo users, groups, and return cases."
+    help = "Seed the legacy single-surface demo users, groups, and return cases."
 
     GROUP_NAMES = ["Admin", "Ops", "Customer", "Merchant"]
 

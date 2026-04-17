@@ -23,9 +23,9 @@ User = get_user_model()
 
 
 class Command(BaseCommand):
-    """Create stable users, profiles, and cases for the ReturnHub multi-surface demo."""
+    """Create the preferred users, profiles, and cases for the ReturnHub multi-surface demo."""
 
-    help = "Seed deterministic users and paginated return cases for the ReturnHub demo."
+    help = "Seed the preferred deterministic multi-surface demo users and paginated return cases."
 
     def handle(self, *args, **options):
         """Create demo users, groups, profiles, and enough cases for page 1 and page 2."""
