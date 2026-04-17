@@ -31,7 +31,7 @@ CUSTOMER_TIMELINE_ITEMS = (
         "title": "See your own cases",
         "body": (
             "Keep customer-linked returns visible in one place while later "
-            "sprints add deeper case actions."
+            "releases add deeper case actions."
         ),
     },
     {
@@ -60,7 +60,7 @@ MERCHANT_TIMELINE_ITEMS = (
     {
         "title": "Stay in shared workflow context",
         "body": (
-            "Case summaries remain visible while later sprints add merchant "
+            "Case summaries remain visible while later product updates add merchant "
             "responses and supporting documents."
         ),
     },

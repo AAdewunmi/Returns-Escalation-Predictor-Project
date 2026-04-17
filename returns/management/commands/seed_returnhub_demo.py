@@ -23,7 +23,7 @@ User = get_user_model()
 
 
 class Command(BaseCommand):
-    """Create stable users, profiles, and cases for the Sprint 6 multi-surface demo."""
+    """Create stable users, profiles, and cases for the ReturnHub multi-surface demo."""
 
     help = "Seed deterministic users and paginated return cases for the ReturnHub demo."
 
@@ -106,6 +106,7 @@ class Command(BaseCommand):
         self.stdout.write(
             f"Merchant users: {merchant_one_user.username}, {merchant_two_user.username}"
         )
+        self.stdout.write("Seeded demo subset count: 32")
         self.stdout.write(f"Total cases: {ReturnCase.objects.count()}")
 
     def _ensure_groups(self):

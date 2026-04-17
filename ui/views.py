@@ -29,9 +29,9 @@ SURFACE_CONTENT = {
         "surface_title": "Admin surface",
         "heading": "Administration entry is reserved and branded.",
         "body": (
-            "Sprint 1 reserves the admin entry route so the landing page points at a real, "
-            "product-branded destination. Django admin remains available now, while in-product "
-            "admin console work and auth routing land in later sprints."
+            "The admin entry route points the landing page at a real, product-branded "
+            "destination. Django admin remains available now, while in-product admin console "
+            "work and auth routing continue to evolve inside the ReturnHub shell."
         ),
     },
     "ops": {
@@ -40,16 +40,16 @@ SURFACE_CONTENT = {
         "body": (
             "This route establishes the future ops login surface and keeps product entry points "
             "coherent from the start. Queue, filtering, status actions, and HTMX interactions "
-            "arrive in later sprints."
+            "continue to expand within the ops workspace."
         ),
     },
     "customer": {
         "surface_title": "Customer surface",
         "heading": "Customer entry is reserved for case tracking.",
         "body": (
-            "Sprint 1 gives customers a branded entry point instead of a dead link. Read-only "
-            "case status, pagination, and evidence upload workflows arrive once API-first "
-            "workflow contracts are in place."
+            "Customers have a branded entry point instead of a dead link. Read-only case "
+            "status, pagination, and evidence upload workflows expand as the API-first "
+            "workflow contracts mature."
         ),
     },
     "merchant": {
@@ -87,7 +87,7 @@ class SurfaceEntryView(TemplateView):
 
 
 class BootstrapLandingView(LandingView):
-    """Backward-compatible minimal bootstrap view kept during the sprint transition."""
+    """Backward-compatible minimal bootstrap view kept during the UI transition."""
 
 
 class ReturnCaseDetailView(TemplateView):

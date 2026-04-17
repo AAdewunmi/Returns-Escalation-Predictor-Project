@@ -1,5 +1,5 @@
 # path: tests/test_surface_smoke.py
-"""Cross-surface smoke tests for the Sprint 6 product shell."""
+"""Cross-surface smoke tests for the ReturnHub product shell."""
 
 import pytest
 from django.core.management import call_command
@@ -21,17 +21,26 @@ def login(client, path, username):
     )
 
 
-def test_admin_can_open_admin_console_and_customer_portal_pages(client, seeded_data):
-    """Admin should reach the admin console and inspect customer page 1 and page 2."""
+def test_admin_can_open_admin_console(client, seeded_data):
+    """Admin should reach the admin console."""
     login_response = login(client, "/login/admin/", "admin.demo")
     assert login_response.status_code == 302
     assert login_response.headers["Location"] == "/console/admin/"
 
     console_response = client.get("/console/admin/")
+
+    assert console_response.status_code == 200
+
+
+def test_admin_can_open_customer_portal_pages(client, seeded_data):
+    """Admin should be able to inspect customer portal page 1 and page 2."""
+    login_response = login(client, "/login/admin/", "admin.demo")
+    assert login_response.status_code == 302
+    assert login_response.headers["Location"] == "/console/admin/"
+
     customer_page_1 = client.get("/customer/?page=1")
     customer_page_2 = client.get("/customer/?page=2")
 
-    assert console_response.status_code == 200
     assert customer_page_1.status_code == 200
     assert customer_page_2.status_code == 200
 

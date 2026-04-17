@@ -59,19 +59,19 @@ docker compose exec -T web python manage.py migrate --noinput
 Seed demo data.
 
 ```bash
-docker compose exec -T web python manage.py seed_demo_data
+docker compose exec -T web python manage.py seed_returnhub_demo
 ```
 
 Expected result:
 
 ```text
-Seed complete. Stable return case count: 32
+ReturnHub demo seed complete.
 ```
 
 Run it again to confirm idempotency.
 
 ```bash
-docker compose exec -T web python manage.py seed_demo_data
+docker compose exec -T web python manage.py seed_returnhub_demo
 ```
 
 ## Verify seeded roles and users
@@ -97,13 +97,13 @@ docker compose exec -T web python manage.py shell -c "from django.contrib.auth i
 Expected:
 
 ```text
-['admin', 'customer', 'merchant', 'ops']
+['admin.demo', 'customer.one', 'customer.two', 'merchant.one', 'merchant.two', 'ops.demo']
 ```
 
 Shared local password for the seeded users:
 
 ```text
-password123
+ChangeMe123!
 ```
 
 Check return-case count.
@@ -261,7 +261,7 @@ Document visibility checks:
 
 Authenticate with one of the seeded users and verify the live routes.
 
-Create a case as `customer`:
+Create a case as a seeded customer user such as `customer.one`:
 
 ```http
 POST /api/returns/
@@ -338,8 +338,8 @@ Check risk:
 
 Expected:
 
-- `ops` and `admin` receive risk payloads
-- `customer` and `merchant` receive `403`
+- ops and admins receive risk payloads
+- customers and merchants receive `403`
 
 Check audit export:
 
@@ -486,7 +486,7 @@ docker compose exec web python manage.py shell -c "import logging; from django.t
 docker compose exec web python manage.py shell -c "import logging; from django.test import Client; from django.contrib.auth import get_user_model; from returns.models import ReturnCase, CaseNote; logging.getLogger('django.request').disabled = True; User = get_user_model(); client = Client(HTTP_HOST='localhost', raise_request_exception=False); user = User.objects.filter(groups__name__iexact='Ops').first() or User.objects.filter(is_superuser=True).first(); nav_case = ReturnCase.objects.order_by('id').first(); sparse_case = ReturnCase.objects.exclude(pk=nav_case.pk).order_by('id').first() or nav_case; CaseNote.objects.filter(return_case=nav_case).delete(); CaseNote.objects.filter(return_case=sparse_case).delete(); CaseNote.objects.create(return_case=nav_case, author=user, body='Older note for ordering check'); CaseNote.objects.create(return_case=nav_case, author=user, body='Newer note for ordering check'); client.force_login(user); response = client.get(f'/ops/{nav_case.pk}/'); sparse_response = client.get(f'/ops/{sparse_case.pk}/'); content = response.content.decode(); sparse_content = sparse_response.content.decode(); print(f'OPS_CASE_DETAIL_QUICK_NAVIGATION_CHECK={\"Quick navigation\" in content}'); print(f'OPS_ACTION_BAR_WORKFLOW_LINK_CHECK={\"#case-status-panel\" in content}'); print(f'OPS_ACTION_BAR_NOTES_LINK_CHECK={\"#case-notes-panel\" in content}'); print(f'OPS_ACTION_BAR_DOCUMENTS_LINK_CHECK={\"#case-document-table\" in content}'); print(f'OPS_ACTION_BAR_TIMELINE_LINK_CHECK={\"#case-timeline\" in content}'); print(f'OPS_CASE_DETAIL_NOTES_PLACEMENT_CHECK={content.index(\"Workflow state\") < content.index(\"Internal notes\") < content.index(\"Documents\")}'); print(f'OPS_NOTES_ORDERING_RENDER_CHECK={content.index(\"Newer note for ordering check\") < content.index(\"Older note for ordering check\")}'); print(f'OPS_EMPTY_NOTES_CHECK={\"No notes yet\" in sparse_content}')"
 ```
 
-### Day 5 ops surface proof
+### Ops surface proof
 
 ```bash
 docker compose exec web python manage.py shell -c "import logging; from django.test import Client; from django.contrib.auth import get_user_model; from returns.models import ReturnCase; logging.getLogger('django.request').disabled = True; User = get_user_model(); client = Client(HTTP_HOST='localhost', raise_request_exception=False); user = User.objects.filter(groups__name__iexact='Ops').first() or User.objects.filter(is_superuser=True).first(); first_case = ReturnCase.objects.order_by('id').first(); sparse_case = ReturnCase.objects.filter(order_reference='RH-RUNBOOK-SPARSE').first() or first_case; client.force_login(user); queue = client.get('/ops/'); detail = client.get(f'/ops/{first_case.pk}/'); page_two = client.get('/ops/?page=2'); empty = client.get('/ops/?status=closed&priority=high&search=unlikely_runbook_value'); sparse = client.get(f'/ops/{sparse_case.pk}/'); queue_content = queue.content.decode(); detail_content = detail.content.decode(); empty_content = empty.content.decode(); sparse_content = sparse.content.decode(); print(f'OPS_QUEUE_SMOKE_RENDER_CHECK={queue.status_code == 200 and \"Returns queue\" in queue_content}'); print(f'OPS_DETAIL_SMOKE_RENDER_CHECK={detail.status_code == 200 and first_case.order_reference in detail_content}'); print(f'OPS_QUEUE_PAGE_TWO_CHECK={page_two.status_code == 200 and \"Showing 16-\" in page_two.content.decode()}'); print(f'OPS_QUEUE_EMPTY_STATE_CHECK={\"No cases match these filters\" in empty_content}'); print(f'OPS_DETAIL_EMPTY_DOCUMENTS_CHECK={\"No documents yet\" in sparse_content}'); print(f'OPS_DETAIL_EMPTY_TIMELINE_CHECK={\"No timeline events yet\" in sparse_content}'); print(f'OPS_DETAIL_LOADING_LAYER_CHECK={(\"data-loading-label\" in detail_content) and (\"rh-fragment-panel__status\" in detail_content)}'); print(f'OPS_DETAIL_FRAGMENT_IDS_CHECK={(\"case-status-panel\" in detail_content) and (\"case-notes-panel\" in detail_content)}')"

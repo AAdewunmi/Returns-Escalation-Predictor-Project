@@ -44,6 +44,7 @@ def test_seed_returnhub_demo_creates_expected_records() -> None:
     assert "ReturnHub demo seed complete." in out.getvalue()
     assert "Customer users: customer.one, customer.two" in out.getvalue()
     assert "Merchant users: merchant.one, merchant.two" in out.getvalue()
+    assert "Seeded demo subset count: 32" in out.getvalue()
 
 
 @pytest.mark.django_db
