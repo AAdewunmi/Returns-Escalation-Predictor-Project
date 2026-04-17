@@ -25,12 +25,29 @@ ReturnHub is organized around a shared domain model and service layer:
 
 - `accounts/` defines customer and merchant profiles
 - `returns/` owns return cases, documents, notes, audit events, risk persistence, workflow services, and ops APIs
-- `api/` exposes compatibility views and serializers for the live returns/document APIs
+- `api/` retains compatibility views and serializers that are not the default live route entry points
 - `analytics/` exposes bounded return metrics for ops and admins
 - `console/` serves authenticated dashboard and ops workflow pages
 - `ui/` serves public pages, the shared case workspace, and branded error pages
 - `ml/` owns feature extraction, scoring, model registry access, training flows, and reason-code generation
-- `common/` provides shared pagination, context processors, and demo-data seeding
+- `common/` provides shared pagination, context processors, and legacy demo-data seeding
+
+## Architecture Note
+
+The default live application entry points are:
+
+- `config/urls.py` for route composition
+- `console/` for authenticated console views
+- `returns/` for workflow routes, services, and the live returns API
+- `ui/` for public pages, shared case-detail pages, and branded error handling
+- `analytics/api/` for bounded analytics endpoints
+
+Compatibility and legacy layers retained in the repository:
+
+- `api/` for compatibility API wiring and serializers that are not mounted as the default live router
+- `core/` for compatibility mirrors used by older tests and imports
+- `common.management.commands.seed_demo_data` for the older single-surface seed dataset
+- `web/` as a reserved compatibility scaffold with no live route ownership
 
 ## Core domain
 
@@ -176,6 +193,14 @@ Demo users created by `seed_returnhub_demo`:
 Shared local password:
 
 - `ChangeMe123!`
+
+Preferred seed command for current manual verification and multi-surface demos:
+
+- `docker compose exec -T web python manage.py seed_returnhub_demo`
+
+Legacy compatibility seed still available for older workflows:
+
+- `docker compose exec -T web python manage.py seed_demo_data`
 
 ## Useful commands
 

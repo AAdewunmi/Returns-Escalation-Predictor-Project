@@ -1,4 +1,4 @@
-"""Compatibility API URL routes mirroring the live returns API structure."""
+"""Compatibility API URL routes not mounted by the default project router."""
 
 from __future__ import annotations
 

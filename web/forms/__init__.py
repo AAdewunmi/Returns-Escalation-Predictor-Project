@@ -1,1 +1,1 @@
-"""Form package for web-facing views."""
+"""Reserved compatibility scaffold for web-facing forms."""

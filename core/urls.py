@@ -1,5 +1,5 @@
 # path: core/urls.py
-"""Core URL routes aligned with the live public and console shells."""
+"""Compatibility URL mirrors for the live public and console shells."""
 
 from __future__ import annotations
 

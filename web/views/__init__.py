@@ -1,1 +1,1 @@
-"""View package for web-facing routes."""
+"""Reserved compatibility scaffold for web-facing views."""
