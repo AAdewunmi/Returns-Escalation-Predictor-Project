@@ -11,7 +11,7 @@ from ml.datasets.synthetic import generate_synthetic_rows, write_synthetic_rows_
 
 
 class Command(BaseCommand):
-    """Generate a CSV dataset for Sprint 3 model training work."""
+    """Generate a CSV dataset for ReturnHub model training work."""
 
     help = "Generate deterministic synthetic risk training data for ReturnHub."
 

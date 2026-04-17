@@ -1,5 +1,5 @@
 # path: tests/test_surface_smoke.py
-"""Cross-surface smoke tests for the Sprint 6 product shell."""
+"""Cross-surface smoke tests for the ReturnHub product shell."""
 
 import pytest
 from django.core.management import call_command
