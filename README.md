@@ -155,7 +155,7 @@ Current committed active model:
 cp .env.example .env
 docker compose up --build -d
 docker compose exec -T web python manage.py migrate --noinput
-docker compose exec -T web python manage.py seed_demo_data
+docker compose exec -T web python manage.py seed_returnhub_demo
 ```
 
 Application URL:
@@ -164,16 +164,18 @@ Application URL:
 http://127.0.0.1:8000/
 ```
 
-Demo users created by `seed_demo_data`:
+Demo users created by `seed_returnhub_demo`:
 
-- `admin`
-- `ops`
-- `customer`
-- `merchant`
+- `admin.demo`
+- `ops.demo`
+- `customer.one`
+- `customer.two`
+- `merchant.one`
+- `merchant.two`
 
 Shared local password:
 
-- `password123`
+- `ChangeMe123!`
 
 ## Useful commands
 
@@ -195,17 +197,23 @@ docker compose exec -T web python manage.py retrain_baseline_model --seed 7 --ro
 
 ```text
 .
+├── .github/
 ├── accounts/
 ├── analytics/
 ├── api/
+├── artifacts/
 ├── common/
 ├── config/
 ├── console/
+├── core/
 ├── docs/
 │   ├── api/
 │   ├── ml/
+│   ├── sprint-runbook/
 │   └── ui/
 ├── ml/
+├── ml_artifacts/
+├── requirements/
 ├── returns/
 ├── static/
 ├── templates/
@@ -214,7 +222,13 @@ docker compose exec -T web python manage.py retrain_baseline_model --seed 7 --ro
 ├── Dockerfile
 ├── Makefile
 ├── README.md
-└── RUNBOOK.md
+├── RUNBOOK.md
+├── codecov.yml
+├── docker-compose.yml
+├── manage.py
+├── pyproject.toml
+├── pytest.ini
+└── web/
 ```
 
 ## Documentation map
@@ -228,3 +242,4 @@ docker compose exec -T web python manage.py retrain_baseline_model --seed 7 --ro
 - `docs/ui/product-ui-brief.md`: product-surface intent and route map
 - `docs/ui/design-system.md`: tokens, layout patterns, and component rules
 - `docs/ui/evidence-states.md`: case detail and document-upload state handling
+- `docs/sprint-runbook/sprint-6/sprint-6-multi-surface-verification.md`: current multi-surface verification flow

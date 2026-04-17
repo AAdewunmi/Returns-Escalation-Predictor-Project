@@ -1,5 +1,5 @@
 <!-- path: docs/sprint-runbook/sprint-6/sprint-6-multi-surface-verification.md -->
-# Sprint 6 Multi-Surface Verification
+# Multi-Surface Verification
 
 This runbook verifies the current ReturnHub multi-surface experience using the live repository structure. It covers seeded demo access, public entry points, role-specific console routes, paginated surface routes, wrong-role handling, and the smoke tests that back those flows in the test suite.
 
