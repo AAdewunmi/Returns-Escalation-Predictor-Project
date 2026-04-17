@@ -106,6 +106,7 @@ class Command(BaseCommand):
         self.stdout.write(
             f"Merchant users: {merchant_one_user.username}, {merchant_two_user.username}"
         )
+        self.stdout.write("Seeded demo subset count: 32")
         self.stdout.write(f"Total cases: {ReturnCase.objects.count()}")
 
     def _ensure_groups(self):
