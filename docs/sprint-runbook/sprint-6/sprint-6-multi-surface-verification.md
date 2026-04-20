@@ -3,6 +3,14 @@
 
 This runbook verifies the current ReturnHub multi-surface experience using the live repository structure. It covers seeded demo access, public entry points, role-specific console routes, paginated surface routes, wrong-role handling, and the smoke tests that back those flows in the test suite.
 
+For an executable version of this runbook, use:
+
+```bash
+./docs/sprint-runbook/sprint-6/sprint-6-multi-surface-verification.sh
+```
+
+The shell runbooks are written to fail with compact `CHECK_FAILED=` or `UNEXPECTED_ERROR=` lines instead of printing full Python tracebacks.
+
 ## Scope
 
 This document is aligned to the current project state:
@@ -36,7 +44,9 @@ Expected result:
 
 - `web` is running
 - the seed command reports `ReturnHub demo seed complete.`
-- the seed command prints the seeded usernames and a total case count of `32`
+- the seed command prints the seeded usernames
+- the seed command prints `Seeded demo subset count: 32`
+- the seed command may print a larger live `Total cases` value in non-pristine local databases
 
 ## Seeded Users
 
