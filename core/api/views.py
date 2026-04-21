@@ -20,8 +20,6 @@ class HealthCheckView(APIView):
         """Return the current readiness state for the application."""
         payload = get_readiness_payload()
         response_status = (
-            status.HTTP_200_OK
-            if payload["status"] == "ok"
-            else status.HTTP_503_SERVICE_UNAVAILABLE
+            status.HTTP_200_OK if payload["status"] == "ok" else status.HTTP_503_SERVICE_UNAVAILABLE
         )
         return Response(payload, status=response_status)
