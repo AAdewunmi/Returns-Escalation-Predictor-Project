@@ -5,6 +5,7 @@ from __future__ import annotations
 import importlib
 import sys
 
+
 def test_production_settings_apply_env_driven_security_and_release_values(monkeypatch) -> None:
     """Production settings should expose the expected hardened env-driven values."""
     monkeypatch.setenv("DJANGO_ALLOWED_HOSTS", "app.example.com,api.example.com")
