@@ -30,6 +30,13 @@ def test_ops_namespace_routes_to_real_case_detail_page() -> None:
     assert resolve("/ops/42/").view_name == "ops:case-detail"
 
 
+def test_api_health_route_resolves_to_core_health_check() -> None:
+    """The root router should expose the operational health endpoint."""
+
+    assert reverse("core_api:health") == "/api/health/"
+    assert resolve("/api/health/").view_name == "core_api:health"
+
+
 def test_config_urls_appends_media_patterns_when_debug(monkeypatch) -> None:
     """Root URLs should append media-serving patterns in debug mode."""
 

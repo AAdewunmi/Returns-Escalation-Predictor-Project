@@ -23,6 +23,7 @@ urlpatterns = [
     ),
     path("ops/", include(("returns.urls.ops", "ops"), namespace="ops")),
     path("console/", include("console.urls")),
+    path("api/", include("core.api.urls")),
     path("api/analytics/", include("analytics.api.urls")),
     path("api/returns/", include("returns.api.urls")),
     path("admin/", admin.site.urls),
