@@ -13,7 +13,7 @@ def test_production_compose_contains_required_services() -> None:
     assert "db:" in compose_text
     assert "web:" in compose_text
     assert "nginx:" in compose_text
-    assert "dockerfile: Dockerfile" in compose_text
+    assert "dockerfile: Dockerfile.prod" in compose_text
     assert "service_healthy" in compose_text
 
 
@@ -29,7 +29,9 @@ def test_nginx_site_config_exposes_static_media_and_health() -> None:
 
 def test_deployment_doc_mentions_build_and_health_verification() -> None:
     """Deployment documentation should include the critical operator steps."""
-    deployment_doc = Path("docs/DEPLOYMENT.md").read_text()
+    deployment_doc = Path("docs/deployment.md").read_text()
 
-    assert "docker compose -f docker-compose.prod.yml --env-file .env.prod build" in deployment_doc
-    assert "curl -i http://127.0.0.1/api/health/" in deployment_doc
+    assert "docker compose -f docker-compose.prod.yml up --build -d" in deployment_doc
+    assert "production.env" in deployment_doc
+    assert "/api/health/" in deployment_doc
+    assert "config.settings.production" in deployment_doc
