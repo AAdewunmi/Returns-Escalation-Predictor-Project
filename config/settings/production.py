@@ -3,6 +3,8 @@
 
 from __future__ import annotations
 
+import os
+
 from .base import *  # noqa: F401,F403
 from .production_helpers import env_bool, env_int, env_list
 
@@ -36,4 +38,4 @@ SECURE_CONTENT_TYPE_NOSNIFF = True
 SECURE_CROSS_ORIGIN_OPENER_POLICY = "same-origin"
 X_FRAME_OPTIONS = "DENY"
 
-RELEASE_VERSION = env_list("RELEASE_VERSION", ["dev"])[0]
+RELEASE_VERSION = os.getenv("RELEASE_VERSION", "dev")

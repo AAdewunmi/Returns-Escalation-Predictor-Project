@@ -179,6 +179,7 @@ Local health-check release identifier:
 
 - set `RELEASE_VERSION` in `.env` to control the value returned by `/api/health/`
 - examples: `RELEASE_VERSION=dev`, `RELEASE_VERSION=staging-2026-04-21`, `RELEASE_VERSION=prod-2026-04-21`
+- set `DJANGO_SETTINGS_MODULE=config.settings.production` in `.env` to run the app with the production settings module instead of the default `config.settings.dev`
 
 Application URL:
 
