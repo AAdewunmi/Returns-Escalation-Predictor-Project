@@ -1,8 +1,9 @@
 # path: Dockerfile
 FROM python:3.12-slim
 
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    PIP_NO_CACHE_DIR=1
 
 WORKDIR /app
 
@@ -18,6 +19,9 @@ RUN pip install --upgrade pip \
 
 COPY . /app
 
+RUN chmod +x /app/docker/entrypoint.sh
+
 EXPOSE 8000
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+ENTRYPOINT ["sh", "/app/docker/entrypoint.sh"]
+CMD ["gunicorn", "config.wsgi:application", "-c", "gunicorn.conf.py"]
