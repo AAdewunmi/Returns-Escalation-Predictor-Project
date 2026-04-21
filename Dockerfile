@@ -19,6 +19,9 @@ RUN pip install --upgrade pip \
 
 COPY . /app
 
+RUN chmod +x /app/docker/entrypoint.sh
+
 EXPOSE 8000
 
-CMD ["python", "manage.py", "runserver", "0.0.0.0:8000"]
+ENTRYPOINT ["sh", "/app/docker/entrypoint.sh"]
+CMD ["gunicorn", "config.wsgi:application", "-c", "gunicorn.conf.py"]
