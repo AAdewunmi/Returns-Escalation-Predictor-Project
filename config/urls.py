@@ -1,10 +1,13 @@
-# path: config/urls.py
-"""Project URL configuration for ReturnHub."""
+"""Top-level URL configuration for ReturnHub."""
+
+from __future__ import annotations
 
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
+
+from core.api.views import HealthCheckView
 
 handler403 = "ui.error_views.error_403"
 handler404 = "ui.error_views.error_404"
@@ -23,7 +26,7 @@ urlpatterns = [
     ),
     path("ops/", include(("returns.urls.ops", "ops"), namespace="ops")),
     path("console/", include("console.urls")),
-    path("api/", include("core.api.urls")),
+    path("api/health/", HealthCheckView.as_view(), name="api-health"),
     path("api/analytics/", include("analytics.api.urls")),
     path("api/returns/", include("returns.api.urls")),
     path("admin/", admin.site.urls),
