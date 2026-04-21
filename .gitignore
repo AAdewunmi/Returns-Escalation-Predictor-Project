@@ -47,3 +47,4 @@ coverage.xml
 
 # Shell scripts
 *.sh
+!docker/entrypoint.sh
