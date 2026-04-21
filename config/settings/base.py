@@ -10,6 +10,7 @@ load_dotenv(BASE_DIR / ".env")
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-dev-key")
 DEBUG = os.getenv("DJANGO_DEBUG", "0") == "1"
+RELEASE_VERSION = os.getenv("RELEASE_VERSION", "dev")
 ALLOWED_HOSTS = [
     host.strip()
     for host in os.getenv(

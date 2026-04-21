@@ -175,6 +175,11 @@ docker compose exec -T web python manage.py migrate --noinput
 docker compose exec -T web python manage.py seed_returnhub_demo
 ```
 
+Local health-check release identifier:
+
+- set `RELEASE_VERSION` in `.env` to control the value returned by `/api/health/`
+- examples: `RELEASE_VERSION=dev`, `RELEASE_VERSION=staging-2026-04-21`, `RELEASE_VERSION=prod-2026-04-21`
+
 Application URL:
 
 ```text
