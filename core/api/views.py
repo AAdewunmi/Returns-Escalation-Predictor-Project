@@ -1,5 +1,4 @@
-# path: core/api.py
-"""API views that support operational concerns for ReturnHub."""
+"""Operational API views for ReturnHub core endpoints."""
 
 from __future__ import annotations
 
@@ -8,7 +7,7 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from apps.core.health import get_readiness_payload
+from core.health import get_readiness_payload
 
 
 class HealthCheckView(APIView):

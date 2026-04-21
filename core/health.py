@@ -1,4 +1,3 @@
-# path: core/health.py
 """Health and readiness checks used by deployment and monitoring tooling."""
 
 from __future__ import annotations
