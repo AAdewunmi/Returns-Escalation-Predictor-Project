@@ -28,6 +28,16 @@ Key values:
 - `POSTGRES_*` database connection values
 - `RELEASE_VERSION=<deployment identifier>`
 
+For the repo's Compose-based production stack, create a real `production.env`
+from that template and set `POSTGRES_HOST=db` so the web container connects to
+the Compose `db` service. The production Compose stack builds `Dockerfile.prod`,
+which installs `requirements/prod.txt` instead of the dev dependency set.
+
+```bash
+cp production.env.example production.env
+docker compose -f docker-compose.prod.yml up --build -d
+```
+
 ## Verification
 
 After deployment, verify that the process is using the production settings
@@ -59,3 +69,4 @@ Expected result:
 - Keep `.env.example` for local development only.
 - Do not rely on one-off `export DJANGO_SETTINGS_MODULE=...` commands during deploy.
 - Keep production-only behavior in `config/settings/production.py`.
+- Keep `Dockerfile.prod` and `requirements/prod.txt` as the production image path.
