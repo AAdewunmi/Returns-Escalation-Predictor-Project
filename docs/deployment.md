@@ -28,6 +28,15 @@ Key values:
 - `POSTGRES_*` database connection values
 - `RELEASE_VERSION=<deployment identifier>`
 
+For the repo's Compose-based production stack, create a real `production.env`
+from that template and set `POSTGRES_HOST=db` so the web container connects to
+the Compose `db` service.
+
+```bash
+cp production.env.example production.env
+docker compose -f docker-compose.prod.yml up --build -d
+```
+
 ## Verification
 
 After deployment, verify that the process is using the production settings
