@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 
 from django.db.utils import OperationalError
 from rest_framework import status
@@ -78,7 +78,7 @@ def test_check_database_returns_unavailable_on_operational_error(monkeypatch) ->
 def test_get_readiness_payload_includes_release_timestamp_and_checks(monkeypatch, settings) -> None:
     """The readiness payload should expose the stable response contract."""
 
-    fixed_now = datetime(2026, 4, 21, 9, 3, 36, tzinfo=timezone.utc)
+    fixed_now = datetime(2026, 4, 21, 9, 3, 36, tzinfo=UTC)
     monkeypatch.setattr("core.health.check_database", lambda: (True, "ok"))
     monkeypatch.setattr("core.health.timezone.now", lambda: fixed_now)
     settings.RELEASE_VERSION = "2026.04.21"
@@ -97,7 +97,7 @@ def test_get_readiness_payload_falls_back_to_degraded_and_dev_release(
 ) -> None:
     """The helper should preserve safe defaults for degraded environments."""
 
-    fixed_now = datetime(2026, 4, 21, 9, 3, 36, tzinfo=timezone.utc)
+    fixed_now = datetime(2026, 4, 21, 9, 3, 36, tzinfo=UTC)
     monkeypatch.setattr("core.health.check_database", lambda: (False, "unavailable"))
     monkeypatch.setattr("core.health.timezone.now", lambda: fixed_now)
     del settings.RELEASE_VERSION
