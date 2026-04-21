@@ -28,6 +28,7 @@ jobs:
     env:
       DJANGO_SETTINGS_MODULE: config.settings.test
       DJANGO_SECRET_KEY: ci-secret-key
+      RELEASE_VERSION: ci
       DJANGO_ALLOWED_HOSTS: localhost,127.0.0.1
       POSTGRES_DB: returnhub
       POSTGRES_USER: returnhub

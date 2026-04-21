@@ -38,6 +38,12 @@ Create the local environment file.
 cp .env.example .env
 ```
 
+Set the release identifier returned by `/api/health/` when needed.
+
+- local default: `RELEASE_VERSION=dev`
+- staging example: `RELEASE_VERSION=staging-2026-04-21`
+- production example: `RELEASE_VERSION=prod-2026-04-21`
+
 Start the containers.
 
 ```bash
