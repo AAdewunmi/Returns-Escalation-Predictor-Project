@@ -76,6 +76,31 @@ The canonical production-like stack is:
 - `web`
 - `nginx`
 
+## Operator sequence
+
+Use this exact sequence to move from image build to a healthy application:
+
+1. Create and review `production.env` from `production.env.example`.
+2. Start the stack:
+
+   ```bash
+   docker compose -f docker-compose.prod.yml up --build -d
+   ```
+
+3. Confirm the services are running:
+
+   ```bash
+   docker compose -f docker-compose.prod.yml ps
+   ```
+
+4. Verify the app process is using `config.settings.production`.
+5. Verify `/api/health/` returns a healthy readiness payload.
+6. Verify the landing page responds through Nginx with the expected security headers.
+
+The application should be considered healthy only after the entrypoint has
+completed Django checks, migrations, and `collectstatic`, and after Gunicorn and
+Nginx are both serving requests successfully.
+
 ## Verification
 
 After deployment, verify that the process is using the production settings
