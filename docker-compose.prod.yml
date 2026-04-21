@@ -4,7 +4,7 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     env_file:
-      - .env.prod
+      - production.env
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
@@ -19,8 +19,7 @@ services:
       dockerfile: Dockerfile
     restart: unless-stopped
     env_file:
-      - .env.prod
-    command: gunicorn config.wsgi:application -c gunicorn.conf.py
+      - production.env
     depends_on:
       db:
         condition: service_healthy
