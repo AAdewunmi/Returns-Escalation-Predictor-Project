@@ -48,8 +48,8 @@
         <div class="rh-kicker">Case Queue</div>
         <h2>Keep merchant-owned returns visible, current, and easy to action.</h2>
       </div>
-      <div class="table-responsive">
-        <table class="table table-hover rh-table align-middle mb-0">
+      <div class="table-responsive rh-table-responsive">
+        <table class="table table-hover rh-table rh-table--stacked align-middle mb-0">
           <thead>
             <tr>
               <th scope="col">Reference</th>
@@ -64,14 +64,28 @@
             {% for case in cases %}
               <tr>
                 <td>
+                  <div class="rh-table__cell-label">Reference</div>
                   <div class="fw-semibold">{{ case.order_reference }}</div>
                   <div class="text-muted small">{{ case.item_category|title }}</div>
                 </td>
-                <td>{% include "partials/_status_badge.html" with status=case.status %}</td>
-                <td>{{ case.priority|title }}</td>
-                <td>{{ case.customer.display_name|default:case.customer.user.username }}</td>
-                <td>{{ case.created_at|date:"j M Y" }}</td>
+                <td>
+                  <div class="rh-table__cell-label">Status</div>
+                  {% include "partials/_status_badge.html" with status=case.status %}
+                </td>
+                <td>
+                  <div class="rh-table__cell-label">Priority</div>
+                  {{ case.priority|title }}
+                </td>
+                <td>
+                  <div class="rh-table__cell-label">Customer</div>
+                  {{ case.customer.display_name|default:case.customer.user.username }}
+                </td>
+                <td>
+                  <div class="rh-table__cell-label">Opened</div>
+                  {{ case.created_at|date:"j M Y" }}
+                </td>
                 <td class="text-end">
+                  <div class="rh-table__cell-label">Workspace</div>
                   <a class="btn btn-sm btn-outline-dark" href="{% url 'merchant_portal:case_detail' case_id=case.pk %}">
                     Open case
                   </a>

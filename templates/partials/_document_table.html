@@ -1,7 +1,7 @@
 <!-- path: templates/partials/_document_table.html -->
 {% if documents %}
-<div class="table-responsive">
-  <table class="table table-hover rh-table align-middle mb-0">
+<div class="table-responsive rh-table-responsive">
+  <table class="table table-hover rh-table rh-table--stacked align-middle mb-0">
     <thead>
       <tr>
         <th scope="col">Filename</th>
@@ -15,19 +15,30 @@
       {% for document in documents %}
       <tr>
         <td>
+          <div class="rh-table__cell-label">Filename</div>
           <div class="fw-semibold">{{ document.original_filename }}</div>
           {% if document.notes %}
           <div class="text-muted small">{{ document.notes }}</div>
           {% endif %}
         </td>
         <td>
+          <div class="rh-table__cell-label">Kind</div>
           <span class="rh-status-pill rh-status-pill--neutral">
             {{ document.get_kind_display }}
           </span>
         </td>
-        <td>{{ document.content_type }}</td>
-        <td>{{ document.byte_size|filesizeformat }}</td>
-        <td>{{ document.created_at|date:"j M Y, H:i" }}</td>
+        <td>
+          <div class="rh-table__cell-label">Type</div>
+          {{ document.content_type }}
+        </td>
+        <td>
+          <div class="rh-table__cell-label">Size</div>
+          {{ document.byte_size|filesizeformat }}
+        </td>
+        <td>
+          <div class="rh-table__cell-label">Added</div>
+          {{ document.created_at|date:"j M Y, H:i" }}
+        </td>
       </tr>
       {% endfor %}
     </tbody>

@@ -9,7 +9,7 @@
 
   {% if pagination.page_obj.object_list %}
     <div class="table-responsive rh-queue-table-wrap">
-      <table class="table rh-queue-table align-middle mb-0">
+      <table class="table rh-queue-table rh-queue-table--stacked align-middle mb-0">
         <thead>
           <tr>
             <th scope="col">Case</th>
@@ -25,6 +25,7 @@
           {% for return_case in pagination.page_obj.object_list %}
             <tr>
               <td>
+                <div class="rh-table__cell-label">Case</div>
                 <div class="rh-queue-table__primary">
                   <a href="{% url 'ops:case-detail' case_id=return_case.pk %}">
                     {{ return_case.order_reference }}
@@ -36,20 +37,27 @@
                 </div>
               </td>
               <td>
+                <div class="rh-table__cell-label">Customer</div>
                 <div class="rh-queue-table__primary">{{ return_case.customer.display_name }}</div>
                 <div class="rh-queue-table__subtle">{{ return_case.customer.user.email }}</div>
               </td>
               <td>
+                <div class="rh-table__cell-label">Merchant</div>
                 <div class="rh-queue-table__primary">{{ return_case.merchant.display_name|default:"Unknown merchant" }}</div>
                 <div class="rh-queue-table__subtle">{{ return_case.merchant.support_email|default:return_case.merchant.user.email }}</div>
               </td>
-              <td>{% include "partials/_status_badge.html" with status=return_case.status %}</td>
               <td>
+                <div class="rh-table__cell-label">Status</div>
+                {% include "partials/_status_badge.html" with status=return_case.status %}
+              </td>
+              <td>
+                <div class="rh-table__cell-label">Priority</div>
                 <span class="rh-priority-pill rh-priority-pill--{{ return_case.priority }}">
                   {{ return_case.get_priority_display }}
                 </span>
               </td>
               <td>
+                <div class="rh-table__cell-label">SLA due</div>
                 {% if return_case.sla_due_at %}
                   <div class="rh-queue-table__primary">{{ return_case.sla_due_at|date:"d M Y" }}</div>
                   <div class="rh-queue-table__subtle">{{ return_case.sla_due_at|date:"H:i" }}</div>
@@ -58,6 +66,7 @@
                 {% endif %}
               </td>
               <td>
+                <div class="rh-table__cell-label">Risk</div>
                 {% include "partials/_risk_badge.html" with risk_label=return_case.current_risk_label risk_score=return_case.current_risk_score %}
               </td>
             </tr>
