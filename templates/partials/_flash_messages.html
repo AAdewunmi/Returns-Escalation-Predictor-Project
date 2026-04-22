@@ -2,8 +2,19 @@
 {% if messages %}
   <div class="mb-4" aria-live="polite">
     {% for message in messages %}
-      <div class="alert alert-{{ message.tags|default:'info' }} mb-2" role="alert">
-        {{ message }}
+      <div class="rh-alert {% if message.tags == 'success' %}rh-alert--success{% elif message.tags == 'warning' %}rh-alert--warning{% elif message.tags == 'error' %}rh-alert--danger{% else %}rh-alert--info{% endif %}" role="alert">
+        <h2 class="rh-alert__title">
+          {% if message.tags == "success" %}
+            Update complete
+          {% elif message.tags == "warning" %}
+            Check this update
+          {% elif message.tags == "error" %}
+            Action needed
+          {% else %}
+            Notice
+          {% endif %}
+        </h2>
+        <p class="rh-alert__body">{{ message }}</p>
       </div>
     {% endfor %}
   </div>
