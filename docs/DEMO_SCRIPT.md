@@ -44,6 +44,22 @@ Shared local password:
 
 - `ChangeMe123!`
 
+Deterministic case-pick commands:
+
+```bash
+docker compose exec -T web python manage.py shell -c "from returns.models import ReturnCase; case = ReturnCase.objects.filter(status='submitted').order_by('id').first(); print(f'OPS_CASE_ID={case.id}'); print(f'OPS_CASE_REF={case.order_reference}')"
+docker compose exec -T web python manage.py shell -c "from returns.models import ReturnCase; case = ReturnCase.objects.filter(order_reference='RH-RUNBOOK-SPARSE').first() or ReturnCase.objects.order_by('id').first(); print(f'SHARED_CASE_ID={case.id}'); print(f'SHARED_CASE_REF={case.order_reference}')"
+```
+
+Use the printed values throughout the demo:
+
+- use `ops.demo` for the ops queue and ops case-detail steps
+- use `admin.demo` for the admin console step
+- use `customer.one` for the customer console and shared case-detail step
+- use `merchant.one` for the merchant console step
+- use `OPS_CASE_ID` for the main operational walkthrough
+- use `SHARED_CASE_ID` for the shared case-detail walkthrough
+
 ## Demo flow
 
 ### 1. Open the public product surface
@@ -73,12 +89,12 @@ Narration:
 
 ### 3. Show console dashboards
 
-Log in with seeded users and open:
+Log in with these seeded users and open:
 
-- `http://127.0.0.1:8000/console/admin/`
-- `http://127.0.0.1:8000/console/ops/`
-- `http://127.0.0.1:8000/console/customer/`
-- `http://127.0.0.1:8000/console/merchant/`
+- `admin.demo` -> `http://127.0.0.1:8000/console/admin/`
+- `ops.demo` -> `http://127.0.0.1:8000/console/ops/`
+- `customer.one` -> `http://127.0.0.1:8000/console/customer/`
+- `merchant.one` -> `http://127.0.0.1:8000/console/merchant/`
 
 Narration:
 
@@ -90,7 +106,9 @@ Narration:
 
 Open:
 
-- `http://127.0.0.1:8000/ops/`
+- log in as `ops.demo`
+- open `http://127.0.0.1:8000/ops/`
+- locate `OPS_CASE_REF` in the queue
 
 Call out:
 
@@ -107,9 +125,9 @@ Narration:
 
 ### 5. Open an ops case-detail workspace
 
-Open a seeded case from the queue:
+Open the deterministic seeded case:
 
-- `http://127.0.0.1:8000/ops/<case_id>/`
+- `http://127.0.0.1:8000/ops/<OPS_CASE_ID>/`
 
 Call out:
 
@@ -129,7 +147,7 @@ Narration:
 
 ### 6. Show inline workflow actions
 
-Using an ops or admin account:
+Using `ops.demo` on `OPS_CASE_ID`:
 
 - change a case from `submitted` to `in_review`
 - raise priority if useful for the demo
@@ -146,7 +164,8 @@ Narration:
 
 Open:
 
-- `http://127.0.0.1:8000/cases/<case_id>/`
+- log in as `customer.one`
+- open `http://127.0.0.1:8000/cases/<SHARED_CASE_ID>/`
 
 Narration:
 
@@ -171,17 +190,17 @@ Narration:
 
 ### 9. Show the live API surface
 
-Use a browser client or API tool to reference these routes:
+Use a browser client or API tool and substitute `OPS_CASE_ID` where needed:
 
 - `POST /api/returns/`
-- `GET /api/returns/<case_id>/`
-- `PATCH /api/returns/<case_id>/status/`
-- `POST /api/returns/<case_id>/notes/`
+- `GET /api/returns/<OPS_CASE_ID>/`
+- `PATCH /api/returns/<OPS_CASE_ID>/status/`
+- `POST /api/returns/<OPS_CASE_ID>/notes/`
 - `GET /api/returns/queue/`
-- `GET /api/returns/<case_id>/documents/`
-- `POST /api/returns/<case_id>/documents/`
-- `GET /api/returns/<case_id>/risk/`
-- `GET /api/returns/<case_id>/audit-export/`
+- `GET /api/returns/<OPS_CASE_ID>/documents/`
+- `POST /api/returns/<OPS_CASE_ID>/documents/`
+- `GET /api/returns/<OPS_CASE_ID>/risk/`
+- `GET /api/returns/<OPS_CASE_ID>/audit-export/`
 - `GET /api/analytics/returns/?from=YYYY-MM-DD&to=YYYY-MM-DD`
 
 Narration:
@@ -204,6 +223,17 @@ Narration:
 
 - The project includes repeatable quality checks and a deterministic demo seed.
 - The same repository supports product walkthroughs, operational review, and API verification.
+
+## Time box
+
+Suggested pacing for a five to eight minute walkthrough:
+
+- 1 minute: public landing and role entry points
+- 1 minute: console dashboards
+- 2 minutes: ops queue and ops case-detail workspace
+- 1 minute: workflow actions and audit/risk context
+- 1 minute: shared case-detail route
+- 1 minute: API surface and quality checks
 
 ## Optional proof commands
 
