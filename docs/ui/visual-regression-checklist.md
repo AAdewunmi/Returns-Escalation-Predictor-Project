@@ -9,7 +9,7 @@ Use this checklist before demos, release candidates, or major merges that touch 
 
 - The landing page, login pages, and consoles all use the same typography rhythm and spacing scale.
 - Top navigation remains aligned and readable from tablet width upward.
-- Flash messages do not overlap page headings or primary actions.
+- Flash messages and shared form-error alerts use the same branded visual language and do not overlap page headings or primary actions.
 - Keyboard focus is visible on links, buttons, and form fields.
 
 ## Ops surface
@@ -34,7 +34,8 @@ Use this checklist before demos, release candidates, or major merges that touch 
 ## Responsive review
 
 - Check 375px, 768px, 1024px, and desktop widths.
-- Confirm tables use horizontal overflow gracefully where needed.
+- Confirm dense customer, merchant, ops, and document tables switch to readable stacked mobile cards on small screens.
+- Confirm mobile table labels remain visible and actions remain clear and tappable.
 - Confirm stacked actions remain readable and tappable on mobile.
 
 ## Accessibility review
