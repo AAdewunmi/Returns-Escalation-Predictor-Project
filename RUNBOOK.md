@@ -2,6 +2,37 @@
 
 This runbook takes the project from clean clone to a verified local environment and checks the routes, workflows, APIs, ML artifacts, and proof commands that currently match the repository.
 
+## Sprint 7 walkthrough intent
+
+This runbook covers the operational commands and checks needed to run, inspect, and verify ReturnHub after Sprint 7. It is intentionally practical. It assumes a working development or production-like environment and focuses on the tasks an operator, reviewer, or hiring manager might perform during a walkthrough.
+
+Common operator commands:
+
+```bash
+make up
+make ps
+make logs
+make shell
+make migrate
+make test
+make test-cov
+make lint
+make format-check
+make check
+```
+
+Equivalent Docker Compose commands:
+
+```bash
+docker compose up --build -d
+docker compose ps
+docker compose logs -f
+docker compose exec -T web python manage.py migrate
+docker compose exec -T web pytest -q
+docker compose exec -T web python -m ruff check .
+docker compose exec -T web python -m black . --check
+```
+
 ## Scope
 
 This runbook verifies:
