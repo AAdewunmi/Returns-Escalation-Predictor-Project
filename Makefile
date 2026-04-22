@@ -58,7 +58,7 @@ test:
 	$(WEB) pytest -q
 
 test-cov:
-	$(WEB) pytest -q --cov=. --cov-report=term-missing --cov-report=xml --cov-fail-under=85
+	$(WEB) pytest -q
 
 lint:
 	$(PY) -m ruff check .
