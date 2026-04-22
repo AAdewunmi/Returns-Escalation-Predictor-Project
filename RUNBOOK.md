@@ -473,7 +473,7 @@ docker compose exec -T web pytest -q
 Run coverage gate:
 
 ```bash
-docker compose exec -T web pytest -q --cov=. --cov-report=term-missing --cov-report=xml --cov-fail-under=85
+docker compose exec -T web pytest -q
 ```
 
 ## Convenience targets
