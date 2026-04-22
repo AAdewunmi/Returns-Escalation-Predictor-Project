@@ -2,11 +2,16 @@
 [tool.black]
 line-length = 100
 target-version = ["py312"]
+extend-exclude = '''
+/(
+    migrations
+)/
+'''
 
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-exclude = ["migrations"]
+extend-exclude = ["**/migrations/*.py"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "DJ"]
@@ -14,5 +19,18 @@ select = ["E", "F", "I", "B", "UP", "DJ"]
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "config.settings.test"
 python_files = ["tests.py", "test_*.py", "*_tests.py"]
-addopts = "--strict-markers --disable-warnings"
+addopts = "--strict-markers --disable-warnings --cov --cov-report=term-missing --cov-report=xml --no-cov-on-fail"
 testpaths = ["tests"]
+
+[tool.coverage.run]
+branch = true
+source = ["accounts", "analytics", "api", "common", "config", "console", "core", "ml", "returns", "ui", "web"]
+
+[tool.coverage.report]
+fail_under = 85
+show_missing = true
+skip_covered = false
+exclude_lines = [
+  "pragma: no cover",
+  "if TYPE_CHECKING:",
+]

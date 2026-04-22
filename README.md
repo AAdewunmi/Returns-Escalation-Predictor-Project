@@ -259,7 +259,6 @@ docker compose exec -T web python manage.py retrain_baseline_model --seed 7 --ro
 ├── docker-compose.yml
 ├── manage.py
 ├── pyproject.toml
-├── pytest.ini
 └── web/
 ```
 
