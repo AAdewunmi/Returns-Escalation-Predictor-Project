@@ -5,6 +5,15 @@
 
 Use this checklist before demos, release candidates, or major merges that touch templates, CSS, pagination, or HTMX partials. The aim is not pixel-perfect automation. The aim is a disciplined manual pass that catches obvious product regressions before someone else sees them.
 
+## How to run this pass
+
+- Start from a seeded local environment with the current demo dataset applied.
+- Review the public shell first at `/`, `/login/admin/`, `/login/ops/`, `/login/customer/`, and `/login/merchant/`.
+- Review authenticated surfaces with the seeded demo accounts: `admin.demo`, `ops.demo`, `customer.one`, and `merchant.one`.
+- Check the main role surfaces at `/console/admin/`, `/ops/?page=1`, `/ops/?page=2`, `/customer/?page=1`, `/customer/?page=2`, `/merchant/?page=1`, and `/merchant/?page=2`.
+- Check branded failure states by reviewing the 403, 404, and 500 templates in the browser or through the project’s error-view tests when direct triggering is not practical.
+- Record the pass as successful only when navigation, alerts, pagination, responsive table fallbacks, and recovery actions remain readable and usable across the reviewed surfaces.
+
 ## Global shell
 
 - The landing page, login pages, and consoles all use the same typography rhythm and spacing scale.
