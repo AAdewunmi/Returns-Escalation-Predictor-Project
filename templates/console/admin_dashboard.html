@@ -70,6 +70,52 @@
     </div>
   </section>
 
+  <section class="rh-band rh-band--value rh-band--wide mb-4" aria-labelledby="health-release-heading">
+    <div class="rh-section-heading">
+      <div class="rh-kicker">Health and release</div>
+      <h2 id="health-release-heading">Check runtime readiness at a glance.</h2>
+      <p>The same readiness contract used by <code>/api/health/</code> is surfaced here for admins.</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-6 col-xl-3">
+        <article class="rh-info-card rh-info-card--primary h-100">
+          <h2>Application status</h2>
+          {% if health_release_panel.status == "ok" %}
+            <span class="rh-status-pill rh-status-pill--success">OK</span>
+          {% else %}
+            <span class="rh-status-pill rh-status-pill--danger">{{ health_release_panel.status|title }}</span>
+          {% endif %}
+          <p>Overall readiness from dependency checks.</p>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="rh-info-card rh-info-card--primary h-100">
+          <h2>Release</h2>
+          <div class="rh-visual-summary-value">{{ health_release_panel.release }}</div>
+          <p>Configured RELEASE_VERSION for this running app.</p>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="rh-info-card rh-info-card--primary h-100">
+          <h2>Settings module</h2>
+          <div class="rh-queue-table__primary">{{ health_release_panel.settings_module }}</div>
+          <p>Django environment currently loaded by the process.</p>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="rh-info-card rh-info-card--primary h-100">
+          <h2>Database</h2>
+          {% if health_release_panel.database == "ok" %}
+            <span class="rh-status-pill rh-status-pill--success">Connected</span>
+          {% else %}
+            <span class="rh-status-pill rh-status-pill--danger">{{ health_release_panel.database|title }}</span>
+          {% endif %}
+          <p>Default database connectivity from a lightweight readiness probe.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
   <section class="rh-band rh-band--workflow rh-band--wide mb-4" aria-labelledby="user-management-heading">
     <div class="rh-section-heading rh-queue-shell__heading">
       <div>

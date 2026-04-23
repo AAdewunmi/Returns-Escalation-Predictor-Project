@@ -3,7 +3,10 @@
 
 from __future__ import annotations
 
+import os
+
 from django.contrib.auth import get_user_model
+from django.conf import settings
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -16,6 +19,7 @@ from accounts.mixins import (
     OpsSurfaceMixin,
 )
 from common.pagination import paginate_queryset
+from core.health import get_readiness_payload
 from returns.models import ReturnCase
 from returns.ops_forms import OpsCaseUpdateForm, OpsNoteForm, OpsRequestInfoForm
 from returns.services.cases import (
@@ -113,9 +117,19 @@ class AdminConsoleView(AdminSurfaceMixin, TemplateView):
     def get_context_data(self, **kwargs):
         """Build the admin dashboard context."""
         context = super().get_context_data(**kwargs)
+        health_payload = get_readiness_payload()
         context["page_title"] = "Admin Console"
         context["total_cases"] = ReturnCase.objects.count()
         context["user_management_rows"] = self._build_user_management_rows()
+        context["health_release_panel"] = {
+            "status": health_payload["status"],
+            "release": health_payload["release"],
+            "settings_module": os.environ.get(
+                "DJANGO_SETTINGS_MODULE",
+                settings.SETTINGS_MODULE or "unknown",
+            ),
+            "database": health_payload["checks"]["database"],
+        }
         return context
 
 

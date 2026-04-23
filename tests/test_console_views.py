@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import os
+
 import pytest
 from django.contrib.auth.models import Group
 from django.urls import reverse
@@ -126,6 +128,69 @@ def test_admin_console_renders_user_role_management_panel(client) -> None:
     assert "Inactive" in body
     assert "Never" in body
     assert f'href="/admin/auth/user/{ops_user.pk}/change/"' in body
+
+
+@pytest.mark.django_db
+def test_admin_console_renders_health_and_release_panel(client, settings, monkeypatch) -> None:
+    """Admin dashboard should show readiness, release, settings, and database state."""
+    admin_user = UserFactory(is_superuser=True, is_staff=True)
+    add_group(admin_user, "Admin")
+    settings.RELEASE_VERSION = "test-release-1"
+    monkeypatch.setattr(
+        "console.views.get_readiness_payload",
+        lambda: {
+            "status": "ok",
+            "service": "returnhub",
+            "release": "test-release-1",
+            "timestamp": "2026-04-23T09:00:00+00:00",
+            "checks": {"database": "ok"},
+        },
+    )
+
+    client.force_login(admin_user)
+    response = client.get(reverse("console:admin-dashboard"))
+
+    panel = response.context["health_release_panel"]
+    body = response.content.decode()
+    assert response.status_code == 200
+    expected_settings_module = os.environ.get("DJANGO_SETTINGS_MODULE", "unknown")
+    assert panel == {
+        "status": "ok",
+        "release": "test-release-1",
+        "settings_module": expected_settings_module,
+        "database": "ok",
+    }
+    assert "Health and release" in body
+    assert "test-release-1" in body
+    assert expected_settings_module in body
+    assert "Connected" in body
+
+
+@pytest.mark.django_db
+def test_admin_console_health_panel_renders_degraded_database(client, monkeypatch) -> None:
+    """The health panel should expose degraded database readiness clearly."""
+    admin_user = UserFactory(is_superuser=True, is_staff=True)
+    add_group(admin_user, "Admin")
+    monkeypatch.setattr(
+        "console.views.get_readiness_payload",
+        lambda: {
+            "status": "degraded",
+            "service": "returnhub",
+            "release": "degraded-release",
+            "timestamp": "2026-04-23T09:00:00+00:00",
+            "checks": {"database": "unavailable"},
+        },
+    )
+
+    client.force_login(admin_user)
+    response = client.get(reverse("console:admin-dashboard"))
+
+    body = response.content.decode()
+    assert response.status_code == 200
+    assert response.context["health_release_panel"]["status"] == "degraded"
+    assert response.context["health_release_panel"]["database"] == "unavailable"
+    assert "Degraded" in body
+    assert "Unavailable" in body
 
 
 @pytest.mark.django_db
