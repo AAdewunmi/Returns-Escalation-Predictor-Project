@@ -6,5 +6,17 @@
 
 {% block content %}
   {% include "partials/_console_hero_shell.html" with kicker="Customer Console" heading="Track the most recent return activity in one customer-facing shell." lead="This console keeps a customer’s own return cases visible inside the branded ReturnHub frame, with status changes, evidence, and case detail kept easy to review." trust_aria_label="Customer console signals" trust_items=customer_trust_items visual_aria_label="Customer return summary" visual_window_title="Customer cases" visual_list_label="Recent activity" visual_case_meta_items=customer_visual_case_meta_items visual_empty_title="No cases yet" visual_empty_status="Waiting" visual_empty_body="No cases are associated with this customer yet." timeline_label="What comes next" timeline_items=customer_timeline_items recent_cases=recent_cases %}
+  <section class="rh-band rh-band--workflow mb-4">
+    <div class="rh-section-heading rh-queue-shell__heading">
+      <div>
+        <div class="rh-kicker">Customer portal</div>
+        <h2>Open your linked return case queue and evidence workspace.</h2>
+        <p>Use the portal to review only this customer’s cases, open a case, and upload supporting evidence.</p>
+      </div>
+      <a class="btn btn-primary rh-btn-primary" href="{% url 'customer_portal:case_list' %}">
+        View customer cases
+      </a>
+    </div>
+  </section>
   {% include "partials/_console_recent_cases_section.html" with kicker="Recent cases" heading="Keep the customer’s own return history visible and easy to scan." recent_cases=recent_cases case_meta_items=customer_recent_case_meta_items empty_title="No customer cases yet" empty_body="This customer account does not have any linked return cases yet." case_detail_url_name="customer_portal:case_detail" %}
 {% endblock %}
