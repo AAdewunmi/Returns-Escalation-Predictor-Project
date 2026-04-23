@@ -105,12 +105,13 @@ def test_user_has_surface_access_returns_false_for_unknown_role() -> None:
     assert user_has_surface_access(ops_user, "unknown") is False
 
 
-def test_user_has_surface_access_returns_true_for_superuser() -> None:
-    """Superusers should be allowed onto every surface."""
+def test_user_has_surface_access_limits_superuser_to_admin_surface() -> None:
+    """Superusers should not automatically bypass non-admin surface boundaries."""
 
     admin_user = UserFactory(is_superuser=True, is_staff=True)
 
-    assert user_has_surface_access(admin_user, "ops") is True
+    assert user_has_surface_access(admin_user, "admin") is True
+    assert user_has_surface_access(admin_user, "ops") is False
 
 
 def test_user_has_surface_access_returns_false_for_anonymous_user() -> None:

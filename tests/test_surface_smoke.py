@@ -32,8 +32,8 @@ def test_admin_can_open_admin_console(client, seeded_data):
     assert console_response.status_code == 200
 
 
-def test_admin_can_open_customer_portal_pages(client, seeded_data):
-    """Admin should be able to inspect customer portal page 1 and page 2."""
+def test_admin_gets_403_on_customer_portal_pages(client, seeded_data):
+    """Admin should not be able to open customer-only portal pages."""
     login_response = login(client, "/login/admin/", "admin.demo")
     assert login_response.status_code == 302
     assert login_response.headers["Location"] == "/console/admin/"
@@ -41,8 +41,8 @@ def test_admin_can_open_customer_portal_pages(client, seeded_data):
     customer_page_1 = client.get("/customer/?page=1")
     customer_page_2 = client.get("/customer/?page=2")
 
-    assert customer_page_1.status_code == 200
-    assert customer_page_2.status_code == 200
+    assert customer_page_1.status_code == 403
+    assert customer_page_2.status_code == 403
 
 
 def test_ops_can_open_console_and_ops_page_one_and_two(client, seeded_data):

@@ -157,3 +157,33 @@ def test_merchant_console_renders_for_merchant_user(client) -> None:
     assert response.status_code == 200
     assert "Merchant Console" in body
     assert "Review linked cases" in body
+
+
+@pytest.mark.django_db
+def test_authenticated_console_nav_uses_post_logout_form(client) -> None:
+    """The shared console nav should submit logout via POST instead of a GET link."""
+    ops_user = UserFactory(email="console-logout@example.com")
+    add_group(ops_user, "Ops")
+
+    client.force_login(ops_user)
+    response = client.get("/console/ops/")
+
+    body = response.content.decode()
+    assert response.status_code == 200
+    assert 'method="post"' in body
+    assert 'action="/logout/"' in body
+    assert "Sign out" in body
+
+
+@pytest.mark.django_db
+def test_admin_console_does_not_render_return_to_landing_button(client) -> None:
+    """The admin dashboard should not show a landing-page return action."""
+    admin_user = UserFactory(email="console-admin@example.com", is_superuser=True, is_staff=True)
+    add_group(admin_user, "Admin")
+
+    client.force_login(admin_user)
+    response = client.get("/console/admin/")
+
+    body = response.content.decode()
+    assert response.status_code == 200
+    assert "Return to landing page" not in body

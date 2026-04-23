@@ -91,15 +91,14 @@ def test_console_routes_forbid_wrong_role(client) -> None:
 
 
 @pytest.mark.django_db
-def test_superuser_can_access_console_routes_without_group_membership(client) -> None:
-    """Superusers should bypass group checks for authenticated console routes."""
+def test_superuser_without_admin_group_gets_403_on_ops_console(client) -> None:
+    """Superusers without the admin role should not bypass non-admin console boundaries."""
     admin_user = UserFactory(is_superuser=True, is_staff=True)
 
     client.force_login(admin_user)
     response = client.get(reverse("console:ops-dashboard"))
 
-    assert response.status_code == 200
-    assert "Ops Console" in response.content.decode()
+    assert response.status_code == 403
 
 
 @pytest.mark.django_db

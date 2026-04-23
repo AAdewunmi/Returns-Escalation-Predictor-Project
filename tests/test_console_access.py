@@ -66,3 +66,14 @@ def test_ops_can_access_ops_console(client):
 
     assert response.status_code == 200
     assert b"Work the live return queue inside the same shared ReturnHub shell." in response.content
+
+
+def test_logout_view_accepts_post_and_redirects(client):
+    """Logout should work through a POST request from the shared dashboard nav."""
+    user = create_user_for_role("ops.logout", ROLE_OPS)
+    client.force_login(user)
+
+    response = client.post(reverse("accounts:logout"))
+
+    assert response.status_code == 302
+    assert response.headers["Location"] == reverse("landing")
