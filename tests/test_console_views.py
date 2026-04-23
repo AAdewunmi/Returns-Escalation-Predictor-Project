@@ -46,6 +46,8 @@ def test_ops_console_renders_counts_and_recent_cases(client) -> None:
     assert "Submitted" in body
     assert "In review" in body
     assert submitted_case.order_reference in body
+    assert f'href="/ops/{submitted_case.pk}/"' in body
+    assert "Open case" in body
 
 
 @pytest.mark.django_db

@@ -95,6 +95,7 @@ def test_ops_case_detail_route_renders_standalone_ops_workspace(client) -> None:
     assert "OPS-DETAIL-1" in body
     assert "Back to ops queue" in body
     assert 'id="case-upload-form"' in body
+    assert f'action="/cases/{return_case.pk}/documents/upload/"' in body
     assert "Document actions" in body
 
 

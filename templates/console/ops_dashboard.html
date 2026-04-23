@@ -162,13 +162,18 @@
                 <th scope="col">Priority</th>
                 <th scope="col">SLA due</th>
                 <th scope="col">Risk</th>
+                <th scope="col" class="text-end">Workspace</th>
               </tr>
             </thead>
             <tbody>
               {% for return_case in pagination.page_obj.object_list %}
                 <tr>
                   <td>
-                    <div class="rh-queue-table__primary">{{ return_case.order_reference }}</div>
+                    <div class="rh-queue-table__primary">
+                      <a href="{% url 'ops:case-detail' case_id=return_case.pk %}">
+                        {{ return_case.order_reference }}
+                      </a>
+                    </div>
                     <div class="rh-queue-table__meta">
                       <span>{{ return_case.item_category|title }}</span>
                       <span>{{ return_case.return_reason|title }}</span>
@@ -198,6 +203,11 @@
                   </td>
                   <td>
                     {% include "partials/_risk_badge.html" with risk_label=return_case.current_risk_label risk_score=return_case.current_risk_score %}
+                  </td>
+                  <td class="text-end">
+                    <a class="btn btn-sm btn-outline-dark" href="{% url 'ops:case-detail' case_id=return_case.pk %}">
+                      Open case
+                    </a>
                   </td>
                 </tr>
               {% endfor %}
