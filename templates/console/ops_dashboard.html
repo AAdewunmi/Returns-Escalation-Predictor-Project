@@ -15,14 +15,117 @@
         priority, or human review.
       </p>
     </div>
-    <div class="rh-hero-actions">
-      <a class="btn btn-primary rh-btn-primary" href="{% url 'analytics-api:return-analytics' %}?from=2026-03-01&amp;to=2026-03-31">Open analytics endpoint</a>
-    </div>
     <div class="rh-trust-row" aria-label="Ops console signals">
       <span class="rh-trust-item">Live queue view</span>
       <span class="rh-trust-item">Filter-aware counts</span>
       <span class="rh-trust-item">Controlled risk signal</span>
       <span class="rh-trust-item">Role-aware shell</span>
+    </div>
+  </section>
+
+  <section class="rh-band rh-band--value rh-band--wide mb-4" aria-labelledby="ops-ml-insights-heading">
+    <div class="rh-section-heading rh-queue-shell__heading">
+      <div>
+        <div class="rh-kicker">ML insights</div>
+        <h2 id="ops-ml-insights-heading">Use escalation risk to focus triage.</h2>
+        <p>
+          Persisted scoring gives ops a compact view of high-risk volume, recent rescoring,
+          model context, and the reason codes driving the queue.
+        </p>
+      </div>
+      <a class="btn btn-primary rh-btn-primary" href="{{ ml_insights.high_risk_queue_url }}">
+        Review high-risk cases
+      </a>
+    </div>
+
+    <div class="row g-4 mb-4">
+      <div class="col-md-6 col-xl-3">
+        <article class="rh-info-card rh-info-card--primary h-100">
+          <h2>High-risk active</h2>
+          <div class="rh-visual-summary-value">{{ ml_insights.high_risk_active_count }}</div>
+          <p>Active return cases with a persisted high-risk score.</p>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="rh-info-card rh-info-card--primary h-100">
+          <h2>Risk distribution</h2>
+          <p>
+            Low {{ ml_insights.risk_distribution.low }},
+            medium {{ ml_insights.risk_distribution.medium }},
+            high {{ ml_insights.risk_distribution.high }}.
+          </p>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="rh-info-card rh-info-card--primary h-100">
+          <h2>Current model</h2>
+          <div class="rh-queue-table__primary">{{ ml_insights.model_version }}</div>
+          <p>Latest model version recorded by persisted risk scoring.</p>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="rh-info-card rh-info-card--primary h-100">
+          <h2>Top reason codes</h2>
+          {% if ml_insights.top_reason_codes %}
+            {% for code, count in ml_insights.top_reason_codes %}
+              <div class="rh-queue-table__meta">
+                <span>{{ code }}</span>
+                <span>{{ count }}</span>
+              </div>
+            {% endfor %}
+          {% else %}
+            <p>No reason codes scored yet.</p>
+          {% endif %}
+        </article>
+      </div>
+    </div>
+
+    <div class="rh-queue-shell">
+      <div class="rh-queue-shell__header">
+        <div>
+          <h3>Recently rescored cases</h3>
+          <p>Latest persisted risk scores available to operations.</p>
+        </div>
+      </div>
+      {% if ml_insights.recent_scores %}
+        <div class="table-responsive rh-queue-table-wrap">
+          <table class="table rh-queue-table rh-queue-table--stacked align-middle mb-0">
+            <thead>
+              <tr>
+                <th scope="col">Case</th>
+                <th scope="col">Risk</th>
+                <th scope="col">Model</th>
+                <th scope="col">Scored</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for risk_score in ml_insights.recent_scores %}
+                <tr>
+                  <td data-label="Case">
+                    <div class="rh-queue-table__primary">{{ risk_score.case.order_reference }}</div>
+                    <div class="rh-queue-table__subtle">{{ risk_score.case.status|title }}</div>
+                  </td>
+                  <td data-label="Risk">
+                    {% include "partials/_risk_badge.html" with risk_label=risk_score.label risk_score=risk_score.score %}
+                  </td>
+                  <td data-label="Model">
+                    <div class="rh-queue-table__primary">{{ risk_score.model_version }}</div>
+                  </td>
+                  <td data-label="Scored">
+                    <div class="rh-queue-table__primary">{{ risk_score.scored_at|date:"M j, Y" }}</div>
+                    <div class="rh-queue-table__subtle">{{ risk_score.scored_at|time:"H:i" }}</div>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="rh-empty-state">
+          <h3>No risk scores yet</h3>
+          <p>Scored return cases will appear here after creation, status changes, or document uploads.</p>
+        </div>
+      {% endif %}
     </div>
   </section>
 

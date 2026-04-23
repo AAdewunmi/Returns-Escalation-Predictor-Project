@@ -14,6 +14,7 @@ from tests.factories import (
     CustomerProfileFactory,
     MerchantProfileFactory,
     ReturnCaseFactory,
+    RiskScoreFactory,
     UserFactory,
 )
 
@@ -45,6 +46,55 @@ def test_ops_console_renders_counts_and_recent_cases(client) -> None:
     assert "Submitted" in body
     assert "In review" in body
     assert submitted_case.order_reference in body
+
+
+@pytest.mark.django_db
+def test_ops_console_renders_ml_insights_panel(client) -> None:
+    """Ops dashboard should expose persisted ML risk signals in-product."""
+    ops_user = UserFactory()
+    add_group(ops_user, "Ops")
+    high_case = ReturnCaseFactory(
+        status=ReturnCase.Status.SUBMITTED,
+        order_reference="OPS-HIGH-RISK",
+    )
+    medium_case = ReturnCaseFactory(
+        status=ReturnCase.Status.APPROVED,
+        order_reference="OPS-MEDIUM-RISK",
+    )
+    low_case = ReturnCaseFactory(
+        status=ReturnCase.Status.IN_REVIEW,
+        order_reference="OPS-LOW-RISK",
+    )
+    RiskScoreFactory(
+        case=high_case,
+        label="high",
+        model_version="model-high-v1",
+        reason_codes=[{"code": "high_order_value"}, {"code": "delayed_return_window"}],
+    )
+    RiskScoreFactory(
+        case=medium_case,
+        label="medium",
+        model_version="model-medium-v1",
+        reason_codes=["high_order_value"],
+    )
+    RiskScoreFactory(case=low_case, label="low", model_version="model-low-v1")
+
+    client.force_login(ops_user)
+    response = client.get(reverse("console:ops-dashboard"))
+
+    insights = response.context["ml_insights"]
+    body = response.content.decode()
+    assert response.status_code == 200
+    assert insights["risk_distribution"] == {"low": 1, "medium": 1, "high": 1}
+    assert insights["high_risk_active_count"] == 1
+    assert insights["high_risk_queue_url"] == "/ops/?risk_label=high"
+    assert insights["top_reason_codes"][0] == ("high_order_value", 2)
+    assert "ML insights" in body
+    assert "Review high-risk cases" in body
+    assert 'href="/ops/?risk_label=high"' in body
+    assert "OPS-HIGH-RISK" in body
+    assert "Open analytics endpoint" not in body
+    assert "/api/analytics/returns/" not in body
 
 
 @pytest.mark.django_db

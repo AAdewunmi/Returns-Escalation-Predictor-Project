@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import os
+from collections import Counter
 
 from django.conf import settings
 from django.contrib.auth import get_user_model
@@ -20,7 +21,7 @@ from accounts.mixins import (
 )
 from common.pagination import paginate_queryset
 from core.health import get_readiness_payload
-from returns.models import ReturnCase
+from returns.models import ReturnCase, RiskScore
 from returns.ops_forms import OpsCaseUpdateForm, OpsNoteForm, OpsRequestInfoForm
 from returns.services.cases import (
     ReturnCaseWorkflowError,
@@ -135,6 +136,43 @@ class AdminConsoleView(AdminSurfaceMixin, TemplateView):
 class BaseOpsQueueView(OpsSurfaceMixin, TemplateView):
     """Shared ops queue context for the server-rendered console shell."""
 
+    def _build_ml_insights(self) -> dict[str, object]:
+        """Return persisted ML risk signals for the ops console."""
+
+        active_statuses = (
+            ReturnCase.Status.SUBMITTED,
+            ReturnCase.Status.IN_REVIEW,
+            ReturnCase.Status.WAITING_CUSTOMER,
+            ReturnCase.Status.WAITING_MERCHANT,
+        )
+        risk_scores = RiskScore.objects.select_related("case").order_by("-scored_at", "-id")
+        risk_distribution = {
+            label: risk_scores.filter(label=label).count() for label in ("low", "medium", "high")
+        }
+        latest_score = risk_scores.first()
+        reason_counter: Counter[str] = Counter()
+
+        for risk_score in risk_scores[:50]:
+            for reason in risk_score.reason_codes:
+                if isinstance(reason, dict):
+                    code = reason.get("code")
+                else:
+                    code = str(reason)
+                if code:
+                    reason_counter[code] += 1
+
+        return {
+            "risk_distribution": risk_distribution,
+            "high_risk_active_count": risk_scores.filter(
+                label="high",
+                case__status__in=active_statuses,
+            ).count(),
+            "model_version": latest_score.model_version if latest_score else "No model scored yet",
+            "recent_scores": risk_scores[:3],
+            "top_reason_codes": reason_counter.most_common(3),
+            "high_risk_queue_url": f"{reverse('ops:queue')}?risk_label=high",
+        }
+
     def get_context_data(self, **kwargs):
         """Build the ops queue context."""
         context = super().get_context_data(**kwargs)
@@ -148,6 +186,7 @@ class BaseOpsQueueView(OpsSurfaceMixin, TemplateView):
                 "queue_summary": get_queue_summary(queryset),
                 "pagination": pagination,
                 "queue_reset_url": self.request.path,
+                "ml_insights": self._build_ml_insights(),
             }
         )
         return context
