@@ -93,7 +93,8 @@ def test_ops_case_detail_route_renders_standalone_ops_workspace(client) -> None:
     assert response.status_code == 200
     assert "Ops Case Detail" in body
     assert "OPS-DETAIL-1" in body
-    assert "Back to ops queue" in body
+    assert "Back to ops console" in body
+    assert 'href="/console/ops/"' in body
     assert 'id="case-upload-form"' in body
     assert f'action="/cases/{return_case.pk}/documents/upload/"' in body
     assert "Document actions" in body

@@ -309,7 +309,7 @@ class OpsCaseDetailView(OpsSurfaceMixin, TemplateView):
             "page_title": f"Ops Case {detail_context['return_case'].order_reference}",
             "upload_form": CaseDocumentUploadForm(actor_role=actor_role) if actor_role else None,
             "upload_success_message": "",
-            "ops_queue_url": reverse("ops:queue"),
+            "ops_queue_url": reverse("console:ops-dashboard"),
             "ops_action_success_message": "",
             "note_success_message": "",
             "latest_request_event": latest_request_event,
