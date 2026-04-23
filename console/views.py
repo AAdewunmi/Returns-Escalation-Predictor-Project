@@ -3,6 +3,7 @@
 
 from __future__ import annotations
 
+from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -79,11 +80,42 @@ class AdminConsoleView(AdminSurfaceMixin, TemplateView):
 
     template_name = "console/admin_dashboard.html"
 
+    def _build_user_management_rows(self) -> list[dict[str, object]]:
+        """Return user rows for the admin console management panel."""
+
+        user_model = get_user_model()
+        admin_route_name = (
+            f"admin:{user_model._meta.app_label}_{user_model._meta.model_name}_change"
+        )
+        users = (
+            user_model.objects.prefetch_related("groups")
+            .order_by("-is_superuser", "username")[:10]
+        )
+        rows = []
+
+        for user in users:
+            role_names = [group.name.title() for group in user.groups.all()]
+            if user.is_superuser and "Admin" not in role_names:
+                role_names.insert(0, "Admin")
+
+            rows.append(
+                {
+                    "user": user,
+                    "roles": ", ".join(role_names) or "No role assigned",
+                    "is_active": user.is_active,
+                    "last_login": user.last_login,
+                    "admin_url": reverse(admin_route_name, args=[user.pk]),
+                }
+            )
+
+        return rows
+
     def get_context_data(self, **kwargs):
         """Build the admin dashboard context."""
         context = super().get_context_data(**kwargs)
         context["page_title"] = "Admin Console"
         context["total_cases"] = ReturnCase.objects.count()
+        context["user_management_rows"] = self._build_user_management_rows()
         return context
 
 

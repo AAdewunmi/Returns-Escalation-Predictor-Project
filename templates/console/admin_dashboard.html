@@ -70,6 +70,80 @@
     </div>
   </section>
 
+  <section class="rh-band rh-band--workflow rh-band--wide mb-4" aria-labelledby="user-management-heading">
+    <div class="rh-section-heading rh-queue-shell__heading">
+      <div>
+        <div class="rh-kicker">User management</div>
+        <h2 id="user-management-heading">Review users, roles, and account status.</h2>
+        <p>Use this panel for a quick access check, then open Django admin for edits.</p>
+      </div>
+      <a class="btn btn-outline-secondary rh-btn-secondary" href="/admin/auth/user/">Open all users</a>
+    </div>
+
+    <div class="rh-queue-shell">
+      <div class="rh-queue-shell__header">
+        <div>
+          <h3>Platform users</h3>
+          <p>Showing the first 10 users by admin priority and username.</p>
+        </div>
+      </div>
+
+      {% if user_management_rows %}
+        <div class="table-responsive rh-queue-table-wrap">
+          <table class="table rh-queue-table rh-queue-table--stacked align-middle mb-0">
+            <thead>
+              <tr>
+                <th scope="col">User</th>
+                <th scope="col">Assigned role</th>
+                <th scope="col">Status</th>
+                <th scope="col">Last login</th>
+                <th scope="col" class="text-end">Admin record</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in user_management_rows %}
+                <tr>
+                  <td data-label="User">
+                    <div class="rh-queue-table__primary">{{ row.user.username }}</div>
+                    <div class="rh-queue-table__subtle">{{ row.user.email|default:"No email recorded" }}</div>
+                  </td>
+                  <td data-label="Assigned role">
+                    <div class="rh-queue-table__primary">{{ row.roles }}</div>
+                  </td>
+                  <td data-label="Status">
+                    {% if row.is_active %}
+                      <span class="rh-status-pill rh-status-pill--success">Active</span>
+                    {% else %}
+                      <span class="rh-status-pill rh-status-pill--danger">Inactive</span>
+                    {% endif %}
+                  </td>
+                  <td data-label="Last login">
+                    {% if row.last_login %}
+                      <div class="rh-queue-table__primary">{{ row.last_login|date:"M j, Y" }}</div>
+                      <div class="rh-queue-table__subtle">{{ row.last_login|time:"H:i" }}</div>
+                    {% else %}
+                      <span class="rh-queue-table__subtle">Never</span>
+                    {% endif %}
+                  </td>
+                  <td data-label="Admin record" class="text-end">
+                    <a class="btn btn-outline-secondary btn-sm rh-btn-secondary" href="{{ row.admin_url }}">
+                      Open user
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="rh-empty-state">
+          <h3>No users yet</h3>
+          <p>User records will appear here after accounts are created.</p>
+        </div>
+      {% endif %}
+    </div>
+  </section>
+
   <section class="rh-band rh-band--value rh-band--wide">
     <div class="rh-section-heading">
       <div class="rh-kicker">Admin role</div>

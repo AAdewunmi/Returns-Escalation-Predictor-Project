@@ -5,6 +5,7 @@ from __future__ import annotations
 import pytest
 from django.contrib.auth.models import Group
 from django.urls import reverse
+from django.utils import timezone
 
 from returns.models import ReturnCase
 from tests.factories import (
@@ -88,6 +89,43 @@ def test_console_routes_forbid_wrong_role(client) -> None:
     response = client.get(reverse("console:ops-dashboard"))
 
     assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_admin_console_renders_user_role_management_panel(client) -> None:
+    """Admin dashboard should show user roles, status, last login, and admin links."""
+    admin_user = UserFactory(
+        username="admin.panel",
+        email="admin.panel@example.com",
+        is_superuser=True,
+        is_staff=True,
+        last_login=timezone.now(),
+    )
+    add_group(admin_user, "Admin")
+    ops_user = UserFactory(
+        username="ops.panel",
+        email="ops.panel@example.com",
+        is_active=False,
+    )
+    add_group(ops_user, "Ops")
+
+    client.force_login(admin_user)
+    response = client.get(reverse("console:admin-dashboard"))
+
+    rows = {row["user"].username: row for row in response.context["user_management_rows"]}
+    body = response.content.decode()
+    assert response.status_code == 200
+    assert rows["admin.panel"]["roles"] == "Admin"
+    assert rows["ops.panel"]["roles"] == "Ops"
+    assert rows["ops.panel"]["is_active"] is False
+    assert rows["ops.panel"]["admin_url"] == f"/admin/auth/user/{ops_user.pk}/change/"
+    assert "User management" in body
+    assert "Platform users" in body
+    assert "admin.panel@example.com" in body
+    assert "ops.panel@example.com" in body
+    assert "Inactive" in body
+    assert "Never" in body
+    assert f'href="/admin/auth/user/{ops_user.pk}/change/"' in body
 
 
 @pytest.mark.django_db
