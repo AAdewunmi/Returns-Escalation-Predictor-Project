@@ -1,5 +1,17 @@
 # ReturnHub
 
+[![CI Pipeline](https://img.shields.io/github/actions/workflow/status/AAdewunmi/Returns-Escalation-Predictor-Project/ci.yml?branch=main)](https://github.com/AAdewunmi/Returns-Escalation-Predictor-Project/actions/workflows/ci.yml)
+[![Code Style - Black](https://img.shields.io/badge/code%20style-black-000000.svg)](https://black.readthedocs.io/)
+[![Lint - Ruff](https://img.shields.io/badge/lint-ruff-000000.svg)](https://docs.astral.sh/ruff/)
+[![Python](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/django-5.x-0C4B33.svg)](https://www.djangoproject.com/)
+[![DRF](https://img.shields.io/badge/DRF-3.15-red.svg)](https://www.django-rest-framework.org/)
+[![PostgreSQL](https://img.shields.io/badge/postgresql-16-336791.svg)](https://www.postgresql.org/)
+[![Docker](https://img.shields.io/badge/docker-enabled-2496ED.svg)](https://www.docker.com/)
+[![Docker Compose](https://img.shields.io/badge/docker%20compose-supported-2496ED.svg)](https://docs.docker.com/compose/)
+[![License](https://img.shields.io/github/license/AAdewunmi/Returns-Escalation-Predictor-Project)](https://github.com/AAdewunmi/Returns-Escalation-Predictor-Project/blob/main/LICENSE)
+[![Coverage Status](https://codecov.io/gh/AAdewunmi/Returns-Escalation-Predictor-Project/branch/main/graph/badge.svg)](https://codecov.io/gh/AAdewunmi/Returns-Escalation-Predictor-Project)
+
 ReturnHub is a Django 5 application for managing online-retail return cases across customer, merchant, ops, and admin roles. The project combines server-rendered workflow surfaces with DRF APIs, a service-layer workflow core, persisted audit events, and artifact-backed escalation-risk scoring.
 
 ## Feature-complete state
@@ -236,7 +248,11 @@ docker compose exec -T web python manage.py retrain_baseline_model --seed 7 --ro
 
 ```text
 .
+├── .dockerignore
+├── .env.example
 ├── .github/
+├── .gitattributes
+├── .gitignore
 ├── accounts/
 ├── analytics/
 ├── api/
@@ -245,11 +261,13 @@ docker compose exec -T web python manage.py retrain_baseline_model --seed 7 --ro
 ├── config/
 ├── console/
 ├── core/
+├── docker/
 ├── docs/
 │   ├── api/
 │   ├── ml/
 │   ├── sprint-runbook/
 │   └── ui/
+├── infra/
 ├── ml/
 ├── ml_artifacts/
 ├── requirements/
@@ -259,12 +277,17 @@ docker compose exec -T web python manage.py retrain_baseline_model --seed 7 --ro
 ├── tests/
 ├── ui/
 ├── Dockerfile
+├── Dockerfile.prod
+├── LICENSE
 ├── Makefile
 ├── README.md
 ├── RUNBOOK.md
 ├── codecov.yml
+├── docker-compose.prod.yml
 ├── docker-compose.yml
+├── gunicorn.conf.py
 ├── manage.py
+├── production.env.example
 ├── pyproject.toml
 └── web/
 ```
