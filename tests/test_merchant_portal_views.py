@@ -141,6 +141,9 @@ def test_merchant_case_detail_view_renders_for_linked_merchant(client, db) -> No
     assert response.status_code == 200
     assert b"Merchant Case Workspace" in response.content
     assert b"MERCH-DETAIL-001" in response.content
+    assert b"Merchant console" in response.content
+    assert b"Back to merchant console" in response.content
+    assert b'href="/console/merchant/"' in response.content
     assert b"Merchant response" in response.content
     assert b"Latest merchant response" in response.content
     assert b"Response history" in response.content
