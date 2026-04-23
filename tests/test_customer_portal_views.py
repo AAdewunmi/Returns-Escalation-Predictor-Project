@@ -58,6 +58,8 @@ def test_customer_case_list_paginates_and_hides_other_customers(
 
     assert response_page_1.status_code == 200
     assert response_page_2.status_code == 200
+    assert b"Back to customer console" in response_page_1.content
+    assert b'href="/console/customer/"' in response_page_1.content
     assert b"Showing 1-15 of 17" in response_page_1.content
     assert b"Showing 16-17 of 17" in response_page_2.content
     assert b"CUST-OTHER-001" not in response_page_1.content
