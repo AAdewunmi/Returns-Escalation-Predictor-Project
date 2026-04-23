@@ -1,7 +1,7 @@
 <!-- path: templates/partials/_upload_panel.html -->
 <section class="rh-card" aria-label="Document upload panel">
-  <div class="rh-kicker">Uploads</div>
-  <h2 class="h4">Document actions</h2>
+  <div class="rh-kicker">{{ upload_panel_label|default:"Uploads" }}</div>
+  <h2 class="h4">{{ upload_panel_title|default:"Document actions" }}</h2>
   {% if upload_success_message %}
     <div class="alert alert-success" role="status">
       {{ upload_success_message }}
@@ -9,7 +9,7 @@
   {% endif %}
   {% if upload_form %}
     <p class="text-muted mb-3">
-      Upload feedback stays inside this panel while the document table refreshes in place.
+      {{ upload_panel_help|default:"Upload feedback stays inside this panel while the document table refreshes in place." }}
     </p>
     {% include "partials/_form_errors.html" with form=upload_form %}
     <form
@@ -31,7 +31,7 @@
         <label class="form-label" for="{{ upload_form.notes.id_for_label }}">Notes</label>
         {{ upload_form.notes }}
       </div>
-      <button type="submit" class="btn btn-dark">Upload document</button>
+      <button type="submit" class="btn btn-dark">{{ upload_button_label|default:"Upload document" }}</button>
     </form>
   {% else %}
     <p class="text-muted mb-3">

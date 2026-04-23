@@ -3,11 +3,11 @@
 
 ## Purpose
 
-This document describes the ML operations flow that is currently implemented in ReturnHub. It covers the active-model registry, the available dataset and training commands, the runtime scoring path, and the concrete checks that can be used before a demo or release.
+This document describes the ML operations flow implemented in feature-complete ReturnHub. It covers the active-model registry, the available dataset and training commands, the runtime scoring path, safe fallback behavior, and the concrete checks that can be used before a demo or release.
 
-## Current model setup
+## Model setup
 
-ReturnHub currently uses a logistic-regression baseline for escalation-risk scoring.
+ReturnHub uses a logistic-regression baseline for escalation-risk scoring.
 
 The live scoring path depends on:
 
@@ -17,7 +17,7 @@ The live scoring path depends on:
 - reason-code generation in `ml/reason_codes.py`
 - risk persistence in `returns/services/risk.py`
 
-Current committed active registry entry:
+Committed active registry entry:
 
 ```json
 {
@@ -31,7 +31,7 @@ Current committed active registry entry:
 }
 ```
 
-Current committed artifacts:
+Committed artifacts:
 
 - `ml_artifacts/retrain_baseline-logreg-v1-seed-7-rows-500.pkl`
 - `ml_artifacts/retrain_baseline-logreg-v1-seed-7-rows-500.json`
@@ -40,12 +40,12 @@ Current committed artifacts:
 
 The registry stores one active model entry.
 
-The current registry shape is defined by:
+The registry shape is defined by:
 
 - `ml/services/model_registry.py`
 - `ml/registry.py`
 
-Current fields:
+Fields:
 
 - `version`
 - `model_type`
@@ -60,11 +60,11 @@ The registry is updated by:
 
 `train_escalation_model` writes the active entry directly after baseline training.
 
-`retrain_baseline_model` uses the current wrapper flow in `ml/training/train.py` and then writes the active entry.
+`retrain_baseline_model` uses the wrapper flow in `ml/training/train.py` and then writes the active entry.
 
 ## Dataset and training commands
 
-Current dataset-generation commands:
+Dataset-generation commands:
 
 - `python manage.py generate_risk_dataset --seed 7 --size 250`
 - `python manage.py generate_training_dataset --seed 7 --rows 300`
@@ -74,7 +74,7 @@ Default dataset outputs:
 - `artifacts/ml/synthetic_return_risk_dataset.csv`
 - `artifacts/ml/evidence_aware_training_dataset.csv`
 
-Current training commands:
+Training commands:
 
 - `python manage.py train_escalation_model --seed 7 --size 500`
 - `python manage.py retrain_baseline_model --seed 7 --rows 500`
@@ -90,7 +90,7 @@ Each trained version writes:
 
 ## Runtime scoring path
 
-The current artifact-backed scoring flow is:
+The artifact-backed scoring flow is:
 
 1. `returns/services/risk.py` calls `score_case_and_persist(...)`.
 2. That service tries `ml/services/scoring.py`.
@@ -114,7 +114,7 @@ The artifact metadata must include `feature_contract_hash`. If it is missing, ar
 
 ## Safe degradation
 
-If artifact-backed scoring is unavailable, ReturnHub currently falls back to the placeholder scorer in `ml/scoring.py`.
+If artifact-backed scoring is unavailable, ReturnHub falls back to the placeholder scorer in `ml/scoring.py`.
 
 This fallback is implemented in:
 
@@ -130,11 +130,11 @@ The fallback behavior is:
 - the risk record is persisted
 - a warning is logged indicating that placeholder scoring was used
 
-This means the current system does not surface risk as unavailable. It degrades to placeholder scoring instead.
+This means the completed baseline does not surface risk as unavailable. It degrades to placeholder scoring instead.
 
 ## Rescoring triggers
 
-The current returns workflow triggers scoring on:
+The returns workflow triggers scoring on:
 
 - case creation in `returns/services/cases.py`
 - status update in `returns/services/cases.py`
@@ -144,7 +144,7 @@ These flows call `returns/services/risk.py:score_case_and_persist(...)`.
 
 ## Operational checks
 
-Before a demo or release, the current project supports these concrete checks:
+Before a demo or release, the project supports these concrete checks:
 
 - confirm `ml/registry/model_registry.json` contains an active model entry
 - confirm the matching `.pkl` and `.json` files exist under `ml_artifacts/`
@@ -158,11 +158,11 @@ Before a demo or release, the current project supports these concrete checks:
   - `tests/test_risk_dataset_generation.py`
 - verify the ops queue and case detail surfaces still render risk information safely
 
-## Boundaries and current limitations
+## Boundaries
 
-This document describes what is implemented now.
+This document describes the completed core implementation.
 
-The current implementation does not add extra operational metadata such as:
+The core baseline intentionally does not add extra operational metadata such as:
 
 - artifact checksum fields in the registry
 - preprocessing-version fields in the registry

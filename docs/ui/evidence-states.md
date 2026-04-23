@@ -1,20 +1,22 @@
 <!-- path: docs/ui/evidence-states.md -->
 # Evidence States
 
-This document describes the document and evidence behavior currently implemented around the shared case detail page and the returns document APIs.
+This document describes the document and evidence behavior implemented around the feature-complete shared case detail page and the returns document APIs.
 
-## Current surfaces
+## Implemented surfaces
 
 Evidence-related UI appears in:
 
 - `/cases/{case_id}/`
+- `/customer/{case_id}/`
+- `/merchant/{case_id}/`
 - `/ops/{case_id}/`
 - `GET /api/returns/{case_id}/documents/`
 - `POST /api/returns/{case_id}/documents/`
 
-## Current components
+## Implemented components
 
-The repository currently uses these evidence-oriented components:
+The repository uses these evidence-oriented components:
 
 - document table
 - upload panel
@@ -32,14 +34,14 @@ When no documents are visible for a case:
 
 ## Upload success state
 
-Server-rendered uploads on `/cases/{case_id}/documents/upload/` currently:
+Server-rendered uploads on `/cases/{case_id}/documents/upload/`:
 
 - submit the form asynchronously
 - return JSON containing refreshed `upload_panel_html`
 - return JSON containing refreshed `document_table_html`
 - keep the success message local to the upload panel
 
-Expected success copy in the current flow:
+Expected success copy:
 
 ```text
 Document uploaded successfully.

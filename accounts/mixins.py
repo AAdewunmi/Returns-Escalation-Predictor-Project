@@ -40,9 +40,6 @@ def user_has_surface_access(user, role: str) -> bool:
     if not getattr(user, "is_authenticated", False):
         return False
 
-    if is_admin_user(user):
-        return True
-
     surface_group_lookup = {
         ROLE_OPS: GROUP_NAMES[ROLE_OPS],
         ROLE_CUSTOMER: GROUP_NAMES[ROLE_CUSTOMER],
@@ -51,6 +48,9 @@ def user_has_surface_access(user, role: str) -> bool:
     }
     if role not in surface_group_lookup:
         return False
+
+    if role == ROLE_ADMIN:
+        return is_admin_user(user)
 
     return user_in_group(user, surface_group_lookup[role])
 

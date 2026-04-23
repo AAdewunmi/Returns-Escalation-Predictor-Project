@@ -46,9 +46,9 @@
 </div>
 {% else %}
 <div class="rh-visual-panel">
-  <h3 class="h5">No documents yet</h3>
+  <h3 class="h5">{{ empty_title|default:"No documents yet" }}</h3>
   <p class="mb-0 text-muted">
-    Evidence uploaded by customers, merchants, or ops will appear here in created order.
+    {{ empty_body|default:"Evidence uploaded by customers, merchants, or ops will appear here in created order." }}
   </p>
 </div>
 {% endif %}

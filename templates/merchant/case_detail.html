@@ -9,7 +9,7 @@
       <div class="rh-hero-copy">
         <nav aria-label="Breadcrumb">
           <ol class="breadcrumb mb-2">
-            <li class="breadcrumb-item"><a href="{% url 'merchant_portal:case_list' %}">Merchant portal</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'console:merchant-dashboard' %}">Merchant console</a></li>
             <li class="breadcrumb-item active" aria-current="page">{{ case.order_reference }}</li>
           </ol>
         </nav>
@@ -18,6 +18,11 @@
         <p class="rh-hero-lead">
           Review the workflow state, customer-visible context, and merchant-visible documents before uploading a response.
         </p>
+        <div class="rh-hero-actions">
+          <a class="btn btn-outline-secondary rh-btn-secondary" href="{% url 'console:merchant-dashboard' %}">
+            Back to merchant console
+          </a>
+        </div>
         <div class="rh-trust-row" aria-label="Merchant case summary signals">
           <span class="rh-trust-item">{% include "partials/_status_badge.html" with status=case.status %}</span>
           <span class="rh-trust-item">{{ case.item_category|title }}</span>

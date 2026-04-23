@@ -1,6 +1,6 @@
 # ReturnHub Design System
 
-This document describes the design-system baseline currently represented by the templates and styles in `static/css/tokens.css`, `static/css/app.css`, and the shared template partials.
+This document describes the design-system baseline represented by the feature-complete templates and styles in `static/css/tokens.css`, `static/css/app.css`, and the shared template partials.
 
 ## Product tone
 
@@ -11,15 +11,15 @@ The UI should feel:
 - trustworthy
 - calm under dense workflow content
 
-The codebase currently favors a server-rendered application shell with reusable partials over isolated one-off page designs.
+The codebase favors a server-rendered application shell with reusable partials over isolated one-off page designs.
 
 ## Surface types
 
-The current UI system supports three surface families:
+The UI system supports three surface families:
 
 - public marketing and role-entry pages
 - authenticated role dashboards
-- workflow pages for ops queue, ops case detail, and shared case detail
+- workflow pages for customer lists, merchant lists, ops queue, ops case detail, and shared case detail
 
 ## Shared shell expectations
 
@@ -58,7 +58,7 @@ Ops-specific partials mirror those same patterns for the dedicated `/ops/` surfa
 
 ## Data-density rules
 
-The current product surface is intentionally table- and panel-oriented. Design decisions should preserve:
+The completed product surface is intentionally table- and panel-oriented. Design decisions should preserve:
 
 - fast scanning in queue tables
 - visible status and priority signals

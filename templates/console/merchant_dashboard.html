@@ -6,5 +6,17 @@
 
 {% block content %}
   {% include "partials/_console_hero_shell.html" with kicker="Merchant Console" heading="Review merchant-linked return cases in one operational workspace." lead="This merchant console keeps linked cases, response activity, and case context visible in the same ReturnHub frame used across the product." trust_aria_label="Merchant console signals" trust_items=merchant_trust_items visual_aria_label="Merchant case summary" visual_window_title="Merchant review" visual_list_label="Linked cases" visual_case_meta_items=merchant_visual_case_meta_items visual_empty_title="No linked cases" visual_empty_status="Idle" visual_empty_body="No cases are linked to this merchant yet." timeline_label="Merchant role" timeline_items=merchant_timeline_items recent_cases=recent_cases %}
-  {% include "partials/_console_recent_cases_section.html" with kicker="Merchant-linked cases" heading="Keep merchant-linked return history visible and easy to review." recent_cases=recent_cases case_meta_items=merchant_recent_case_meta_items empty_title="No merchant-linked cases yet" empty_body="This merchant account does not have any linked return cases yet." %}
+  <section class="rh-band rh-band--workflow mb-4">
+    <div class="rh-section-heading rh-queue-shell__heading">
+      <div>
+        <div class="rh-kicker">Merchant portal</div>
+        <h2>Open the merchant-linked case queue and response workspace.</h2>
+        <p>Use the portal to review this merchant’s cases, open a case, and submit response evidence.</p>
+      </div>
+      <a class="btn btn-primary rh-btn-primary" href="{% url 'merchant_portal:case_list' %}">
+        View merchant cases
+      </a>
+    </div>
+  </section>
+  {% include "partials/_console_recent_cases_section.html" with kicker="Merchant-linked cases" heading="Keep merchant-linked return history visible and easy to review." recent_cases=recent_cases case_meta_items=merchant_recent_case_meta_items empty_title="No merchant-linked cases yet" empty_body="This merchant account does not have any linked return cases yet." case_detail_url_name="merchant_portal:case_detail" %}
 {% endblock %}

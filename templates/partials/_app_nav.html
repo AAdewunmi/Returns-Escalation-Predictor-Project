@@ -38,9 +38,12 @@
         <div class="rh-topbar-meta" aria-label="Signed-in user">
           <span class="rh-header-note">{{ request.user.get_username }}</span>
         </div>
-        <a class="btn btn-outline-secondary btn-sm rh-topbar-secondary" href="{% url 'accounts:logout' %}">
-          Sign out
-        </a>
+        <form method="post" action="{% url 'accounts:logout' %}" class="m-0">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-outline-secondary btn-sm rh-topbar-secondary">
+            Sign out
+          </button>
+        </form>
       {% endif %}
     </div>
   </div>

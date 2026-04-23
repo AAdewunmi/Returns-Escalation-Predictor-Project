@@ -58,6 +58,8 @@ def test_customer_case_list_paginates_and_hides_other_customers(
 
     assert response_page_1.status_code == 200
     assert response_page_2.status_code == 200
+    assert b"Back to customer console" in response_page_1.content
+    assert b'href="/console/customer/"' in response_page_1.content
     assert b"Showing 1-15 of 17" in response_page_1.content
     assert b"Showing 16-17 of 17" in response_page_2.content
     assert b"CUST-OTHER-001" not in response_page_1.content
@@ -105,7 +107,11 @@ def test_customer_case_detail_view_renders_for_linked_customer(client, db) -> No
     assert response.status_code == 200
     assert b"Customer Case Workspace" in response.content
     assert b"CUST-DETAIL-001" in response.content
-    assert b"Document actions" in response.content
+    assert b"Customer console" in response.content
+    assert b'href="/console/customer/"' in response.content
+    assert b"Upload evidence" in response.content
+    assert b"Uploaded evidence" in response.content
+    assert b"No evidence uploaded yet" in response.content
 
 
 def test_customer_case_detail_post_redirects_after_successful_upload(
@@ -217,7 +223,7 @@ def test_customer_case_detail_post_renders_errors_for_invalid_upload(client, db)
     )
 
     assert response.status_code == 400
-    assert b"Document actions" in response.content
+    assert b"Upload evidence" in response.content
     assert b"This field is required." in response.content
 
 

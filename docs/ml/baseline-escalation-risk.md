@@ -1,9 +1,9 @@
 <!-- path: docs/ml/baseline-escalation-risk.md -->
 # Baseline Escalation Risk
 
-This document describes the ML flow currently implemented for return-case escalation scoring.
+This document describes the ML flow implemented for feature-complete ReturnHub return-case escalation scoring.
 
-## Current approach
+## Implemented approach
 
 The project uses a logistic-regression baseline with:
 
@@ -20,7 +20,7 @@ Training and inference share the feature contract in:
 - `ml/contracts/return_case_features.json`
 - `ml/features.py`
 
-The current implementation includes signals derived from:
+The implementation includes signals derived from:
 
 - item category
 - delivery-to-return timing
@@ -35,7 +35,7 @@ The current implementation includes signals derived from:
 
 Training data is synthetic and deterministic.
 
-Current dataset flows:
+Dataset flows:
 
 - `ml/datasets/synthetic.py` generates seeded rows
 - `ml/datasets/dataset.py` exposes the dataset wrapper
@@ -67,7 +67,7 @@ Retraining wrapper:
 docker compose exec -T web python manage.py retrain_baseline_model --seed 7 --rows 500
 ```
 
-Current committed active version:
+Committed active version:
 
 ```text
 retrain_baseline-logreg-v1-seed-7-rows-500
@@ -86,14 +86,14 @@ Per model version:
 - `<model_version>.pkl`
 - `<model_version>.json`
 
-Committed example artifacts currently present:
+Committed example artifacts:
 
 - `ml_artifacts/retrain_baseline-logreg-v1-seed-7-rows-500.pkl`
 - `ml_artifacts/retrain_baseline-logreg-v1-seed-7-rows-500.json`
 
 ## Metadata contract
 
-Training metadata currently includes:
+Training metadata includes:
 
 - `model_version`
 - `feature_contract_version`
@@ -115,7 +115,7 @@ Runtime scoring path:
 3. `ml/features.extract_case_features(...)` builds the feature vector.
 4. The model returns a probability.
 5. The score is quantized to two decimal places.
-6. Labels are mapped with current thresholds:
+6. Labels are mapped with these thresholds:
    - `>= 0.75` -> `high`
    - `>= 0.45` -> `medium`
    - otherwise -> `low`
@@ -128,7 +128,7 @@ If the active artifact cannot be loaded safely, scoring falls back to the placeh
 
 The returns domain stores one `RiskScore` per case and updates that row on rescore.
 
-Rescoring currently happens on:
+Rescoring happens on:
 
 - case creation
 - status update
@@ -138,7 +138,7 @@ Each rescore emits a `risk_scored` audit event.
 
 ## Dependencies
 
-ML-related runtime packages currently listed in the repository:
+ML-related runtime packages listed in the repository:
 
 - `pandas`
 - `scikit-learn`
@@ -146,7 +146,7 @@ ML-related runtime packages currently listed in the repository:
 
 ## Test coverage
 
-Relevant tests currently cover training, scoring, registry access, artifacts, features, and dataset generation, including:
+Relevant tests cover training, scoring, registry access, artifacts, features, and dataset generation, including:
 
 - `tests/test_baseline_training.py`
 - `tests/test_ml_training.py`

@@ -1,7 +1,9 @@
 <!-- path: docs/sprint-runbook/sprint-6/sprint-6-multi-surface-verification.md -->
 # Multi-Surface Verification
 
-This runbook verifies the current ReturnHub multi-surface experience using the live repository structure. It covers seeded demo access, public entry points, role-specific console routes, paginated surface routes, wrong-role handling, and the smoke tests that back those flows in the test suite.
+This archived sprint runbook verifies the ReturnHub multi-surface experience using the live repository structure. It covers seeded demo access, public entry points, role-specific console routes, paginated surface routes, wrong-role handling, and the smoke tests that back those flows in the test suite.
+
+For the feature-complete baseline, use the root [RUNBOOK.md](../../../RUNBOOK.md). This sprint document is retained as historical implementation evidence.
 
 For an executable version of this runbook, use:
 
@@ -13,7 +15,7 @@ The shell runbooks are written to fail with compact `CHECK_FAILED=` or `UNEXPECT
 
 ## Scope
 
-This document is aligned to the current project state:
+This document is aligned to the completed project state:
 
 - Docker Compose is the primary local setup path
 - deterministic demo data is provided by `seed_returnhub_demo`

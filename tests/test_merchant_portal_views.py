@@ -64,6 +64,8 @@ def test_merchant_case_list_paginates_and_hides_other_merchants(
 
     assert response_page_1.status_code == 200
     assert response_page_2.status_code == 200
+    assert b"Back to merchant console" in response_page_1.content
+    assert b'href="/console/merchant/"' in response_page_1.content
     assert b"Showing 1-15 of 17" in response_page_1.content
     assert b"Showing 16-17 of 17" in response_page_2.content
     assert b"MERCH-OTHER-001" not in response_page_1.content
@@ -139,6 +141,9 @@ def test_merchant_case_detail_view_renders_for_linked_merchant(client, db) -> No
     assert response.status_code == 200
     assert b"Merchant Case Workspace" in response.content
     assert b"MERCH-DETAIL-001" in response.content
+    assert b"Merchant console" in response.content
+    assert b"Back to merchant console" in response.content
+    assert b'href="/console/merchant/"' in response.content
     assert b"Merchant response" in response.content
     assert b"Latest merchant response" in response.content
     assert b"Response history" in response.content

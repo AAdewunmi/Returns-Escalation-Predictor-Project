@@ -1,6 +1,6 @@
 # ReturnHub Product UI Brief
 
-This brief reflects the product surfaces that currently exist in the repository.
+This brief reflects the product surfaces shipped in the feature-complete ReturnHub baseline.
 
 ## Product stance
 
@@ -8,7 +8,7 @@ ReturnHub is not just an API demo. The shipped UI already exposes role-aware wor
 
 ## Current audiences
 
-The repository currently serves four product audiences:
+The repository serves four product audiences:
 
 - admins
 - ops users
@@ -34,6 +34,10 @@ Authenticated dashboards:
 
 Workflow pages:
 
+- `/customer/`
+- `/customer/{case_id}/`
+- `/merchant/`
+- `/merchant/{case_id}/`
 - `/ops/`
 - `/ops/{case_id}/`
 - `/cases/{case_id}/`
@@ -53,19 +57,21 @@ Ops:
 
 Customer:
 
+- browse owned cases through the customer portal
 - access only their own cases
 - view case detail and visible documents
 - upload evidence to their own cases
 
 Merchant:
 
+- browse merchant-linked cases through the merchant portal
 - access only merchant-linked cases
 - review shared workflow context
 - upload response documents to linked cases
 
-## Current UI priorities
+## UI priorities
 
-The current repository emphasizes:
+The completed repository emphasizes:
 
 - clear route boundaries by role
 - reusable shell structure across pages
@@ -73,17 +79,18 @@ The current repository emphasizes:
 - inline partial refresh for ops actions and document uploads
 - stable presentation of audit history, evidence, and risk
 
-## UX constraints from current implementation
+## UX constraints
 
 - risk is intentionally hidden from customer and merchant detail payloads
 - document upload options depend on actor role
 - ops queue and case detail must stay useful under dense operational data
 - error states should return branded pages or local panel-level validation instead of raw framework output where possible
 
-## Near-term documentation baseline
+## Documentation baseline
 
-Any future UI documentation should continue to treat these implemented surfaces as the source of truth:
+Future UI documentation should continue to treat these implemented surfaces as the source of truth:
 
 - landing and role-entry pages are real product routes, not placeholders in the docs
+- `/customer/` and `/merchant/` are role-bound list portals, not generic dashboards
 - `/ops/` and `/ops/{case_id}/` are the main ops workflow surfaces
 - `/cases/{case_id}/` is the shared role-aware case workspace

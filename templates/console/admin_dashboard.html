@@ -16,7 +16,6 @@
         </p>
         <div class="rh-hero-actions">
           <a class="btn btn-primary rh-btn-primary" href="/admin/">Open Django admin</a>
-          <a class="btn btn-outline-secondary rh-btn-secondary" href="{% url 'landing' %}">Return to landing page</a>
         </div>
       </div>
       <aside class="rh-hero-visual" aria-label="Admin console summary">
@@ -68,6 +67,126 @@
       <span class="rh-trust-item">Clear management path</span>
       <span class="rh-trust-item">Role-aware access</span>
       <span class="rh-trust-item">Operational visibility</span>
+    </div>
+  </section>
+
+  <section class="rh-band rh-band--value rh-band--wide mb-4" aria-labelledby="health-release-heading">
+    <div class="rh-section-heading">
+      <div class="rh-kicker">Health and release</div>
+      <h2 id="health-release-heading">Check runtime readiness at a glance.</h2>
+      <p>The same readiness contract used by <code>/api/health/</code> is surfaced here for admins.</p>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-6 col-xl-3">
+        <article class="rh-info-card rh-info-card--primary h-100">
+          <h2>Application status</h2>
+          {% if health_release_panel.status == "ok" %}
+            <span class="rh-status-pill rh-status-pill--success">OK</span>
+          {% else %}
+            <span class="rh-status-pill rh-status-pill--danger">{{ health_release_panel.status|title }}</span>
+          {% endif %}
+          <p>Overall readiness from dependency checks.</p>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="rh-info-card rh-info-card--primary h-100">
+          <h2>Release</h2>
+          <div class="rh-visual-summary-value">{{ health_release_panel.release }}</div>
+          <p>Configured RELEASE_VERSION for this running app.</p>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="rh-info-card rh-info-card--primary h-100">
+          <h2>Settings module</h2>
+          <div class="rh-queue-table__primary">{{ health_release_panel.settings_module }}</div>
+          <p>Django environment currently loaded by the process.</p>
+        </article>
+      </div>
+      <div class="col-md-6 col-xl-3">
+        <article class="rh-info-card rh-info-card--primary h-100">
+          <h2>Database</h2>
+          {% if health_release_panel.database == "ok" %}
+            <span class="rh-status-pill rh-status-pill--success">Connected</span>
+          {% else %}
+            <span class="rh-status-pill rh-status-pill--danger">{{ health_release_panel.database|title }}</span>
+          {% endif %}
+          <p>Default database connectivity from a lightweight readiness probe.</p>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section class="rh-band rh-band--workflow rh-band--wide mb-4" aria-labelledby="user-management-heading">
+    <div class="rh-section-heading rh-queue-shell__heading">
+      <div>
+        <div class="rh-kicker">User management</div>
+        <h2 id="user-management-heading">Review users, roles, and account status.</h2>
+        <p>Use this panel for a quick access check, then open Django admin for edits.</p>
+      </div>
+      <a class="btn btn-outline-secondary rh-btn-secondary" href="/admin/auth/user/">Open all users</a>
+    </div>
+
+    <div class="rh-queue-shell">
+      <div class="rh-queue-shell__header">
+        <div>
+          <h3>Platform users</h3>
+          <p>Showing the first 10 users by admin priority and username.</p>
+        </div>
+      </div>
+
+      {% if user_management_rows %}
+        <div class="table-responsive rh-queue-table-wrap">
+          <table class="table rh-queue-table rh-queue-table--stacked align-middle mb-0">
+            <thead>
+              <tr>
+                <th scope="col">User</th>
+                <th scope="col">Assigned role</th>
+                <th scope="col">Status</th>
+                <th scope="col">Last login</th>
+                <th scope="col" class="text-end">Admin record</th>
+              </tr>
+            </thead>
+            <tbody>
+              {% for row in user_management_rows %}
+                <tr>
+                  <td data-label="User">
+                    <div class="rh-queue-table__primary">{{ row.user.username }}</div>
+                    <div class="rh-queue-table__subtle">{{ row.user.email|default:"No email recorded" }}</div>
+                  </td>
+                  <td data-label="Assigned role">
+                    <div class="rh-queue-table__primary">{{ row.roles }}</div>
+                  </td>
+                  <td data-label="Status">
+                    {% if row.is_active %}
+                      <span class="rh-status-pill rh-status-pill--success">Active</span>
+                    {% else %}
+                      <span class="rh-status-pill rh-status-pill--danger">Inactive</span>
+                    {% endif %}
+                  </td>
+                  <td data-label="Last login">
+                    {% if row.last_login %}
+                      <div class="rh-queue-table__primary">{{ row.last_login|date:"M j, Y" }}</div>
+                      <div class="rh-queue-table__subtle">{{ row.last_login|time:"H:i" }}</div>
+                    {% else %}
+                      <span class="rh-queue-table__subtle">Never</span>
+                    {% endif %}
+                  </td>
+                  <td data-label="Admin record" class="text-end">
+                    <a class="btn btn-outline-secondary btn-sm rh-btn-secondary" href="{{ row.admin_url }}">
+                      Open user
+                    </a>
+                  </td>
+                </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      {% else %}
+        <div class="rh-empty-state">
+          <h3>No users yet</h3>
+          <p>User records will appear here after accounts are created.</p>
+        </div>
+      {% endif %}
     </div>
   </section>
 

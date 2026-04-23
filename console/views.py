@@ -3,6 +3,11 @@
 
 from __future__ import annotations
 
+import os
+from collections import Counter
+
+from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -15,7 +20,8 @@ from accounts.mixins import (
     OpsSurfaceMixin,
 )
 from common.pagination import paginate_queryset
-from returns.models import ReturnCase
+from core.health import get_readiness_payload
+from returns.models import ReturnCase, RiskScore
 from returns.ops_forms import OpsCaseUpdateForm, OpsNoteForm, OpsRequestInfoForm
 from returns.services.cases import (
     ReturnCaseWorkflowError,
@@ -79,16 +85,93 @@ class AdminConsoleView(AdminSurfaceMixin, TemplateView):
 
     template_name = "console/admin_dashboard.html"
 
+    def _build_user_management_rows(self) -> list[dict[str, object]]:
+        """Return user rows for the admin console management panel."""
+
+        user_model = get_user_model()
+        admin_route_name = (
+            f"admin:{user_model._meta.app_label}_{user_model._meta.model_name}_change"
+        )
+        users = user_model.objects.prefetch_related("groups").order_by("-is_superuser", "username")[
+            :10
+        ]
+        rows = []
+
+        for user in users:
+            role_names = [group.name.title() for group in user.groups.all()]
+            if user.is_superuser and "Admin" not in role_names:
+                role_names.insert(0, "Admin")
+
+            rows.append(
+                {
+                    "user": user,
+                    "roles": ", ".join(role_names) or "No role assigned",
+                    "is_active": user.is_active,
+                    "last_login": user.last_login,
+                    "admin_url": reverse(admin_route_name, args=[user.pk]),
+                }
+            )
+
+        return rows
+
     def get_context_data(self, **kwargs):
         """Build the admin dashboard context."""
         context = super().get_context_data(**kwargs)
+        health_payload = get_readiness_payload()
         context["page_title"] = "Admin Console"
         context["total_cases"] = ReturnCase.objects.count()
+        context["user_management_rows"] = self._build_user_management_rows()
+        context["health_release_panel"] = {
+            "status": health_payload["status"],
+            "release": health_payload["release"],
+            "settings_module": os.environ.get(
+                "DJANGO_SETTINGS_MODULE",
+                settings.SETTINGS_MODULE or "unknown",
+            ),
+            "database": health_payload["checks"]["database"],
+        }
         return context
 
 
 class BaseOpsQueueView(OpsSurfaceMixin, TemplateView):
     """Shared ops queue context for the server-rendered console shell."""
+
+    def _build_ml_insights(self) -> dict[str, object]:
+        """Return persisted ML risk signals for the ops console."""
+
+        active_statuses = (
+            ReturnCase.Status.SUBMITTED,
+            ReturnCase.Status.IN_REVIEW,
+            ReturnCase.Status.WAITING_CUSTOMER,
+            ReturnCase.Status.WAITING_MERCHANT,
+        )
+        risk_scores = RiskScore.objects.select_related("case").order_by("-scored_at", "-id")
+        risk_distribution = {
+            label: risk_scores.filter(label=label).count() for label in ("low", "medium", "high")
+        }
+        latest_score = risk_scores.first()
+        reason_counter: Counter[str] = Counter()
+
+        for risk_score in risk_scores[:50]:
+            for reason in risk_score.reason_codes:
+                if isinstance(reason, dict):
+                    code = reason.get("code")
+                else:
+                    code = str(reason)
+                if code:
+                    reason_counter[code] += 1
+
+        return {
+            "risk_distribution": risk_distribution,
+            "high_risk_active_count": risk_scores.filter(
+                label="high",
+                case__status__in=active_statuses,
+            ).count(),
+            "model_version": latest_score.model_version if latest_score else "No model scored yet",
+            "recent_scores": risk_scores[:3],
+            "top_reason_codes": reason_counter.most_common(3),
+            "high_risk_queue_url": f"{reverse('ops:queue')}?risk_label=high",
+        }
 
     def get_context_data(self, **kwargs):
         """Build the ops queue context."""
@@ -103,6 +186,7 @@ class BaseOpsQueueView(OpsSurfaceMixin, TemplateView):
                 "queue_summary": get_queue_summary(queryset),
                 "pagination": pagination,
                 "queue_reset_url": self.request.path,
+                "ml_insights": self._build_ml_insights(),
             }
         )
         return context
@@ -225,7 +309,7 @@ class OpsCaseDetailView(OpsSurfaceMixin, TemplateView):
             "page_title": f"Ops Case {detail_context['return_case'].order_reference}",
             "upload_form": CaseDocumentUploadForm(actor_role=actor_role) if actor_role else None,
             "upload_success_message": "",
-            "ops_queue_url": reverse("ops:queue"),
+            "ops_queue_url": reverse("console:ops-dashboard"),
             "ops_action_success_message": "",
             "note_success_message": "",
             "latest_request_event": latest_request_event,

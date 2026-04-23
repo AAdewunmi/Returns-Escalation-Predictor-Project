@@ -27,9 +27,6 @@ def get_primary_surface(user):
 
 def user_can_access_path(user, path):
     """Return True when the user may land on the requested relative path."""
-    if is_admin_user(user):
-        return True
-
     for role, prefixes in SURFACE_ALLOWED_PREFIXES.items():
         if path.startswith(prefixes):
             return user_has_surface_access(user, role)

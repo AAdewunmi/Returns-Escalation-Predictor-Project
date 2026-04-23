@@ -3,11 +3,11 @@
 
 ## Purpose
 
-Use this checklist before demos, release candidates, or major merges that touch templates, CSS, pagination, or HTMX partials. The aim is not pixel-perfect automation. The aim is a disciplined manual pass that catches obvious product regressions before someone else sees them.
+Use this checklist before demos, release candidates, or major merges that touch templates, CSS, pagination, or HTMX partials. The aim is not pixel-perfect automation. The aim is a disciplined manual pass that protects the feature-complete ReturnHub baseline.
 
 ## How to run this pass
 
-- Start from a seeded local environment with the current demo dataset applied.
+- Start from a seeded local environment with the deterministic demo dataset applied.
 - Review the public shell first at `/`, `/login/admin/`, `/login/ops/`, `/login/customer/`, and `/login/merchant/`.
 - Review authenticated surfaces with the seeded demo accounts: `admin.demo`, `ops.demo`, `customer.one`, and `merchant.one`.
 - Check the main role surfaces at `/console/admin/`, `/ops/?page=1`, `/ops/?page=2`, `/customer/?page=1`, `/customer/?page=2`, `/merchant/?page=1`, and `/merchant/?page=2`.
