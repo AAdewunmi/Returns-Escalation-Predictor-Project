@@ -17,7 +17,7 @@
         <div class="rh-kicker">Customer Case Workspace</div>
         <h1>{{ case.order_reference }}</h1>
         <p class="rh-hero-lead">
-          Review the current workflow status, visible documents, and append-only case activity for this return.
+          Review the current workflow status, upload supporting evidence, and track case activity for this return.
         </p>
         <div class="rh-trust-row" aria-label="Customer case summary signals">
           <span class="rh-trust-item">{% include "partials/_status_badge.html" with status=case.status %}</span>
@@ -51,23 +51,23 @@
     <div class="col-12 col-xl-8">
       <section class="rh-card mb-4">
         <div class="rh-section-heading mb-3">
-          <div class="rh-kicker">Documents</div>
-          <h2>Customer-visible evidence and linked case files.</h2>
+          <div class="rh-kicker">Uploaded evidence</div>
+          <h2>Photos, receipts, and supporting files for this return.</h2>
         </div>
-        {% include "partials/_document_table.html" with documents=case.documents.all %}
+        {% include "partials/_document_table.html" with documents=case.documents.all empty_title="No evidence uploaded yet" empty_body="Use the upload panel to add photos, receipts, or supporting files for this return." %}
       </section>
 
       <section class="rh-card">
         <div class="rh-section-heading mb-3">
           <div class="rh-kicker">Timeline</div>
-          <h2>Append-only case history for the current return.</h2>
+          <h2>Case history, including uploaded evidence events.</h2>
         </div>
         {% include "partials/_timeline.html" with events=case.events.all %}
       </section>
     </div>
 
     <div class="col-12 col-xl-4">
-      {% include "partials/_upload_panel.html" with upload_form=form upload_success_message="" return_case=case actor_role="customer" %}
+      {% include "partials/_upload_panel.html" with upload_form=form upload_success_message="" return_case=case actor_role="customer" upload_panel_label="Evidence" upload_panel_title="Upload evidence" upload_panel_help="Add photos, receipts, packaging images, or other supporting files for this return." upload_button_label="Upload evidence" %}
     </div>
   </div>
 {% endblock %}
