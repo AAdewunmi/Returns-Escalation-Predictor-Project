@@ -116,7 +116,10 @@ def test_customer_console_renders_only_customer_cases(client) -> None:
     assert "CUS-9999" not in body
     assert 'href="/customer/"' in body
     assert f'href="/customer/{owned_case.pk}/"' in body
-    assert "View all cases" in body
+    assert "View my cases" in body
+    assert "only this customer" in body
+    assert "View all cases" not in body
+    assert "full case list" not in body
     assert "Open case" in body
 
 
