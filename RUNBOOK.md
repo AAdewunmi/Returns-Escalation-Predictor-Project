@@ -1,10 +1,10 @@
 # ReturnHub Runbook
 
-This runbook takes the project from clean clone to a verified local environment and checks the routes, workflows, APIs, ML artifacts, and proof commands that currently match the repository.
+This runbook takes the project from clean clone to a verified local environment and checks the routes, workflows, APIs, ML artifacts, and proof commands that match the feature-complete ReturnHub baseline.
 
-## Sprint 7 walkthrough intent
+## Feature-complete walkthrough intent
 
-This runbook covers the operational commands and checks needed to run, inspect, and verify ReturnHub after Sprint 7. It is intentionally practical. It assumes a working development or production-like environment and focuses on the tasks an operator, reviewer, or hiring manager might perform during a walkthrough.
+This runbook covers the operational commands and checks needed to run, inspect, and verify the completed core ReturnHub product as of April 23, 2026. It is intentionally practical. It assumes a working development or production-like environment and focuses on the tasks an operator, reviewer, or hiring manager might perform during a walkthrough.
 
 Common operator commands:
 
@@ -40,6 +40,7 @@ This runbook verifies:
 - Docker-based local setup with PostgreSQL
 - Django migrations and deterministic demo data
 - public and authenticated UI routes
+- customer and merchant case-list portals
 - ops queue and ops case-detail workflows
 - shared case-detail document upload flow
 - returns, documents, queue, risk, audit-export, and analytics APIs
@@ -187,6 +188,21 @@ Expected behavior:
 - customer sees recent linked cases
 - merchant sees recent linked cases
 
+## Customer and merchant portal verification
+
+Open as the matching seeded users:
+
+- `customer.one` -> `http://127.0.0.1:8000/customer/`
+- `merchant.one` -> `http://127.0.0.1:8000/merchant/`
+
+Verify:
+
+- list pages render with linked cases only
+- pagination uses a page size of `15`
+- page 2 remains reachable in the seeded dataset
+- detail routes at `/customer/<case_id>/` and `/merchant/<case_id>/` enforce role ownership
+- unrelated customer or merchant actors receive a branded `403`
+
 ## Ops queue verification
 
 Open:
@@ -239,7 +255,7 @@ Verify the page renders:
 Expected behavior:
 
 - the route is `ops:case-detail`
-- the page renders current workflow state and ownership context
+- the page renders workflow state and ownership context
 - the page includes documents, notes, timeline, and risk sections
 - sparse cases show stable empty states such as `No documents yet`, `No notes yet`, `No timeline events yet`, and `No score yet`
 
@@ -414,7 +430,7 @@ Check the committed active-model registry.
 docker compose exec -T web python manage.py shell -c "from pathlib import Path; print(Path('ml/registry/model_registry.json').read_text())"
 ```
 
-Expected current active model metadata:
+Expected active model metadata:
 
 - version: `retrain_baseline-logreg-v1-seed-7-rows-500`
 - model type: `logistic_regression`

@@ -2,15 +2,16 @@
 
 ReturnHub is a Django 5 application for managing online-retail return cases across customer, merchant, ops, and admin roles. The project combines server-rendered workflow surfaces with DRF APIs, a service-layer workflow core, persisted audit events, and artifact-backed escalation-risk scoring.
 
-## Current state
+## Feature-complete state
 
-The repository currently includes:
+Core ReturnHub development is complete as of April 23, 2026. The repository now represents a feature-complete portfolio baseline for the returns workflow product, including:
 
 - Django 5.1 + Django REST Framework on Python 3.12
 - PostgreSQL-backed local development through Docker Compose
 - seeded demo users, groups, profiles, and 32 stable return cases
 - public landing and role-entry pages
 - authenticated console dashboards for admin, ops, customer, and merchant users
+- customer and merchant case-list portals with stable pagination and role-bound access
 - a standalone ops queue at `/ops/` with filtering, ordering, summary cards, and shared pagination
 - an ops case-detail workspace at `/ops/{case_id}/` with inline status changes, follow-up requests, internal notes, timeline, risk panel, and evidence list
 - a shared case detail route at `/cases/{case_id}/` with role-aware document visibility and inline uploads
@@ -101,6 +102,10 @@ Authenticated console routes:
 
 Workflow routes:
 
+- `/customer/`
+- `/customer/{case_id}/`
+- `/merchant/`
+- `/merchant/{case_id}/`
 - `/ops/`
 - `/ops/{case_id}/`
 - `/cases/{case_id}/`
@@ -121,7 +126,7 @@ Live application routes exposed by `config/urls.py`:
 - `GET /api/returns/{case_id}/audit-export/`
 - `GET /api/analytics/returns/?from=YYYY-MM-DD&to=YYYY-MM-DD`
 
-Behavioral rules currently enforced in code:
+Behavioral rules enforced in code:
 
 - customers and admins can create return cases
 - ops and admins can update status, set priority, and add internal notes
@@ -158,6 +163,8 @@ The project includes:
 - reason-code generation for persisted risk records
 - a committed model registry at `ml/registry/model_registry.json`
 - training, retraining, and dataset-generation management commands
+
+The ML layer is production-path ready for this baseline: scoring is artifact-backed when the active model can be loaded, degrades safely to placeholder scoring when artifacts are unavailable, persists `RiskScore`, and emits `risk_scored` audit events.
 
 Current committed active model:
 
@@ -201,7 +208,7 @@ Shared local password:
 
 - `ChangeMe123!`
 
-Preferred seed command for current manual verification and multi-surface demos:
+Preferred seed command for manual verification and multi-surface demos:
 
 - `docker compose exec -T web python manage.py seed_returnhub_demo`
 
@@ -264,13 +271,17 @@ docker compose exec -T web python manage.py retrain_baseline_model --seed 7 --ro
 
 ## Documentation map
 
-- `README.md`: project overview and current-state summary
+- `README.md`: project overview and feature-complete baseline summary
 - `RUNBOOK.md`: bootstrap and manual verification flow
 - `docs/api/returns-workflow.md`: returns API behavior and permissions
 - `docs/api/ops-queue-contract.md`: shared queue filter, ordering, and pagination contract
 - `docs/ml/baseline-escalation-risk.md`: training, inference, and artifact flow
 - `docs/ml/model-registry.md`: registry structure and active-model metadata
+- `docs/ml/operations.md`: ML operational readiness, scoring, and fallback behavior
 - `docs/ui/product-ui-brief.md`: product-surface intent and route map
 - `docs/ui/design-system.md`: tokens, layout patterns, and component rules
 - `docs/ui/evidence-states.md`: case detail and document-upload state handling
-- `docs/sprint-runbook/sprint-6/sprint-6-multi-surface-verification.md`: current multi-surface verification flow
+- `docs/ui/visual-regression-checklist.md`: manual visual and responsive regression pass
+- `docs/deployment.md`: production-like Docker, Gunicorn, Nginx, and PostgreSQL deployment path
+- `docs/DEMO_SCRIPT.md`: deterministic feature-complete product walkthrough
+- `docs/sprint-runbook/sprint-6/sprint-6-multi-surface-verification.md`: archived multi-surface verification flow retained for sprint evidence

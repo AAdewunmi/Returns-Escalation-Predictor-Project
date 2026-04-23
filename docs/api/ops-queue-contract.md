@@ -1,7 +1,7 @@
 <!-- path: docs/api/ops-queue-contract.md -->
 # Ops Queue Contract
 
-This document describes the queue contract currently shared by the server-rendered ops surface at `/ops/` and the DRF queue endpoint at `/api/returns/queue/`.
+This document describes the queue contract shared by the feature-complete server-rendered ops surface at `/ops/` and the DRF queue endpoint at `/api/returns/queue/`.
 
 ## Supported query parameters
 
@@ -88,7 +88,7 @@ Pagination links preserve active filters except for `page`.
 
 ## Response shape
 
-The API queue response currently returns:
+The API queue response returns:
 
 - `count`
 - `next`

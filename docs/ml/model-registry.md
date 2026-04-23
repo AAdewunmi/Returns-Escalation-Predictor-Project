@@ -11,7 +11,7 @@ Path:
 ml/registry/model_registry.json
 ```
 
-Current structure:
+Structure:
 
 ```json
 {
@@ -25,7 +25,7 @@ Current structure:
 }
 ```
 
-## Current active model
+## Active model
 
 - version: `retrain_baseline-logreg-v1-seed-7-rows-500`
 - model type: `logistic_regression`

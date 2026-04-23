@@ -8,6 +8,11 @@ hosting platform abstraction. The goal is to make one clear operator path that
 can be followed locally, in staging, or in a VM-based deployment with minimal
 translation.
 
+The deployment target is the feature-complete ReturnHub baseline: public role
+entry pages, authenticated dashboards, customer and merchant portals, ops queue
+and case workspace, returns APIs, analytics, audit export, and persisted
+escalation-risk scoring.
+
 This repository defaults to `config.settings.dev` when
 `DJANGO_SETTINGS_MODULE` is unset. Production deployment should override that
 explicitly in the deployment platform, not through ad hoc shell exports.

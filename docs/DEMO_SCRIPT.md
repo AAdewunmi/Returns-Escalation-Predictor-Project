@@ -3,7 +3,7 @@
 
 ## Goal
 
-This script provides a deterministic walkthrough of the current multi-surface ReturnHub product after Sprint 7. It is designed for a five to eight minute demo and follows the repo's current Docker-based workflow, seeded data, and live routes.
+This script provides a deterministic walkthrough of the feature-complete multi-surface ReturnHub product as of April 23, 2026. It is designed for a five to eight minute demo and follows the repo's Docker-based workflow, seeded data, and live routes.
 
 ## Pre-demo preparation
 
@@ -101,6 +101,12 @@ Narration:
 - Admin sees cross-system oversight.
 - Ops sees queue-oriented operational context.
 - Customer and merchant consoles show role-specific linked case views.
+
+Optional route callout:
+
+- `customer.one` can also open `http://127.0.0.1:8000/customer/`
+- `merchant.one` can also open `http://127.0.0.1:8000/merchant/`
+- these list portals provide role-bound case browsing with stable pagination
 
 ### 4. Walk through the ops queue
 
@@ -237,7 +243,7 @@ Suggested pacing for a five to eight minute walkthrough:
 
 ## Optional proof commands
 
-For a more evidence-driven walkthrough, use the current runbook:
+For a more evidence-driven walkthrough, use the runbook:
 
 - [RUNBOOK.md](../RUNBOOK.md)
 

@@ -1,7 +1,7 @@
 <!-- path: docs/api/returns-workflow.md -->
 # Returns Workflow API
 
-This document describes the return-case API behavior implemented in the current repository.
+This document describes the return-case API behavior implemented for the feature-complete ReturnHub baseline.
 
 ## Runtime routes
 
@@ -17,7 +17,7 @@ The live application exposes these routes:
 - `GET /api/returns/{case_id}/risk/`
 - `GET /api/returns/{case_id}/audit-export/`
 
-The repository also contains compatibility wrappers in `api/` and canonical route modules in `returns/api/`; both are aligned around the same workflow services.
+The repository also contains compatibility wrappers in `api/` and canonical route modules in `returns/api/`; both are aligned around the same workflow services. The server-rendered customer, merchant, ops, and shared case-detail pages use the same service-layer behavior where applicable.
 
 ## Create case
 
