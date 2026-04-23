@@ -25,6 +25,13 @@
           </span>
           {% endfor %}
         </div>
+        {% if case_detail_url_name %}
+          <div class="mt-3">
+            <a class="btn btn-sm btn-outline-dark" href="{% url case_detail_url_name case_id=case.pk %}">
+              Open case
+            </a>
+          </div>
+        {% endif %}
       </div>
     {% if wrap_in_rows %}
     </div>
