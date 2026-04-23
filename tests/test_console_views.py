@@ -114,10 +114,9 @@ def test_customer_console_renders_only_customer_cases(client) -> None:
     assert response.status_code == 200
     assert owned_case.order_reference in body
     assert "CUS-9999" not in body
-    assert 'href="/customer/"' in body
     assert f'href="/customer/{owned_case.pk}/"' in body
-    assert "View my cases" in body
-    assert "only this customer" in body
+    assert "View my cases" not in body
+    assert "Customer portal" not in body
     assert "View all cases" not in body
     assert "full case list" not in body
     assert "Open case" in body
@@ -138,6 +137,11 @@ def test_merchant_console_renders_only_merchant_cases(client) -> None:
     assert response.status_code == 200
     assert owned_case.order_reference in body
     assert "MER-9999" not in body
+    assert 'href="/merchant/"' in body
+    assert f'href="/merchant/{owned_case.pk}/"' in body
+    assert "Merchant portal" in body
+    assert "View merchant cases" in body
+    assert "Open case" in body
 
 
 @pytest.mark.django_db
