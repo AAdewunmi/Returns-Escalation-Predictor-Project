@@ -187,3 +187,17 @@ def test_admin_console_does_not_render_return_to_landing_button(client) -> None:
     body = response.content.decode()
     assert response.status_code == 200
     assert "Return to landing page" not in body
+
+
+@pytest.mark.django_db
+def test_ops_console_does_not_render_return_to_landing_button(client) -> None:
+    """The ops dashboard should not show a landing-page return action."""
+    ops_user = UserFactory(email="console-ops-no-landing@example.com")
+    add_group(ops_user, "Ops")
+
+    client.force_login(ops_user)
+    response = client.get("/console/ops/")
+
+    body = response.content.decode()
+    assert response.status_code == 200
+    assert "Return to landing page" not in body
