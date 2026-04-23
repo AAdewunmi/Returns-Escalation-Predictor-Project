@@ -5,8 +5,8 @@ from __future__ import annotations
 
 import os
 
-from django.contrib.auth import get_user_model
 from django.conf import settings
+from django.contrib.auth import get_user_model
 from django.http import JsonResponse
 from django.template.loader import render_to_string
 from django.urls import reverse
@@ -91,10 +91,9 @@ class AdminConsoleView(AdminSurfaceMixin, TemplateView):
         admin_route_name = (
             f"admin:{user_model._meta.app_label}_{user_model._meta.model_name}_change"
         )
-        users = (
-            user_model.objects.prefetch_related("groups")
-            .order_by("-is_superuser", "username")[:10]
-        )
+        users = user_model.objects.prefetch_related("groups").order_by("-is_superuser", "username")[
+            :10
+        ]
         rows = []
 
         for user in users:
