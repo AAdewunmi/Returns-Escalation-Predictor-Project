@@ -123,6 +123,10 @@ Workflow routes:
 - `/cases/{case_id}/`
 - `/cases/{case_id}/documents/upload/`
 
+## Landing Page 
+
+https://github.com/user-attachments/assets/3643eda7-e41f-443c-8f31-8ed80944ae37
+
 ## API surface
 
 Live application routes exposed by `config/urls.py`:
